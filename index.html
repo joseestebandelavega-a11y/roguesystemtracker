@@ -1303,7 +1303,145 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 @media (max-width: 760px){
   .equip-grid{grid-template-columns:1fr !important}
 }
-.equip-card{min-width:0}
+.equip-card{min-width:0;position:relative;overflow:hidden;transition:border-color .15s ease,box-shadow .18s ease,transform .15s ease}
+
+/* ─── RARITY COLOR ACCENTS — at-a-glance on every equip card ─── */
+.equip-card::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:rgba(120,120,120,.35);
+  pointer-events:none;
+}
+.equip-card:has(.rarity-Common)::before{background:#9a9a9a}
+.equip-card:has(.rarity-Uncommon)::before{background:#3a9a4a;box-shadow:0 0 14px rgba(58,154,74,.45)}
+.equip-card:has(.rarity-Rare)::before{background:#4466cc;box-shadow:0 0 14px rgba(68,102,204,.5)}
+.equip-card:has(.rarity-Very-Rare)::before{background:#9944cc;box-shadow:0 0 16px rgba(153,68,204,.55)}
+.equip-card:has(.rarity-Legendary)::before{background:linear-gradient(180deg,#ffd97d,#cc9922);box-shadow:0 0 22px rgba(220,160,20,.65)}
+
+.equip-card:has(.rarity-Uncommon){border-color:rgba(58,154,74,.5) !important;background:linear-gradient(180deg,rgba(34,80,38,.22),rgba(29,34,48,.55)) !important}
+.equip-card:has(.rarity-Rare){border-color:rgba(68,102,204,.55) !important;background:linear-gradient(180deg,rgba(48,68,140,.25),rgba(29,34,48,.55)) !important}
+.equip-card:has(.rarity-Very-Rare){border-color:rgba(153,68,204,.6) !important;background:linear-gradient(180deg,rgba(90,40,140,.28),rgba(29,34,48,.55)) !important}
+.equip-card:has(.rarity-Legendary){border-color:rgba(220,160,20,.6) !important;background:linear-gradient(180deg,rgba(140,100,20,.28),rgba(29,34,48,.55)) !important;box-shadow:0 0 0 1px rgba(220,160,20,.2), 0 8px 28px -16px rgba(220,160,20,.4) !important}
+
+.equip-card:has(.rarity-Uncommon):hover{box-shadow:0 0 0 1px rgba(58,154,74,.45), 0 12px 28px -12px rgba(58,154,74,.45) !important;transform:translateY(-1px)}
+.equip-card:has(.rarity-Rare):hover{box-shadow:0 0 0 1px rgba(68,102,204,.5), 0 12px 30px -12px rgba(68,102,204,.55) !important;transform:translateY(-1px)}
+.equip-card:has(.rarity-Very-Rare):hover{box-shadow:0 0 0 1px rgba(153,68,204,.55), 0 14px 32px -10px rgba(153,68,204,.6) !important;transform:translateY(-1px)}
+.equip-card:has(.rarity-Legendary):hover{box-shadow:0 0 0 1px rgba(220,160,20,.5), 0 16px 38px -10px rgba(220,160,20,.65) !important;transform:translateY(-2px)}
+
+/* Bigger, bolder rarity tag */
+.equip-rarity{
+  font-family:var(--font-ui) !important;
+  letter-spacing:.16em !important;
+  font-size:9.5px !important;
+  font-weight:700 !important;
+  padding:2px 7px !important;
+  border-radius:3px !important;
+  display:inline-block !important;
+  align-self:flex-start !important;
+  margin-bottom:2px !important;
+  background:rgba(0,0,0,.3) !important;
+  box-shadow:inset 0 0 0 1px currentColor !important;
+}
+
+/* ─── ITEM ROLL MODAL — match the prettifier draw-modal styling ─── */
+.item-roll-ov{
+  background:radial-gradient(ellipse at center, rgba(15,18,26,.7) 0%, rgba(5,7,15,.95) 100%) !important;
+  animation:section-fade-in .25s ease both;
+}
+.item-roll-modal{
+  background:linear-gradient(180deg,#1d2230 0%,#141822 100%) !important;
+  border:1px solid rgba(226,161,75,.4) !important;
+  border-radius:16px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 0 0 1px rgba(226,161,75,.12),
+    0 30px 80px -20px rgba(0,0,0,.8) !important;
+  animation:modal-rise .35s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes modal-rise{
+  from{opacity:0;transform:translateY(14px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+@keyframes section-fade-in{
+  from{opacity:0}
+  to{opacity:1}
+}
+.irm-head{
+  background:linear-gradient(180deg,rgba(37,43,60,.7),rgba(29,34,48,.7)) !important;
+  border-bottom:1px solid rgba(61,69,100,.45) !important;
+  padding:16px 22px !important;
+}
+.irm-title{font-family:var(--font-ui) !important;letter-spacing:.22em !important;color:var(--fighter) !important;font-weight:700 !important}
+.irm-roll-badge{
+  font-family:var(--font-display) !important;
+  font-weight:700 !important;
+  color:#f6e1b4 !important;
+  background:linear-gradient(180deg,#2d2238,#1a1525) !important;
+  border:1.5px solid rgba(226,161,75,.5) !important;
+  box-shadow:inset 0 1px 0 rgba(255,200,100,.12), 0 0 18px -4px rgba(226,161,75,.35) !important;
+}
+.irm-sub{font-family:var(--font-serif) !important;font-style:italic !important;color:#a8a08e !important;padding:12px 22px 8px !important}
+.irm-cards{padding:14px 22px 22px !important;gap:14px !important}
+.irm-card{
+  background:linear-gradient(180deg,rgba(37,43,60,.7),rgba(29,34,48,.85)) !important;
+  border:1.5px solid rgba(61,69,100,.55) !important;
+  border-radius:12px !important;
+  padding:14px 16px !important;
+  transition:all .2s cubic-bezier(.2,.7,.2,1) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03), 0 6px 18px -10px rgba(0,0,0,.5);
+  animation:card-deal .55s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes card-deal{
+  from{opacity:0;transform:translateY(20px) rotateX(-30deg) scale(.94);transform-origin:center top}
+  to{opacity:1;transform:none}
+}
+.irm-cards .irm-card:nth-child(1){animation-delay:.05s}
+.irm-cards .irm-card:nth-child(2){animation-delay:.18s}
+.irm-cards .irm-card:nth-child(3){animation-delay:.31s}
+.irm-card:hover{transform:translateY(-3px) !important;box-shadow:inset 0 1px 0 rgba(255,200,100,.08), 0 14px 32px -10px rgba(0,0,0,.6) !important}
+
+/* Rarity tinting on roll modal cards (always visible) */
+.irm-card.rarity-Common{border-color:rgba(154,154,154,.45) !important}
+.irm-card.rarity-Uncommon{
+  border-color:#3a9a4a !important;
+  background:linear-gradient(180deg,rgba(34,80,38,.38),rgba(20,40,22,.72)) !important;
+  box-shadow:inset 0 1px 0 rgba(120,255,140,.05), 0 0 0 1px rgba(58,154,74,.25), 0 0 22px -8px rgba(58,154,74,.35) !important;
+}
+.irm-card.rarity-Rare{
+  border-color:#4466cc !important;
+  background:linear-gradient(180deg,rgba(40,60,140,.4),rgba(20,28,60,.75)) !important;
+  box-shadow:inset 0 1px 0 rgba(140,180,255,.05), 0 0 0 1px rgba(68,102,204,.3), 0 0 24px -8px rgba(68,102,204,.45) !important;
+}
+.irm-card.rarity-Very\ Rare{
+  border-color:#9944cc !important;
+  background:linear-gradient(180deg,rgba(90,40,140,.42),rgba(40,18,60,.78)) !important;
+  box-shadow:inset 0 1px 0 rgba(220,140,255,.06), 0 0 0 1px rgba(153,68,204,.35), 0 0 26px -6px rgba(153,68,204,.5) !important;
+}
+.irm-card.rarity-Legendary{
+  border-color:#ddaa22 !important;
+  background:linear-gradient(180deg,rgba(140,100,20,.42),rgba(60,40,8,.82)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,220,140,.08), 0 0 0 1px rgba(220,160,20,.4), 0 0 30px -6px rgba(220,160,20,.55) !important;
+}
+.irm-card.rarity-Uncommon:hover{box-shadow:inset 0 1px 0 rgba(120,255,140,.08), 0 0 0 1px rgba(58,154,74,.45), 0 16px 36px -12px rgba(58,154,74,.5) !important}
+.irm-card.rarity-Rare:hover{box-shadow:inset 0 1px 0 rgba(140,180,255,.08), 0 0 0 1px rgba(68,102,204,.5), 0 16px 36px -12px rgba(68,102,204,.6) !important}
+.irm-card.rarity-Very\ Rare:hover{box-shadow:inset 0 1px 0 rgba(220,140,255,.1), 0 0 0 1px rgba(153,68,204,.55), 0 16px 38px -10px rgba(153,68,204,.65) !important}
+.irm-card.rarity-Legendary:hover{box-shadow:inset 0 1px 0 rgba(255,220,140,.12), 0 0 0 1px rgba(220,160,20,.6), 0 18px 42px -10px rgba(220,160,20,.7) !important}
+
+.irm-rarity{
+  font-family:var(--font-ui) !important;
+  letter-spacing:.18em !important;
+  font-size:9.5px !important;
+  font-weight:700 !important;
+  padding:2px 7px !important;
+  border-radius:3px !important;
+  display:inline-block !important;
+  align-self:flex-start !important;
+  background:rgba(0,0,0,.3) !important;
+  box-shadow:inset 0 0 0 1px currentColor !important;
+}
+.irm-card-name{font-family:var(--font-display) !important;font-size:15px !important;color:#f6e1b4 !important;letter-spacing:.02em}
+.irm-card-type{font-family:var(--font-ui) !important;letter-spacing:.06em;color:#9a9281 !important}
+.irm-card-stat{font-family:var(--font-display) !important;color:var(--fighter) !important;font-weight:700}
+.irm-card-desc{font-family:var(--font-serif) !important;font-style:italic;color:#a8a08e !important;line-height:1.55}
 .equip-card-name,.equip-card-detail{overflow-wrap:anywhere}
 .cs-ac-inner{padding-bottom:14px;padding-top:6px;gap:1px}
 .cs-ac-input{font-size:26px;width:58px;margin-top:-2px}
