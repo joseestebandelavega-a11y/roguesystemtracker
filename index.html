@@ -564,7 +564,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <div class="tab active" onclick="switchTab('character',this)">Character Sheet</div>
     <div class="tab" onclick="switchTab('decks',this)">Ability Deck</div>
     <div class="tab" onclick="switchTab('equipment',this)">Equipment</div>
-    <div class="tab" onclick="switchTab('equipment',this)">Equipment</div>
   </div>
   <button class="info-btn" onclick="openInfo('overview')" title="Rules &amp; subclass info">&#x2139;</button>
 </div>
@@ -788,38 +787,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 </div><!-- /cs-body -->
 </div><!-- /tab-character -->
 </div><!-- /content -->
-
-<!-- EQUIPMENT PAGE -->
-<div id="tab-equipment" class="section">
-  <div class="equip-layout">
-
-    <!-- Browser -->
-    <div class="equip-browser">
-      <input class="equip-search" id="equip-search" placeholder="🔍 Search items, properties, damage types…"
-        oninput="setEquipSearch(this.value)">
-      <div id="equip-cat-strip" class="equip-cat-strip"></div>
-      <div id="equip-grid" class="equip-grid"></div>
-    </div>
-
-    <!-- Inventory -->
-    <div class="inv-panel">
-      <div class="inv-panel-hd">
-        <div class="inv-panel-title">Character Inventory</div>
-        <button class="inv-clear-btn" onclick="clearInventory()">Clear All</button>
-      </div>
-      <div class="inv-stats">
-        <div>Weight: <span class="inv-stat-val" id="inv-weight">0 lb</span></div>
-        <div>Items: <span class="inv-stat-val" id="inv-count">0 items</span></div>
-      </div>
-      <div id="inv-empty" class="inv-empty">No items — browse and add from the left</div>
-      <div id="inv-list" class="inv-list"></div>
-    </div>
-
-  </div>
-</div>
-
-
-
 
 <!-- EQUIPMENT PAGE -->
 <div id="tab-equipment" class="section">
