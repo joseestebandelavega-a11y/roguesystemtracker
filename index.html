@@ -382,7 +382,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .equip-cat-btn:hover{border-color:var(--border-hi);color:var(--text)}
 .equip-cat-btn.active{border-color:var(--cc);color:var(--cc);background:var(--cc-pale)}
 .equip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
-.equip-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);
+.equip-card{background:var(--s1);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:var(--radius);
   padding:10px 12px;display:flex;flex-direction:column;gap:4px;position:relative;
   transition:border-color .15s}
 .equip-card:hover{border-color:var(--border-hi)}
@@ -1208,209 +1208,6 @@ body::before{
   text-align:center;
 }
 .cs-ac-lbl span{display:block}
-
-/* ═══════════════════════════════════════════════════════════════
-   LAYOUT / ALIGNMENT FIXES — section padding & polish
-   ═══════════════════════════════════════════════════════════════ */
-
-/* `.content` was injecting 88px of empty padding above the equipment tab
-   (which lives outside .content). Reset content padding and apply it to
-   sections directly. */
-.content{padding:0 !important}
-body > .section,
-.content > .section{
-  padding:24px 28px 64px;
-}
-.section{transition:opacity .35s ease}
-.section:not(.active){display:none}
-
-/* Equipment page also lives at the body level — match horizontal padding */
-#tab-equipment{padding:24px 28px 64px}
-
-/* HEADER: tighten internal alignment, balance pills */
-.header{align-items:center}
-.head-meta{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
-.head-stats{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-
-/* TABS — center the underline, evenly spaced */
-.tabs{gap:2px}
-.tab{text-align:center;min-width:140px}
-
-/* CHARACTER SHEET column widths — make the proficiency/initiative/speed cards
-   match the AC shield height for a cleaner row */
-.cs-quick{min-height:90px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-
-/* HP block — line the +Roll / Reset buttons up flush right of the title row */
-.cs-hp-head{justify-content:space-between;align-items:flex-start}
-.cs-hp-btns{align-self:flex-start;flex-shrink:0}
-.cs-mini-btn{
-  font-family:var(--font-ui);
-  letter-spacing:.06em;
-  font-weight:600;
-  padding:5px 11px;
-  border-radius:5px;
-  transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
-}
-.cs-mini-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px -4px rgba(226,161,75,.45)}
-
-/* HP big numbers — center them within their tiles */
-.cs-hp-inputs{justify-content:flex-start;align-items:center}
-.cs-hp-cur,.cs-hp-max{text-align:center;min-width:54px}
-
-/* DEATH SAVES block — center the dot rows */
-.cs-death-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-
-/* Stats row — center the shields evenly and reserve a touch more vertical
-   room for the "tap to roll" caption beneath */
-.cs-stat-row{gap:14px;justify-content:flex-start}
-.cs-stat{gap:4px}
-.cs-stat-hint{font-size:8.5px;letter-spacing:.18em;color:#5a5648;font-family:var(--font-ui);text-transform:uppercase;margin-top:2px}
-
-/* Right-side combat panel: align attack bonus / damage cleanly */
-.cs-atk-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.cs-atk-bonus{font-family:var(--font-display);font-weight:700;color:var(--fighter);font-size:18px}
-
-/* ═══════════════════════════════════════════════════════════════
-   ANIMATIONS — subtle motion on the right surfaces
-   ═══════════════════════════════════════════════════════════════ */
-
-@keyframes section-fade-in{
-  from{opacity:0;transform:translateY(6px)}
-  to{opacity:1;transform:none}
-}
-.section.active{animation:section-fade-in .35s ease both}
-
-/* Staggered entrance for the stat shields */
-@keyframes shield-rise{
-  from{opacity:0;transform:translateY(10px) scale(.96)}
-  to{opacity:1;transform:none}
-}
-.section.active .cs-stat{animation:shield-rise .45s ease both}
-.section.active .cs-stat:nth-child(1){animation-delay:.05s}
-.section.active .cs-stat:nth-child(2){animation-delay:.10s}
-.section.active .cs-stat:nth-child(3){animation-delay:.15s}
-.section.active .cs-stat:nth-child(4){animation-delay:.20s}
-.section.active .cs-stat:nth-child(5){animation-delay:.25s}
-.section.active .cs-stat:nth-child(6){animation-delay:.30s}
-
-/* Stat shield: hover bumps + a quick "ready" wobble on click */
-.cs-stat:active .cs-stat-shell{animation:shield-wobble .35s ease}
-@keyframes shield-wobble{
-  0%{transform:translateY(0)}
-  30%{transform:translateY(2px) scale(.98)}
-  60%{transform:translateY(-3px) scale(1.02)}
-  100%{transform:translateY(0)}
-}
-
-/* Sigil at the top breathes a slow golden glow */
-@keyframes sigil-breathe{
-  0%,100%{box-shadow:
-    inset 0 1px 0 rgba(255,200,100,.25),
-    inset 0 -1px 0 rgba(0,0,0,.4),
-    0 4px 14px -4px rgba(226,161,75,.4),
-    0 0 0 0 rgba(226,161,75,0);}
-  50%{box-shadow:
-    inset 0 1px 0 rgba(255,220,140,.35),
-    inset 0 -1px 0 rgba(0,0,0,.4),
-    0 6px 22px -4px rgba(226,161,75,.6),
-    0 0 24px -4px rgba(226,161,75,.35);}
-}
-.sigil{animation:sigil-breathe 4.5s ease-in-out infinite}
-
-/* Inspiration star: twinkle softly when on */
-@keyframes inspire-pulse{
-  0%,100%{transform:scale(1);filter:drop-shadow(0 0 4px rgba(226,161,75,.5))}
-  50%{transform:scale(1.08);filter:drop-shadow(0 0 14px rgba(226,161,75,.85))}
-}
-.cs-insp.on .cs-insp-star{animation:inspire-pulse 2.4s ease-in-out infinite;display:inline-block}
-
-/* Active tab underline grows in */
-@keyframes tab-underline{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.tab.active::after{transform-origin:center;animation:tab-underline .3s ease both}
-
-/* Drawn cards (in deck modal): flip into place, staggered */
-@keyframes card-deal{
-  from{opacity:0;transform:translateY(20px) rotateX(-30deg) scale(.94);transform-origin:center top}
-  to{opacity:1;transform:none}
-}
-.draw-card{animation:card-deal .55s cubic-bezier(.2,.7,.2,1) both;transform-style:preserve-3d}
-.draw-card:nth-child(1){animation-delay:.05s}
-.draw-card:nth-child(2){animation-delay:.18s}
-.draw-card:nth-child(3){animation-delay:.31s}
-.draw-card:nth-child(4){animation-delay:.44s}
-
-/* CS roll modal: d20 tumbles in */
-@keyframes d20-drop{
-  0%{opacity:0;transform:translateY(-30px) rotate(-20deg) scale(.6)}
-  60%{opacity:1;transform:translateY(6px) rotate(8deg) scale(1.08)}
-  100%{opacity:1;transform:none}
-}
-.cs-roll-d20{animation:d20-drop .55s cubic-bezier(.2,.8,.2,1) both}
-@keyframes crit-flash{
-  0%,100%{filter:drop-shadow(0 0 18px rgba(125,208,106,.4))}
-  50%{filter:drop-shadow(0 0 38px rgba(125,208,106,.9))}
-}
-.cs-roll-d20.crit{animation:d20-drop .55s cubic-bezier(.2,.8,.2,1) both, crit-flash 1s ease-in-out 0.55s infinite}
-@keyframes fumble-shake{
-  0%,100%{transform:translateX(0)}
-  25%{transform:translateX(-6px)}
-  75%{transform:translateX(6px)}
-}
-.cs-roll-d20.fumble{animation:d20-drop .55s cubic-bezier(.2,.8,.2,1) both, fumble-shake .12s linear .55s 4}
-
-/* Modal panels rise on open */
-@keyframes modal-rise{
-  from{opacity:0;transform:translateY(14px) scale(.97)}
-  to{opacity:1;transform:none}
-}
-.draw-modal,.cs-roll-box,.info-modal,.item-roll-modal{animation:modal-rise .35s cubic-bezier(.2,.8,.2,1) both}
-.draw-overlay,.info-overlay,.item-roll-ov,.cs-roll-ov{animation:section-fade-in .25s ease both}
-
-/* HP heal / damage flash on the current-HP field */
-@keyframes hp-flash-heal{
-  0%{box-shadow:0 0 0 0 rgba(125,208,106,0)}
-  35%{box-shadow:0 0 0 6px rgba(125,208,106,.35), 0 0 22px rgba(125,208,106,.55)}
-  100%{box-shadow:0 0 0 0 rgba(125,208,106,0)}
-}
-@keyframes hp-flash-dmg{
-  0%{box-shadow:0 0 0 0 rgba(226,96,96,0);transform:translateX(0)}
-  20%{transform:translateX(-3px)}
-  40%{transform:translateX(3px);box-shadow:0 0 0 5px rgba(226,96,96,.4)}
-  60%{transform:translateX(-2px)}
-  100%{box-shadow:0 0 0 0 rgba(226,96,96,0);transform:translateX(0)}
-}
-.cs-hp-cur.flash-heal{animation:hp-flash-heal .8s ease}
-.cs-hp-cur.flash-dmg{animation:hp-flash-dmg .55s ease}
-
-/* Subclass cards: when expanded, the body slides down */
-@keyframes accordion-down{
-  from{opacity:0;transform:translateY(-6px);max-height:0}
-  to{opacity:1;transform:none;max-height:2000px}
-}
-.subclass-card.open .sub-body{animation:accordion-down .35s ease both;overflow:hidden}
-
-/* Tabs: hover lift */
-.tab{position:relative}
-.tab:not(.active):hover{transform:translateY(-1px)}
-
-/* Equipment cards: stagger in (light) */
-@keyframes card-rise{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:none}
-}
-.equip-card{animation:card-rise .35s ease both}
-.equip-card:nth-child(odd){animation-delay:.04s}
-.equip-card:nth-child(even){animation-delay:.10s}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{
-    animation-duration:.01ms !important;
-    animation-iteration-count:1 !important;
-    transition-duration:.01ms !important;
-  }
-}
-/* ─── end animations ─── */
 /* ── Item Roll Modal ─────────────────────────────────────────────── */
 .item-roll-ov{display:none;position:fixed;inset:0;background:rgba(4,6,12,.92);
   z-index:300;align-items:center;justify-content:center;padding:16px}
@@ -1541,6 +1338,12 @@ body > .section,
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   background-clip:text;font-size:15px;
 }
+
+
+.equip-card[data-rarity="Uncommon"]{border-left-color:#5ab85a}
+.equip-card[data-rarity="Rare"]{border-left-color:#5577cc}
+.equip-card[data-rarity="Very Rare"]{border-left-color:#aa55dd}
+.equip-card[data-rarity="Legendary"]{border-left-color:#ddaa22}
 
 </style>
 </head>
@@ -3503,10 +3306,38 @@ function renderCharSheet(){
   const ab=Math.max(mod(statTotal('str')),mod(statTotal('dex')))+pb;
   const atk=document.getElementById('cs-atk');if(atk)atk.textContent=fmtMod(ab);
   // AC: update dex tooltip. Input is manually set but we show DEX mod next to it.
-  const acEl=document.getElementById('cs-ac');
   const dexM=mod(statTotal('dex'));
+  // Auto-calculate AC from equipped armor + DEX
+  const equippedShield=inventory.find(i=>i.equipped&&i.cat==='armor'&&(i.name||'').toLowerCase().includes('shield'));
+  const equippedArmor=inventory.find(i=>i.equipped&&i.cat==='armor'&&!(i.name||'').toLowerCase().includes('shield'));
+  if(equippedArmor){
+    const raw=equippedArmor.stat||'';
+    let baseAC=10;
+    if(raw.includes('+ DEX (max 2)')){
+      // Medium armor
+      const base=parseInt(raw)||12;
+      baseAC=base+Math.min(2,dexM);
+    } else if(raw.includes('+ DEX')){
+      // Light armor
+      const base=parseInt(raw)||11;
+      baseAC=base+dexM;
+    } else {
+      // Heavy armor — no DEX
+      baseAC=parseInt(raw)||10;
+    }
+    if(equippedShield) baseAC+=2;
+    const acEl=document.getElementById('cs-ac');
+    if(acEl) acEl.value=baseAC;
+  } else if(currentClass==='barbarian'){
+    // Unarmored Defense: 10 + DEX + CON
+    const conM=mod(statTotal('con'));
+    const acEl=document.getElementById('cs-ac');
+    if(acEl) acEl.value=10+dexM+conM;
+  }
   const acTip=document.getElementById('cs-ac-tip');
-  if(acTip)acTip.textContent='DEX '+fmtMod(dexM);
+  const equippedArmorName=equippedArmor?equippedArmor.name:'Unarmored';
+  const shieldNote=equippedShield?' + Shield':'';
+  if(acTip)acTip.textContent=equippedArmorName+shieldNote+' · DEX '+fmtMod(dexM);
   // attacks per action
   const apa=document.getElementById('cs-apa');
   if(apa){let a='Attacks: 1';if(acquiredMain.has('g20')||acquiredMain.has('bar01'))a='Attacks: 2';if(acquiredMain.has('g22'))a='Attacks: 3';apa.textContent='· '+a;}
@@ -3670,21 +3501,13 @@ function applyHeal(){
   const amt=parseInt(document.getElementById('cs-heal-amt').value)||0;
   const maxHP=hpLevels.reduce((a,x)=>a+x.total,0);
   const cur=document.getElementById('cs-hp-cur');
-  if(cur&&amt>0){
-    cur.value=Math.min(maxHP||999,parseInt(cur.value||0)+amt);
-    cur.classList.remove('flash-heal');void cur.offsetWidth;cur.classList.add('flash-heal');
-    setTimeout(()=>cur.classList.remove('flash-heal'),900);
-  }
+  if(cur&&amt>0)cur.value=Math.min(maxHP||999,parseInt(cur.value||0)+amt);
   document.getElementById('cs-heal-amt').value='';
 }
 function applyDmg(){
   const amt=parseInt(document.getElementById('cs-dmg-amt').value)||0;
   const cur=document.getElementById('cs-hp-cur');
-  if(cur&&amt>0){
-    cur.value=Math.max(0,parseInt(cur.value||0)-amt);
-    cur.classList.remove('flash-dmg');void cur.offsetWidth;cur.classList.add('flash-dmg');
-    setTimeout(()=>cur.classList.remove('flash-dmg'),650);
-  }
+  if(cur&&amt>0)cur.value=Math.max(0,parseInt(cur.value||0)-amt);
   document.getElementById('cs-dmg-amt').value='';
 }
 // proficiency toggles
@@ -3803,6 +3626,11 @@ function finishManeuverBatch(){
 // ── DRAW OVERLAY ──────────────────────────────────────────────────────────────
 function openDraw(target){
   drawTarget=target; chosenCard=null;
+  if(target==='maneuver-batch-extra'){
+    // Battle Master: draw 3 more maneuvers from sub-deck
+    startManeuverBatch(99, 3);  // level 99 = extra draw, 3 picks
+    return;
+  }
   if(target==='subclass'){
     drawnCards=shuffle(getCD().subclassMeta).slice(0,3);
     renderDrawModal();
@@ -3878,6 +3706,16 @@ function keepCard(idx){
   btn.className='draw-dismiss visible';
   btn.textContent='Done — close';
   btn.onclick=closeDraw;
+  // Auto-trigger maneuver selection when Combat Superiority is acquired
+  if(chosen.id==='bm1'){
+    btn.textContent='Next: Pick 3 Maneuvers →';
+    btn.style.borderColor='var(--cc)';
+    btn.style.color='var(--cc)';
+    btn.onclick=function(){
+      closeDraw();
+      setTimeout(function(){startManeuverBatch(3,3);},200);
+    };
+  }
 }
 
 function closeDraw(){
@@ -4112,31 +3950,11 @@ const EQUIP_ITEMS = [
  prof:["fighter","barbarian","paladin"],
  desc:"Reach 10 ft, finesse. Low damage but excellent range control."},
 // ─── MARTIAL RANGED ───────────────────────────────────────────────────────────
-{id:"mr01",cat:"martial-ranged",
- rarity:"Common",name:"Blowgun",stat:"1",statType:"Piercing",
- cost:"10gp",wt:1,props:["Ammunition 25/100","Loading"],
- prof:["fighter","barbarian","paladin"],
- desc:"Fires tiny needles. Low damage but can be coated with poison."},
-{id:"mr02",cat:"martial-ranged",
- rarity:"Common",name:"Hand Crossbow",stat:"1d6",statType:"Piercing",
- cost:"75gp",wt:3,props:["Ammunition 30/120","Light","Loading"],
- prof:["fighter","barbarian","paladin","rogue"],
- desc:"One-handed crossbow. Loading limits bonus action attacks unless you have Crossbow Expert."},
-{id:"mr03",cat:"martial-ranged",
- rarity:"Common",name:"Heavy Crossbow",stat:"1d10",statType:"Piercing",
- cost:"50gp",wt:18,props:["Ammunition 100/400","Heavy","Loading","Two-Handed"],
- prof:["fighter","barbarian","paladin"],
- desc:"High-damage crossbow. Loading means one attack per turn without Crossbow Expert."},
 {id:"mr04",cat:"martial-ranged",
  rarity:"Common",name:"Longbow",stat:"1d8",statType:"Piercing",
  cost:"50gp",wt:2,props:["Ammunition 150/600","Heavy","Two-Handed"],
  prof:["fighter","barbarian","paladin","rogue"],
  desc:"Long range, high damage. Requires STR 10 if heavy."},
-{id:"mr05",cat:"martial-ranged",
- rarity:"Common",name:"Net",stat:"—",statType:"—",
- cost:"1gp",wt:3,props:["Thrown 5/15","Special"],
- prof:["fighter","barbarian","paladin"],
- desc:"Throw to restrain a Large or smaller creature (STR DC 10 to escape, can be cut through). No damage."},
 // ─── ARMOR ────────────────────────────────────────────────────────────────────
 {id:"ar01",cat:"armor",
  rarity:"Common",name:"Padded Armor",stat:"11 + DEX",statType:"AC",
@@ -4421,13 +4239,13 @@ const EQUIP_ITEMS = [
  desc:"+2 to attack, damage, AC, saves, and spell attacks. 20 charges. Cast cone of cold, fireball (5th), globe of invulnerability, hold monster, levitate, lightning bolt (5th), magic missile (5th), ray of enfeeblement, wall of force."},
 // ─── MAGIC ARMOR ──────────────────────────────────────────────────────────────
 {id:"ma01",cat:"magic-armor",name:"+1 Armor",stat:"+1 AC",statType:"Magic",
- cost:"1500gp",wt:0,props:["Uncommon","Any armor type"],rarity:"Uncommon",
+ cost:"1500gp",wt:0,props:["Uncommon","Any armor type"],rarity:"Rare",
  desc:"Any armor type. Grants a +1 bonus to AC on top of the armor's normal value."},
 {id:"ma02",cat:"magic-armor",name:"+2 Armor",stat:"+2 AC",statType:"Magic",
  cost:"8000gp",wt:0,props:["Rare"],rarity:"Rare",
  desc:"+2 bonus to AC. Significant defensive upgrade."},
 {id:"ma03",cat:"magic-armor",name:"+3 Armor",stat:"+3 AC",statType:"Magic",
- cost:"24000gp",wt:0,props:["Very Rare"],rarity:"Very Rare",
+ cost:"24000gp",wt:0,props:["Very Rare"],rarity:"Legendary",
  desc:"+3 bonus to AC. Top-tier defensive enhancement."},
 {id:"ma04",cat:"magic-armor",name:"Mithral Armor",stat:"No disadv., no STR req.",statType:"Magic",
  cost:"5000gp",wt:0,props:["Uncommon","Medium or Heavy"],rarity:"Uncommon",
@@ -4503,21 +4321,9 @@ const EQUIP_ITEMS = [
  cost:"70000gp",wt:3,props:["Legendary","Longsword/Shortsword","Attunement"],rarity:"Legendary",
  desc:"+1 attack/damage. 1–3 luck points: expend after an attack/save/ability check to reroll the d20 (keep new result). Once a day cast Wish (1d4–1 charges remaining)."},
 // ─── UNCOMMON MAGIC ITEMS ─────────────────────────────────────────────────────
-{id:"mu01",cat:"magic-weapons",name:"Weapon +1",stat:"+1 atk/dmg",statType:"Any weapon",cost:"500 gp",wt:0,rarity:"Uncommon",
- props:["Counts as magical"],prof:["fighter","barbarian","paladin","rogue","cleric","druid"],
- desc:"A magic weapon. You have a +1 bonus to attack and damage rolls made with this magic weapon."},
 {id:"mu02",cat:"magic-weapons",name:"Vicious Weapon",stat:"+7 dmg on 20",statType:"Any weapon",cost:"350 gp",wt:0,rarity:"Rare",
  props:["Counts as magical"],prof:["fighter","barbarian","paladin","rogue","cleric","druid"],
  desc:"When you roll a 20 on your attack roll with this magic weapon, the target takes an extra 7 damage of the weapon's type."},
-{id:"mu03",cat:"magic-armor",name:"Armor +1",stat:"+1 AC",statType:"Any armor",cost:"1,500 gp",wt:0,rarity:"Rare",
- props:["Counts as magical"],prof:["fighter","barbarian","paladin","cleric"],
- desc:"You have a +1 bonus to AC while wearing this armor."},
-{id:"mu04",cat:"magic-armor",name:"Mithral Armor",stat:"No STR req / Stealth",statType:"Medium or Heavy",cost:"500 gp",wt:0,rarity:"Uncommon",
- props:["No stealth disadvantage","No STR requirement"],prof:["fighter","barbarian","paladin","cleric"],
- desc:"Mithral is a light, flexible metal. If the armor imposes disadvantage on Dexterity (Stealth) checks or has a Strength requirement, the mithral version of the armor doesn't."},
-{id:"mu05",cat:"magic-armor",name:"Adamantine Armor",stat:"No crits",statType:"Medium or Heavy",cost:"500 gp",wt:0,rarity:"Uncommon",
- props:["Critical hits become normal hits"],prof:["fighter","barbarian","paladin","cleric"],
- desc:"This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any critical hit against you becomes a normal hit."},
 {id:"mu06",cat:"magic-wondrous",name:"Boots of Elvenkind",stat:"Stealth adv",statType:"Wondrous Item",cost:"2,500 gp",wt:1,rarity:"Uncommon",
  props:["No attunement required"],prof:["all"],
  desc:"While you wear these boots, your steps make no sound, regardless of the surface you are moving across. You also have advantage on Dexterity (Stealth) checks that rely on moving silently."},
@@ -4549,30 +4355,9 @@ const EQUIP_ITEMS = [
  props:["No attunement required","7 charges"],prof:["all"],
  desc:"This wand has 7 charges. While holding it, you can use an action to expend 1 to 7 of its charges to cast the Magic Missile spell from it. Regains 1d6+1 expended charges daily at dawn."},
 // ─── RARE MAGIC ITEMS ────────────────────────────────────────────────────────
-{id:"mr01",cat:"magic-weapons",name:"Weapon +2",stat:"+2 atk/dmg",statType:"Any weapon",cost:"4,000 gp",wt:0,rarity:"Rare",
- props:["Counts as magical"],prof:["fighter","barbarian","paladin","rogue","cleric","druid"],
- desc:"A magic weapon. You have a +2 bonus to attack and damage rolls made with this magic weapon."},
-{id:"mr02",cat:"magic-weapons",name:"Flame Tongue",stat:"+2d6 fire",statType:"Sword",cost:"5,000 gp",wt:3,rarity:"Rare",
- props:["Attunement","Bonus action to activate"],prof:["fighter","barbarian","paladin","rogue"],
- desc:"You can use a bonus action to speak this magic sword's command word, causing flames to erupt from the blade. These flames shed bright light in a 40-foot radius. While the sword is ablaze, it deals an extra 2d6 fire damage on a hit."},
-{id:"mr03",cat:"magic-weapons",name:"Frost Brand",stat:"+1d6 cold",statType:"Sword",cost:"5,000 gp",wt:3,rarity:"Rare",
- props:["Attunement","Resistance: fire"],prof:["fighter","barbarian","paladin","rogue"],
- desc:"When you hit with an attack using this magic sword, the target takes an extra 1d6 cold damage. In addition, while you hold the sword, you have resistance to fire damage."},
 {id:"mr04",cat:"magic-weapons",name:"Giant Slayer",stat:"+2d6 vs giants",statType:"Axe or Sword",cost:"5,000 gp",wt:3,rarity:"Rare",
  props:["Attunement","Extra effect vs Giants"],prof:["fighter","barbarian","paladin"],
  desc:"You gain a +1 bonus to attack and damage rolls made with this magic weapon. When you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone."},
-{id:"mr05",cat:"magic-weapons",name:"Dagger of Venom",stat:"+1, 2d10 poison",statType:"Dagger",cost:"2,500 gp",wt:1,rarity:"Rare",
- props:["No attunement"],prof:["all"],
- desc:"You gain a +1 bonus to attack and damage rolls made with this magic weapon. You can use an action to cause thick, black poison to coat the blade. The poison remains for 1 minute or until an attack using this weapon hits a creature. That creature must succeed on a DC 15 Constitution saving throw or take 2d10 poison damage and become poisoned for 1 minute."},
-{id:"mr06",cat:"magic-weapons",name:"Mace of Disruption",stat:"+2d6 vs fiends/undead",statType:"Mace",cost:"5,000 gp",wt:4,rarity:"Rare",
- props:["Attunement"],prof:["fighter","paladin","cleric"],
- desc:"When you hit a fiend or an undead with this magic weapon, that creature takes an extra 2d6 radiant damage. If the target has 25 hit points or fewer after taking this damage, it must succeed on a DC 15 Wisdom saving throw or be destroyed."},
-{id:"mr07",cat:"magic-armor",name:"Armor +2",stat:"+2 AC",statType:"Any armor",cost:"9,000 gp",wt:0,rarity:"Rare",
- props:["Counts as magical"],prof:["fighter","barbarian","paladin","cleric"],
- desc:"You have a +2 bonus to AC while wearing this armor."},
-{id:"mr08",cat:"magic-armor",name:"Armor of Resistance",stat:"Resistance (1 type)",statType:"Any armor",cost:"3,000 gp",wt:0,rarity:"Rare",
- props:["Attunement"],prof:["fighter","barbarian","paladin","cleric"],
- desc:"You have resistance to one type of damage while you wear this armor. The DM chooses the type or determines it randomly from: acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant, or thunder."},
 {id:"mr09",cat:"magic-wondrous",name:"Belt of Giant Strength (Hill)",stat:"STR 21",statType:"Wondrous Item",cost:"12,000 gp",wt:1,rarity:"Rare",
  props:["Attunement"],prof:["all"],
  desc:"While wearing this belt, your Strength score changes to 21. The belt has no effect on you if your Strength is already 21 or higher."},
@@ -4613,7 +4398,7 @@ const EQUIP_ITEMS = [
 {id:"mvr03",cat:"magic-weapons",name:"Staff of Striking",stat:"+3, +3d6 force (3 charges)",statType:"Quarterstaff",cost:"5,000 gp",wt:4,rarity:"Very Rare",
  props:["Attunement","10 charges"],prof:["wizard","druid","cleric"],
  desc:"This staff can be wielded as a magic quarterstaff that grants a +3 bonus to attack and damage rolls made with it. The staff has 10 charges. When you hit with a melee attack using it, you can expend up to 3 of its charges. For each charge expended, the target takes an extra 1d6 force damage."},
-{id:"mvr04",cat:"magic-armor",name:"Armor +3",stat:"+3 AC",statType:"Any armor",cost:"35,000 gp",wt:0,rarity:"Very Rare",
+{id:"mvr04",cat:"magic-armor",name:"Armor +3",stat:"+3 AC",statType:"Any armor",cost:"35,000 gp",wt:0,rarity:"Legendary",
  props:["Counts as magical"],prof:["fighter","barbarian","paladin","cleric"],
  desc:"You have a +3 bonus to AC while wearing this armor."},
 {id:"mvr05",cat:"magic-armor",name:"Studded Leather of Elvenkind",stat:"+1 AC & Stealth adv.",statType:"Light armor",cost:"2,000 gp",wt:13,rarity:"Uncommon",
@@ -4638,9 +4423,6 @@ const EQUIP_ITEMS = [
 {id:"ml01",cat:"magic-weapons",name:"Holy Avenger",stat:"+3, +2d10 vs fiends/undead",statType:"Sword",cost:"165,000 gp",wt:3,rarity:"Legendary",
  props:["Attunement: paladin only","30 ft aura"],prof:["paladin"],
  desc:"You gain a +3 bonus to attack and damage rolls made with this magic weapon. When you hit a fiend or an undead with it, that creature takes an extra 2d10 radiant damage. While you hold the drawn sword, it creates an aura in a 10-foot radius around you. You and all creatures friendly to you in the aura have advantage on saving throws against spells and other magical effects."},
-{id:"ml02",cat:"magic-weapons",name:"Vorpal Sword",stat:"+3, decapitate on 20",statType:"Slashing sword",cost:"165,000 gp",wt:3,rarity:"Legendary",
- props:["Attunement"],prof:["fighter","barbarian","paladin","rogue"],
- desc:"You gain a +3 bonus to attack and damage rolls made with this magic weapon. The sword ignores resistance to slashing damage. When you attack a creature that has at least one head with this weapon and roll a 20 on the attack roll, you cut off one of the creature's heads. The creature dies if it can't survive without the lost head."},
 {id:"ml03",cat:"magic-weapons",name:"Sword of Answering",stat:"+3, reaction attack",statType:"Longsword",cost:"165,000 gp",wt:3,rarity:"Legendary",
  props:["Attunement: same alignment"],prof:["fighter","barbarian","paladin","rogue"],
  desc:"In the world of Greyhawk, only nine of these blades are known to exist. You gain a +3 bonus to attack and damage rolls. As a reaction immediately after a creature within 60 feet of you deals damage to you, you can make one attack with this sword against that creature."},
@@ -4725,9 +4507,20 @@ function changeQty(itemId,delta){
 }
 function toggleEquipped(itemId){
   const item=inventory.find(i=>i.id===itemId);
-  if(item){item.equipped=!item.equipped; renderEquipPage();}
-}
+  if(!item)return;
+  const isArmor=item.cat==='armor'&&!(item.name||'').toLowerCase().includes('shield');
+  if(!item.equipped&&isArmor){
+    inventory.forEach(i=>{
+      if(i.id!==itemId&&i.cat==='armor'&&!(i.name||'').toLowerCase().includes('shield'))
+        i.equipped=false;
+    });
+  }
+  item.equipped=!item.equipped;
+  renderEquipPage();
+  renderCharSheet();
   if(typeof renderActions==='function') renderActions();
+  if(typeof scheduleSave==='function') scheduleSave();
+}
 
 function clearInventory(){if(confirm("Clear all inventory?")) inventory=[];renderEquipPage();}
 function setEquipFilter(cat){equipFilter=cat; renderEquipPage();}
@@ -4760,8 +4553,8 @@ function renderEquipPage(){
       items.map(item=>{
         const isPro=isEquipProficient(item);
         const rar=item.rarity?`<div class="equip-rarity ${getRarityClass(item.rarity)}">${item.rarity}</div>`:'';
-        return`<div class="equip-card${isPro?' proficient':''}">
-          <div class="equip-card-name">${item.name}</div>
+        return`<div class="equip-card" data-rarity="${item.rarity||'Common'}"${isPro?' proficient':''}">
+          <div class="equip-card-name" style="color:${({'Common':'var(--text)','Uncommon':'#5ab85a','Rare':'#5577cc','Very Rare':'#aa55dd','Legendary':'#ddaa22'})[item.rarity]||'var(--text)'}">${item.name}</div>
           ${rar}
           <div class="equip-card-stat">${item.stat} <span style="font-size:10px;font-weight:400;color:var(--text-dim)">${item.statType}</span></div>
           <div class="equip-card-props">${item.props.map(p=>`<span class="eprop">${p}</span>`).join('')}</div>
@@ -5476,7 +5269,973 @@ function renderEquipFiltered(){
     const propsHtml=(item.props||[]).map(p=>`<span class="eprop">${p}</span>`).join('');
     const inInv=inventory.some(x=>x.id===item.id);
     return`<div class="equip-card${isPro?' proficient':''}" data-item-id="${item.id}">
-      <div class="equip-card-name">${item.name}</div>
+      <div class="equip-card-name" style="color:${({'Common':'var(--text)','Uncommon':'#5ab85a','Rare':'#5577cc','Very Rare':'#aa55dd','Legendary':'#ddaa22'})[item.rarity]||'var(--text)'}">${item.name}</div>
+      ${rar}
+      <div class="equip-card-stat">${item.stat||'—'} <span style="font-size:10px;font-weight:400;color:var(--text-dim)">${item.statType||''}</span></div>
+      <div class="equip-card-props">${propsHtml}</div>
+      <div class="equip-card-cost">${item.cost||'—'} · ${item.wt||0} lb${isPro?'<span style="color:var(--cc);margin-left:6px;font-size:9px">★ Proficient</span>':''}</div>
+      <div class="equip-card-detail" style="margin-top:4px;font-size:10px;color:var(--text-dim)">${item.desc||''}</div>
+      <button class="equip-add-btn${inInv?' equipped':''}" onclick="addToInventory('${item.id}')">${inInv?'✓ In Inventory':'+ Add'}</button>
+    </div>`;
+  }).join('');
+  // sync inventory panels
+  renderInvPanel();
+}
+
+
+// ── CLASS REFERENCE in info modal ─────────────────────────────────────────────
+function showClassRef(cls){
+  const cd=CLASS_DATA_MAP[cls];if(!cd)return;
+  document.querySelectorAll('#classref-btns .sc-btn').forEach(b=>{
+    b.classList.toggle('active',b.getAttribute('onclick').includes("'"+cls+"'"));
+  });
+  const pd=CLASS_PROF_DATA[cls]||{};
+  const t=CLASS_SLOT_TYPE[cls];
+  const slotLabel=t==='full'?'Full caster — up to 9th level spells':t==='half'?'Half caster — up to 5th level (starts LV 2)':t==='warlock'?'Pact Magic — short-rest slots, max 5th level':'No spellcasting';
+  const lv=Math.min(currentLevel,20);
+  const tbl=t&&SPELL_SLOTS[t]?SPELL_SLOTS[t][lv]:null;
+  const ord=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
+  const slotsHtml=tbl?'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px">'+tbl.map((n,i)=>n>0?`<div style="background:var(--s2);border:1px solid var(--cc);border-radius:4px;padding:2px 8px;font-size:11px"><strong>${ord[i]}</strong>×${n}</div>`:'').filter(Boolean).join('')+'</div>':'';
+  const classSavesMap={wizard:['INT','WIS'],cleric:['WIS','CHA'],druid:['INT','WIS'],paladin:['WIS','CHA'],warlock:['WIS','CHA'],rogue:['DEX','INT'],barbarian:['STR','CON'],fighter:['STR','CON'],oathbreaker:['WIS','CHA']};
+  const display=document.getElementById('classref-display');
+  if(!display)return;
+  display.innerHTML=`<div style="background:var(--s2);border:1.5px solid var(--cc);border-radius:8px;padding:14px;line-height:1.7">
+    <div style="font-size:20px;font-weight:700;font-family:Georgia,serif;color:var(--text);margin-bottom:6px">${cd.sigil} ${cd.name}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <span class="stat-pill">Hit Die: <span>d${cd.hitDie} → halved (OSR)</span></span>
+      <span class="stat-pill">Saves: <span>${(classSavesMap[cls]||['STR','CON']).join(', ')}</span></span>
+    </div>
+    <div style="margin-bottom:6px"><div style="color:var(--cc);font-size:8px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:2px">Armor</div><div style="color:var(--text-dim)">${pd.armor||'—'}</div></div>
+    <div style="margin-bottom:6px"><div style="color:var(--cc);font-size:8px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:2px">Weapons</div><div style="color:var(--text-dim)">${pd.weapons||'—'}</div></div>
+    <div style="margin-bottom:6px"><div style="color:var(--cc);font-size:8px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:2px">Free Features</div><div style="color:var(--text-dim)">${(pd.freeFeatures||'—').replace(/ · /g,'<br>')}</div></div>
+    <div><div style="color:var(--cc);font-size:8px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:2px">Spellcasting</div><div style="color:var(--text-dim)">${slotLabel}</div>${slotsHtml}</div>
+  </div>`;
+}
+
+// ── CS INVENTORY SYNC ──────────────────────────────────────────────────────────
+function renderCSInventory(){
+  const el=document.getElementById('cs-inventory-list');
+  if(!el)return;
+  if(!inventory||inventory.length===0){
+    el.innerHTML='<div class="cs-no-feats">No items — visit Equipment tab to find gear</div>';
+    const w=document.getElementById('cs-inv-weight');if(w)w.textContent='';
+    return;
+  }
+  let totalW=0;
+  el.innerHTML=inventory.map(item=>{
+    totalW+=(item.wt||0)*(item.qty||1);
+    const propsStr=(item.props||[]).join(', ');
+    return`<div style="padding:6px 10px;border-bottom:.5px solid rgba(212,137,26,.1);display:flex;gap:8px;align-items:start">
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${item.name}${(item.qty||1)>1?' ×'+(item.qty||1):''}</div>
+        <div style="font-size:10px;color:var(--text-dim)">${item.stat||''}${propsStr?' · '+propsStr:''}</div>
+      </div>
+      <div style="color:var(--text-muted);cursor:pointer;font-size:14px" onclick="removeFromInventory('${item.id}')" title="Remove">×</div>
+    </div>`;
+  }).join('');
+  const wEl=document.getElementById('cs-inv-weight');
+  if(wEl)wEl.textContent=totalW?totalW.toFixed(1)+' lbs':'';
+}
+
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function showToast(msg,cls){
+  const t=document.getElementById('toast');
+  if(!t)return;
+  t.textContent=msg;
+  t.style.borderColor=cls==='rest-short'?'var(--blue)':cls==='rest-long'?'#cc9944':'var(--border-hi)';
+  t.style.color=cls==='rest-short'?'var(--blue)':cls==='rest-long'?'#cc9944':'var(--text)';
+  t.style.opacity='1'; t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2500);
+}
+
+// ── REST ────────────────────────────────────────────────────────────────────
+function doLongRest(){
+  usedSlots=[0,0,0,0,0,0,0,0,0];
+  const maxHP=hpLevels.reduce((a,x)=>a+x.total,0);
+  const cur=document.getElementById('cs-hp-cur');
+  if(cur&&maxHP)cur.value=maxHP;
+  const ds=deathSaves||{s:0,f:0};ds.s=0;ds.f=0;
+  renderCharSheet();
+  showToast('Long Rest — HP restored, all abilities recharged','rest-long');
+}
+function doShortRest(){
+  resetShortRestResources();
+  showToast('Short Rest — per-SR abilities recharged','rest-short');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PERSISTENCE — save/load all state to localStorage
+// ═══════════════════════════════════════════════════════════════════════════════
+const SAVE_KEY = 'dnd_roguelike_v1';
+
+function serializeSet(s){ return [...s]; }
+function deserializeSet(a){ return new Set(Array.isArray(a)?a:[]); }
+
+function saveState(){
+  try{
+    const state = {
+      // Identity
+      currentClass, currentSubclass, currentLevel, currentRace,
+      charName,
+      csBackground: (document.getElementById('cs-background')||{}).value||'',
+      csAlign:      (document.getElementById('cs-align')||{}).value||'',
+      csXP:         (document.getElementById('cs-xp')||{}).value||'',
+      csAC:         (document.getElementById('cs-ac')||{}).value||'10',
+      csSpeed:      (document.getElementById('cs-speed')||{}).value||'30',
+      csHPCur:      (document.getElementById('cs-hp-cur')||{}).value||'0',
+      csHPTemp:     (document.getElementById('cs-hp-temp')||{}).value||'0',
+      csNotes:      (document.getElementById('cs-notes-text')||{}).value||'',
+      // Stats
+      stats, statBreakdowns, hpLevels,
+      // Proficiencies
+      skillProfs:   serializeSet(skillProfs),
+      skillExp:     serializeSet(skillExp),
+      saveProfs:    serializeSet(saveProfs),
+      // Misc
+      inspiration, deathSaves, activeTier,
+      // Deck
+      acquiredMain: serializeSet(acquiredMain),
+      acquiredSub:  serializeSet(acquiredSub),
+      bmLevelsDone: serializeSet(bmLevelsDone),
+      usedSlots,
+      // Resources
+      classResources, superiorityDice, maneuversKnown,
+      // Inventory
+      inventory,
+      // Floor tracker
+      floorNum: typeof floorNum!=='undefined'?floorNum:1,
+      roomNum:  typeof roomNum !=='undefined'?roomNum :0,
+      floorNotes: (document.getElementById('floor-notes-text')||{}).value||'',
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  }catch(e){ console.warn('Save failed:', e); }
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const s = JSON.parse(raw);
+
+    // Class / subclass / level / race
+    if(s.currentClass && CLASS_DATA_MAP[s.currentClass]){
+      currentClass    = s.currentClass;
+      currentSubclass = s.currentSubclass||'none';
+      currentLevel    = parseInt(s.currentLevel)||3;
+      currentRace     = s.currentRace||'none';
+    }
+    charName = s.charName||'';
+
+    // Stats
+    if(s.stats)          stats          = s.stats;
+    if(s.statBreakdowns) statBreakdowns = s.statBreakdowns;
+    if(s.hpLevels)       hpLevels       = s.hpLevels;
+    if(s.skillProfs)     skillProfs     = deserializeSet(s.skillProfs);
+    if(s.skillExp)       skillExp       = deserializeSet(s.skillExp);
+    if(s.saveProfs)      saveProfs      = deserializeSet(s.saveProfs);
+    inspiration  = s.inspiration||false;
+    deathSaves   = s.deathSaves||{s:0,f:0};
+    activeTier   = s.activeTier||0;
+
+    // Deck
+    acquiredMain  = deserializeSet(s.acquiredMain);
+    acquiredSub   = deserializeSet(s.acquiredSub);
+    bmLevelsDone  = deserializeSet(s.bmLevelsDone);
+    if(s.usedSlots) usedSlots = s.usedSlots;
+
+    // Resources
+    if(s.classResources)  classResources  = s.classResources;
+    if(s.superiorityDice) superiorityDice = s.superiorityDice;
+    if(s.maneuversKnown)  maneuversKnown  = s.maneuversKnown;
+
+    // Inventory
+    if(s.inventory) inventory = s.inventory;
+
+    // Floor
+    if(typeof floorNum!=='undefined' && s.floorNum) floorNum=s.floorNum;
+    if(typeof roomNum !=='undefined' && s.roomNum)  roomNum =s.roomNum;
+
+    // UI fields — set after DOM ready
+    setTimeout(()=>{
+      const fields = {
+        'cs-name':         s.charName||'',
+        'cs-background':   s.csBackground||'',
+        'cs-align':        s.csAlign||'',
+        'cs-xp':           s.csXP||'',
+        'cs-ac':           s.csAC||'10',
+        'cs-speed':        s.csSpeed||'30',
+        'cs-hp-cur':       s.csHPCur||'0',
+        'cs-hp-temp':      s.csHPTemp||'0',
+        'cs-notes-text':   s.csNotes||'',
+        'floor-notes-text':s.floorNotes||'',
+        'level-input':     String(currentLevel),
+        'cs-level-inp':    String(currentLevel),
+      };
+      Object.entries(fields).forEach(([id,val])=>{
+        const el=document.getElementById(id);
+        if(el) el.value=val;
+      });
+      // Dropdowns
+      const clsSel=document.getElementById('cs-class-select');
+      if(clsSel) clsSel.value=currentClass;
+      const raceSel=document.getElementById('cs-race-sel');
+      if(raceSel) raceSel.value=currentRace;
+      const obOpt=document.getElementById('oathbreaker-opt');
+      if(obOpt&&currentClass==='oathbreaker') obOpt.disabled=false;
+    }, 0);
+
+    return true;
+  }catch(e){
+    console.warn('Load failed:', e);
+    return false;
+  }
+}
+
+function clearSave(){
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+}
+
+
+
+// ── LOAD SAVED STATE ─────────────────────────────────────────────────────────
+const _hasSave = loadState();
+if(_hasSave){
+  // Restore subclass button state
+  renderSubclassBtns();
+}
+initResources();
+render();
+renderCharSheet();
+renderEquipFiltered();
+renderSpellSlots();
+// Wire auto-save after all functions defined
+
+// Auto-save on any meaningful change — debounced 800ms
+let _saveTimer = null;
+function scheduleSave(){
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveState, 800);
+}
+
+// Patch all state-mutating functions to schedule a save
+const _origRollStat = rollStat;
+rollStat = function(s){ _origRollStat(s); scheduleSave(); };
+
+const _origRollAllStats = rollAllStats;
+rollAllStats = function(){ _origRollAllStats(); scheduleSave(); };
+
+const _origRollNextHP = rollNextHP;
+rollNextHP = function(){ _origRollNextHP(); scheduleSave(); };
+
+const _origResetHP = resetHP;
+resetHP = function(){ _origResetHP(); scheduleSave(); };
+
+const _origOnClassChange = typeof onClassChange === 'function' ? onClassChange : null;
+if(_origOnClassChange){
+  onClassChange = function(cls){ _origOnClassChange(cls); scheduleSave(); };
+}
+
+const _origOnLevelChange = onLevelChange;
+onLevelChange = function(v){ _origOnLevelChange(v); scheduleSave(); };
+
+const _origOnRaceChange = onRaceChange;
+onRaceChange = function(v){ _origOnRaceChange(v); scheduleSave(); };
+
+const _origAddToInv = addToInventory;
+addToInventory = function(id){ _origAddToInv(id); scheduleSave(); };
+
+const _origRemoveFromInv = removeFromInventory;
+removeFromInventory = function(id){ _origRemoveFromInv(id); scheduleSave(); };
+
+const _origToggleInsp = toggleInsp;
+toggleInsp = function(){ _origToggleInsp(); scheduleSave(); };
+
+const _origToggleDeath = toggleDeath;
+toggleDeath = function(t,i){ _origToggleDeath(t,i); scheduleSave(); };
+
+const _origUseResource = useResource;
+useResource = function(id,amt){ _origUseResource(id,amt); scheduleSave(); };
+
+const _origRestoreResource = restoreResource;
+restoreResource = function(id,amt){ _origRestoreResource(id,amt); scheduleSave(); };
+
+const _origUseSlot = useSlot;
+useSlot = function(idx){ _origUseSlot(idx); scheduleSave(); };
+
+const _origRestoreSlot = restoreSlot;
+restoreSlot = function(idx){ _origRestoreSlot(idx); scheduleSave(); };
+
+const _origSelectSubclass = selectSubclass;
+selectSubclass = function(sc,el){ _origSelectSubclass(sc,el); scheduleSave(); };
+
+// Save on input changes in the sheet
+document.addEventListener('input', function(e){
+  const saveable=['cs-name','cs-background','cs-align','cs-xp','cs-ac','cs-speed',
+                  'cs-hp-cur','cs-hp-temp','cs-notes-text','floor-notes-text','cs-level-inp'];
+  if(saveable.includes(e.target.id)) scheduleSave();
+});
+
+// Save button in nav
+const _saveBtn = document.createElement('button');
+_saveBtn.textContent='💾';
+_saveBtn.title='Saved automatically — click to clear save';
+_saveBtn.style.cssText='background:transparent;border:none;cursor:pointer;font-size:14px;opacity:.4;padding:0 6px;height:var(--nav-h,56px);color:var(--text-dim);transition:opacity .2s';
+_saveBtn.onmouseover=function(){this.style.opacity='.9'};
+_saveBtn.onmouseout=function(){this.style.opacity='.4'};
+_saveBtn.onclick=function(){if(confirm('Clear saved data and reset everything?'))clearSave();};
+const _navRight=document.querySelector('.tabs-inner')||document.querySelector('.tabs-bar');
+if(_navRight)_navRight.appendChild(_saveBtn);
+</script>
+
+<!-- ROLL OVERLAY -->
+<div class="cs-roll-ov" id="cs-roll-ov" onclick="if(event.target===this)closeRoll()">
+  <div class="cs-roll-box">
+    <div class="cs-roll-lbl" id="cs-roll-lbl">Check</div>
+    <div class="cs-roll-d20" id="cs-roll-d20">—</div>
+    <div class="cs-roll-detail" id="cs-roll-detail"></div>
+    <div class="cs-roll-total" id="cs-roll-total">Total: <em>—</em></div>
+    <div class="cs-roll-btns">
+      <button class="cs-roll-again" onclick="reRoll()">Roll Again</button>
+      <button class="cs-roll-close" onclick="closeRoll()">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--s3);border:1px solid var(--border-hi);border-radius:8px;padding:10px 20px;
+  font-size:13px;color:var(--text);z-index:400;transition:all .3s;opacity:0;pointer-events:none;
+  white-space:nowrap" id="toast"></div>
+
+
+<!-- ITEM ROLL MODAL -->
+<div class="item-roll-ov" id="item-roll-ov" onclick="if(event.target===this&&_irmChosen)closeItemRoll()">
+  <div class="item-roll-modal">
+    <div class="irm-head">
+      <div class="irm-title">🎲 Treasure Room — Roll for Equipment</div>
+      </div>
+    <div class="irm-sub" id="irm-sub">Three items appear before you. Choose one to take.</div>
+    <div id="irm-odds" style="padding:0 20px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
+    <div class="irm-cards" id="irm-cards"></div>
+    <div class="irm-hint" id="irm-hint">Click an item to add it to your inventory</div>
+    <button class="irm-done-btn" id="irm-done-btn" onclick="closeItemRoll()">Close</button>
+  </div>
+</div>
+
+</body>
+</htmlreturn`<div style="padding:6px 10px;border-bottom:.5px solid rgba(212,137,26,.1);display:flex;gap:8px;align-items:start">
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${item.name}${(item.qty||1)>1?' ×'+(item.qty||1):''}</div>
+        <div style="font-size:10px;color:var(--text-dim)">${item.stat||''}${propsStr?' · '+propsStr:''}</div>
+      </div>
+      <div style="display:flex;gap:5px;align-items:center;flex-shrink:0">
+        ${(item.cat==='armor'||item.cat==='simple-melee'||item.cat==='martial-melee'||item.cat==='simple-ranged'||item.cat==='martial-ranged')?
+          '<button onclick="toggleEquipped(\'' + item.id + '\')" style="background:'+(item.equipped?'rgba(212,137,26,.2)':'var(--s3)')+';border:1px solid '+(item.equipped?'var(--cc)':'var(--border-hi)')+';border-radius:4px;color:'+(item.equipped?'var(--cc)':'var(--text-muted)')+';font-size:9px;padding:2px 7px;cursor:pointer;white-space:nowrap">'+(item.equipped?'✓ Equipped':'Equip')+'</button>'
+          :''}
+        <div style="color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 2px" onclick="removeFromInventory('${item.id}')" title="Remove">×</div>
+      </div>
+    </div>`;
+    }).join(' &nbsp;·&nbsp; ');
+  }
+  hint.textContent = 'Click an item to add it to your inventory';
+  doneBtn.className = 'irm-done-btn';
+  
+  const rarityOrder = {Common:0,Uncommon:1,Rare:2,'Very Rare':3,Legendary:4};
+  
+  cards.innerHTML = items.map((item, idx) => {
+    const rarity = item.rarity || 'Common';
+    const propsHtml = (item.props||[]).slice(0,3).map(p=>`<span class="irm-prop">${p}</span>`).join('');
+    return `<div class="irm-card rarity-${rarity.replace(' ','\\ ')}" 
+                 id="irm-card-${idx}" 
+                 onclick="chooseItem(${idx})"
+                 data-item-id="${item.id}">
+      <div class="irm-rarity rarity-${rarity}">${rarity}</div>
+      <div class="irm-card-name">${item.name}</div>
+      <div class="irm-card-type">${item.cat ? item.cat.replace(/-/g,' ') : item.statType || ''}</div>
+      ${item.stat ? `<div class="irm-card-stat">${item.stat}${item.statType?' '+item.statType:''}</div>` : ''}
+      ${propsHtml ? `<div class="irm-card-props">${propsHtml}</div>` : ''}
+      <div class="irm-card-desc">${(item.desc||'').slice(0,100)}${item.desc&&item.desc.length>100?'…':''}</div>
+    </div>`;
+  }).join('');
+  
+  ov.classList.add('open');
+}
+
+function chooseItem(idx){
+  if(_irmChosen) return;
+  _irmChosen = true;
+  const cards = document.getElementById('irm-cards');
+  const allCards = cards.querySelectorAll('.irm-card');
+  const chosen = allCards[idx];
+  if(!chosen) return;
+
+  const itemId = chosen.dataset.itemId;
+  addToInventory(itemId);
+
+  const item = (EQUIP_ITEMS||[]).find(i=>i.id===itemId);
+  const rarity = item ? (item.rarity||'Common') : 'Common';
+
+  chosen.classList.add('chosen');
+  const label = document.createElement('div');
+  label.className = 'irm-chosen-label';
+  label.textContent = '✓ Added to inventory';
+  chosen.appendChild(label);
+
+  // Make name text use rarity color
+  const nameEl = chosen.querySelector('.irm-card-name');
+  if(nameEl){
+    nameEl.classList.add(rarity==='Legendary'?'legendary':'rarity-text-'+rarity.replace(' ','-'));
+  }
+
+  // Legendary special effects
+  if(rarity === 'Legendary'){
+    const positions = [
+      {top:'10%',left:'5%'},{top:'15%',right:'5%'},{top:'50%',left:'2%'},
+      {top:'50%',right:'2%'},{bottom:'20%',left:'8%'},{bottom:'20%',right:'8%'},
+      {top:'5%',left:'45%'},{bottom:'5%',left:'40%'},{top:'30%',left:'48%'},
+    ];
+    positions.forEach((pos,pi)=>{
+      const star=document.createElement('div');
+      star.className='legendary-star';
+      star.textContent=['✦','★','✧','✵','⭐','✨'][pi%6];
+      Object.assign(star.style, pos);
+      star.style.animationDelay=(pi*0.1)+'s';
+      chosen.appendChild(star);
+    });
+    // Play a sound effect via AudioContext (soft bell)
+    try{
+      const ac=new AudioContext();
+      const freqs=[523,659,784,1046];
+      freqs.forEach((f,i)=>{
+        const osc=ac.createOscillator();
+        const gain=ac.createGain();
+        osc.connect(gain);gain.connect(ac.destination);
+        osc.frequency.value=f;
+        osc.type='sine';
+        gain.gain.setValueAtTime(0,ac.currentTime+i*.12);
+        gain.gain.linearRampToValueAtTime(0.25,ac.currentTime+i*.12+.04);
+        gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+i*.12+0.8);
+        osc.start(ac.currentTime+i*.12);
+        osc.stop(ac.currentTime+i*.12+0.9);
+      });
+    }catch(e){}
+  }
+
+  allCards.forEach((c,i)=>{ if(i!==idx) c.classList.add('dismissed'); });
+
+  const hint = document.getElementById('irm-hint');
+  const rarityColors={'Common':'#b0b0b0','Uncommon':'#5ab85a','Rare':'#5577cc','Very Rare':'#aa55dd','Legendary':'#ddaa22'};
+  if(hint){
+    hint.innerHTML=`<span style="color:${rarityColors[rarity]||'var(--cc)'}">${rarity}</span> · ${item?item.name:'Item'} added to inventory!`;
+  }
+
+  const doneBtn = document.getElementById('irm-done-btn');
+  if(doneBtn){ doneBtn.className='irm-done-btn visible'; doneBtn.textContent='Done — Close'; }
+
+  showToast('Found: '+(item?item.name:'item')+' ('+rarity+')','rest-long');
+}
+
+function closeItemRoll(){
+  const ov = document.getElementById('item-roll-ov');
+  if(ov) ov.classList.remove('open');
+  _irmChosen = false;
+}
+
+
+
+// ── CLASS RESOURCE TRACKER ────────────────────────────────────────────────────
+// resources[id] = { max, used, label, recharge }
+let classResources = {};
+
+const CLASS_RESOURCES = {
+  fighter:{
+    secondWind:  {label:'Second Wind',     max:(lv)=>1,                    used:0, recharge:'short', desc:'Bonus action: regain 1d10+level HP. Heals proportionally more in OSR.'},
+    actionSurge: {label:'Action Surge',    max:(lv)=>lv>=17?2:1,           used:0, recharge:'short', desc:'Take one additional action on your turn.'},
+    indomitable: {label:'Indomitable',     max:(lv)=>lv>=17?3:lv>=13?2:1,  used:0, recharge:'long',  desc:'Reroll a failed saving throw; must use new result.'},
+  },
+  barbarian:{
+    rage:        {label:'Rage',            max:(lv)=>lv>=20?Infinity:lv>=17?6:lv>=15?5:lv>=12?4:lv>=9?4:lv>=6?4:lv>=3?3:2, used:0, recharge:'long', desc:'Bonus action: enter rage. +2 damage, resist B/P/S, advantage STR checks/saves.'},
+    reckless:    {label:'Reckless Attack', max:()=>Infinity,                      used:0, recharge:'auto',  desc:'Always available. Advantage on attacks; enemies get advantage vs you.'},
+  },
+  wizard:{
+    arcaneRecov: {label:'Arcane Recovery', max:()=>1,                       used:0, recharge:'long',  desc:'Once per day during a short rest, recover spell slots up to half wizard level.'},
+  },
+  paladin:{
+    divSmite:    {label:'Divine Smite',    max:()=>Infinity,                      used:0, recharge:'slots',  desc:'Expend a spell slot when you hit: +2d8 radiant (+1d8 per slot above 1st, +1d8 vs undead/fiends).'},
+    layOnHands:  {label:'Lay on Hands',    max:(lv)=>lv*5,                  used:0, recharge:'long',   desc:'HP pool: touch to heal. Paladin level × 5 HP per long rest.', isPool:true},
+    divSense:    {label:'Divine Sense',    max:(lv)=>Math.max(1,1+Math.floor((lv-1)/6)), used:0, recharge:'long', desc:'Detect celestials, fiends, undead within 60 ft. Uses: 1+CHA mod per long rest.'},
+    channelDiv:  {label:'Channel Divinity',max:(lv)=>lv>=18?3:lv>=6?2:1,   used:0, recharge:'short',  desc:'Oath-specific Channel Divinity options (Sacred Weapon, Turn Undead, etc.)'},
+  },
+  warlock:{
+    pactSlots:   {label:'Pact Magic Slots',max:(lv)=>lv>=17?4:lv>=11?3:2,  used:0, recharge:'short',  desc:'Short-rest spell slots. All at same level (max 5th). Regain on short or long rest.'},
+    invocations: {label:'Eldritch Invocations', max:()=>Infinity,                 used:0, recharge:'auto',   desc:'Passive — always active. Modify Eldritch Blast and add constant abilities.'},
+  },
+  cleric:{
+    channelDiv:  {label:'Channel Divinity',max:(lv)=>lv>=18?3:lv>=6?2:1,   used:0, recharge:'short',  desc:'Turn Undead + one domain option (varies by subclass). Recharge on short rest.'},
+    divInt:      {label:'Divine Intervention', max:()=>1,                   used:0, recharge:'long',   desc:'Call on your deity. Roll d100 ≤ cleric level to succeed. Recharge next long rest on fail; auto-success at LV 20.'},
+  },
+  druid:{
+    wildShape:   {label:'Wild Shape',      max:()=>2,                       used:0, recharge:'short',  desc:'Transform into a beast (max CR per level). 2 uses per short rest.'},
+  },
+  rogue:{
+    cunningAct:  {label:'Cunning Action',  max:()=>Infinity,                      used:0, recharge:'auto',   desc:'Bonus action every turn: Dash, Disengage, or Hide.'},
+  },
+  oathbreaker:{
+    channelDiv:  {label:'Channel Divinity',max:(lv)=>lv>=18?3:lv>=6?2:1,   used:0, recharge:'short',  desc:'Control Undead + Dreadful Aspect. Recharge on short rest.'},
+    layOnHands:  {label:'Lay on Hands',    max:(lv)=>lv*5,                  used:0, recharge:'long',   desc:'HP pool: paladin level × 5 HP per long rest.', isPool:true},
+  },
+};
+
+// Superiority dice for Battle Master
+let superiorityDice = {total:4, used:0, size:'d8'};
+
+// Maneuvers known (for Battle Master sub-deck draw extension)
+let maneuversKnown = 3;
+
+function mod_cha(){ return Math.floor((statTotal('cha')-10)/2); }
+
+function initResources(){
+  const defs = CLASS_RESOURCES[currentClass] || {};
+  classResources = {};
+  Object.entries(defs).forEach(([id,def])=>{
+    const maxVal = def.max(currentLevel);
+    classResources[id] = {
+      label:    def.label,
+      max:      maxVal,
+      used:     0,
+      recharge: def.recharge,
+      desc:     def.desc,
+      isPool:   def.isPool||false,
+      isInfinite: maxVal===Infinity,
+    };
+  });
+  // Superiority dice for Battle Master
+  if(currentSubclass==='battlemaster'){
+    const lvl=currentLevel;
+    superiorityDice.total = lvl>=15?6:lvl>=10?5:4;
+    superiorityDice.size  = lvl>=18?'d12':lvl>=10?'d10':'d8';
+    superiorityDice.used  = 0;
+    maneuversKnown = lvl>=15?9:lvl>=10?7:lvl>=7?5:3;
+  }
+}
+
+function useResource(id,amt=1){
+  const r=classResources[id]; if(!r||r.isInfinite) return;
+  r.used=Math.min(r.used+amt, r.max);
+  renderResources();
+}
+function restoreResource(id,amt=1){
+  const r=classResources[id]; if(!r) return;
+  r.used=Math.max(r.used-amt, 0);
+  renderResources();
+}
+function resetAllResources(){
+  Object.values(classResources).forEach(r=>r.used=0);
+  superiorityDice.used=0;
+  renderResources();
+}
+function resetShortRestResources(){
+  Object.entries(classResources).forEach(([id,r])=>{
+    if(r.recharge==='short') r.used=0;
+  });
+  if(currentSubclass==='battlemaster') superiorityDice.used=0;
+  renderResources();
+}
+
+function renderResources(){
+  const el=document.getElementById('cs-resources-body');
+  if(!el) return;
+  // Auto-init if classResources is stale (e.g. first render after class change)
+  if(Object.keys(classResources).length===0) initResources();
+  const defs=CLASS_RESOURCES[currentClass]||{};
+  if(!Object.keys(defs).length && currentSubclass!=='battlemaster'){
+    el.innerHTML='<div class="cs-no-feats">No tracked resources for this class</div>';
+    return;
+  }
+  let html='';
+  Object.entries(classResources).forEach(([id,r])=>{
+    const rechargeLabel={short:'⟳ Short rest',long:'☀ Long rest',slots:'Spell slots',auto:'Always available',slots:'Slots'}[r.recharge]||r.recharge;
+    if(r.isInfinite){
+      html+=`<div class="res-row res-row-inf">
+        <div class="res-info"><div class="res-label">${r.label}</div><div class="res-desc">${r.desc}</div></div>
+        <div class="res-badge res-infinite">∞</div>
+      </div>`;
+      return;
+    }
+    if(r.isPool){
+      const remaining=r.max-r.used;
+      html+=`<div class="res-row">
+        <div class="res-info"><div class="res-label">${r.label}</div>
+          <div class="res-desc">${r.max-r.used} / ${r.max} HP remaining · ${rechargeLabel}</div></div>
+        <div style="display:flex;gap:4px">
+          <button class="res-btn res-use" onclick="useResource('${id}',5)" title="Use 5 HP">−5</button>
+          <button class="res-btn res-restore" onclick="restoreResource('${id}',5)" title="Restore 5 HP">+5</button>
+        </div>
+      </div>`;
+      return;
+    }
+    const available=r.max-r.used;
+    const dots=Array.from({length:r.max},(_,i)=>{
+      const avail=i<available;
+      return`<div class="res-dot${avail?'':' used'}" onclick="${avail?`useResource('${id}')`:`restoreResource('${id}')`}" title="${avail?'Click to use':'Click to restore'}"></div>`;
+    }).join('');
+    html+=`<div class="res-row">
+      <div class="res-info"><div class="res-label">${r.label} <span class="res-recharge">${rechargeLabel}</span></div>
+        <div class="res-desc">${r.desc}</div></div>
+      <div class="res-dots">${dots}</div>
+    </div>`;
+  });
+
+  // Superiority dice for Battle Master
+  if(currentSubclass==='battlemaster'){
+    const sd=superiorityDice;
+    const avail=sd.total-sd.used;
+    const dots=Array.from({length:sd.total},(_,i)=>{
+      const a=i<avail;
+      return`<div class="res-dot${a?'':' used'}" onclick="${a?'useSuperiorityDie()':'restoreSuperiorityDie()'}" title="${a?'Use':'Restore'} superiority die"></div>`;
+    }).join('');
+    html+=`<div class="res-row">
+      <div class="res-info"><div class="res-label">Superiority Dice (${sd.size}) <span class="res-recharge">⟳ Short rest</span></div>
+        <div class="res-desc">${avail} / ${sd.total} dice available — fuel maneuvers</div></div>
+      <div class="res-dots">${dots}</div>
+    </div>
+    <div class="res-row" style="padding-top:0">
+      <div class="res-info"><div class="res-label">Maneuvers Known</div>
+        <div class="res-desc">${maneuversKnown} maneuvers — draw 3 more via Combat Superiority at LV 7/10/15</div></div>
+      <button class="res-btn res-use" style="align-self:center" onclick="openDraw('maneuver-batch-extra')" title="Draw 3 more maneuvers">+ Draw 3</button>
+    </div>`;
+  }
+
+  // Channel Divinity counter (cleric / paladin)
+  const cdRes=classResources['channelDiv'];
+  if(!cdRes && (currentClass==='cleric'||currentClass==='paladin'||currentClass==='oathbreaker')){
+    html+='<div class="cs-no-feats">Channel Divinity not initialized</div>';
+  }
+  if(!html){
+    const hasRes=Object.keys(CLASS_RESOURCES[currentClass]||{}).length>0 || currentSubclass==='battlemaster';
+    el.innerHTML=hasRes
+      ?'<div class="cs-no-feats">Resources loading…</div>'
+      :'<div class="cs-no-feats">No tracked resources for '+getCD().name+'</div>';
+    return;
+  }
+  el.innerHTML=html;
+}
+
+function useSuperiorityDie(){
+  if(superiorityDice.used<superiorityDice.total){superiorityDice.used++;renderResources();}
+}
+function restoreSuperiorityDie(){
+  if(superiorityDice.used>0){superiorityDice.used--;renderResources();}
+}
+
+
+// ── INVENTORY SEARCH (from character sheet) ────────────────────────────────
+function renderInvSearch(query){
+  const res=document.getElementById('inv-search-results');
+  if(!res)return;
+  if(!query||query.length<2){res.style.display='none';res.innerHTML='';return;}
+  const q=query.toLowerCase();
+  const matches=(EQUIP_ITEMS||[]).filter(i=>
+    i.name.toLowerCase().includes(q)||(i.cat||'').includes(q)||(i.desc||'').toLowerCase().includes(q)
+  ).slice(0,8);
+  if(!matches.length){res.innerHTML='<div style="padding:8px 10px;font-size:11px;color:var(--text-muted)">No items found</div>';res.style.display='block';return;}
+  const rarC={'Common':'#aaa','Uncommon':'#5ab85a','Rare':'#5577cc','Very Rare':'#aa55dd','Legendary':'#ddaa22'};
+  res.innerHTML=matches.map(item=>{
+    const inInv=inventory.some(i=>i.id===item.id);
+    const rc=rarC[item.rarity||'Common']||'#aaa';
+    return`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:.5px solid var(--border);cursor:pointer;transition:background .1s"
+      onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''"
+      onclick="addToInventory('${item.id}');renderInvSearch('${query.replace(/'/g,"\\'")}')">
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${item.name}</div>
+        <div style="font-size:9px;color:${rc}">${item.rarity||'Common'}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim)">${item.stat||''}</div>
+      <div style="font-size:11px;font-weight:600;color:${inInv?'var(--green)':'var(--cc)'}">
+        ${inInv?'✓ Added':'+ Add'}
+      </div>
+    </div>`;
+  }).join('');
+  res.style.display='block';
+}
+
+// ── OATHBREAKER UNLOCK ───────────────────────────────────────────────────────
+let _obClicks=0;
+function triggerOathbreaker(){
+  _obClicks++;
+  if(_obClicks>=3){
+    const opt=document.getElementById('oathbreaker-opt');
+    if(opt){opt.disabled=false;opt.textContent='☠ Oathbreaker';}
+    // brief red flash on header border
+    const hdr=document.querySelector('.header');
+    if(hdr){hdr.style.borderBottomColor='#8b0000';hdr.style.transition='border-bottom-color 0.5s';setTimeout(()=>{hdr.style.borderBottomColor='';},2000);}
+    _obClicks=0;
+  }
+}
+
+
+function showClassRef(cls){
+  const cd=CLASS_DATA_MAP[cls];if(!cd)return;
+  document.querySelectorAll('#classref-btns .sc-btn').forEach(b=>{
+    b.classList.toggle('active',b.getAttribute('onclick').includes("'"+cls+"'"));
+  });
+  const pd=CLASS_PROF_DATA[cls]||{};
+  const t=CLASS_SLOT_TYPE[cls];
+  const slotLabel=t==='full'?'Full caster (9th level)':t==='half'?'Half caster (5th level)':t==='warlock'?'Pact Magic — short rest (5th level)':'No spellcasting';
+  const lv=Math.min(currentLevel,20);
+  const tbl=t&&SPELL_SLOTS[t]?SPELL_SLOTS[t][lv]:null;
+  const ord=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
+  const slotsHtml=tbl?'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px">'+tbl.map((n,i)=>n>0?`<div style="background:var(--s2);border:1px solid var(--cc);border-radius:4px;padding:2px 8px;font-size:11px"><strong>${ord[i]}</strong>×${n}</div>`:'').filter(Boolean).join('')+'</div>':'';
+  const classSavesMap={wizard:['INT','WIS'],cleric:['WIS','CHA'],druid:['INT','WIS'],paladin:['WIS','CHA'],warlock:['WIS','CHA'],rogue:['DEX','INT'],barbarian:['STR','CON'],fighter:['STR','CON'],oathbreaker:['WIS','CHA']};
+  document.getElementById('classref-display').innerHTML=`
+    <div style="background:var(--s2);border:1.5px solid var(--cc);border-radius:8px;padding:14px;line-height:1.6">
+      <div style="font-size:20px;font-weight:700;font-family:Georgia,serif;color:var(--text);margin-bottom:6px">${cd.sigil} ${cd.name}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <span class="stat-pill">Hit Die: <span>d${cd.hitDie} → OSR halved</span></span>
+        <span class="stat-pill">Saves: <span>${(classSavesMap[cls]||['STR','CON']).join(', ')}</span></span>
+      </div>
+      <div style="margin-bottom:6px"><div style="color:var(--cc);font-size:8px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:2px">Armor</div><div style="color:var(--text-dim)">${pd.armor||'—'}</div></div>
+      <div style="margin-bottom:6px"><div style="color:var(--cc);font-size:8px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:2px">Weapons</div><div style="color:var(--text-dim)">${pd.weapons||'—'}</div></div>
+      <div style="margin-bottom:6px"><div style="color:var(--cc);font-size:8px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:2px">Free Features</div><div style="color:var(--text-dim)">${(pd.freeFeatures||'—').replace(/ · /g,'<br>')}</div></div>
+      <div><div style="color:var(--cc);font-size:8px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:2px">Spellcasting</div><div style="color:var(--text-dim)">${slotLabel}</div>${slotsHtml}</div>
+    </div>`;
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function selectSubclass(sc,el){
+  initResources();
+  currentSubclass=sc; acquiredSub.clear(); bmLevelsDone.clear(); bmBatchRemaining=0;
+  document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else {const btn=document.querySelector(`.sc-btn[data-sc="${sc}"]`);if(btn)btn.classList.add('active');}
+  render();
+}
+
+function onLevelChange(v){
+  currentLevel=Math.max(1,Math.min(20,parseInt(v)||1));
+  const li=document.getElementById('cs-level-inp');if(li&&parseInt(li.value)!==currentLevel)li.value=currentLevel;
+  const di=document.getElementById('level-input');if(di&&parseInt(di.value)!==currentLevel)di.value=currentLevel;
+  render(); renderCharSheet();
+
+  if(typeof initResources==='function'){initResources();renderResources();}
+  if(typeof renderActions==='function') renderActions();
+}
+
+function switchTab(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='decks') render();
+  if(id==='character') renderCharSheet();
+  if(id==='equipment') renderEquipPage();
+}
+
+function openInfo(tab){
+  document.getElementById('info-overlay').classList.add('visible');
+  document.querySelectorAll('.info-modal-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.info-section').forEach(s=>s.classList.remove('active'));
+  const tabId='info-'+(tab||'overview');
+  document.getElementById(tabId)?.classList.add('active');
+  document.querySelector(`.info-modal-tab[onclick*="${tab||'overview'}"]`)?.classList.add('active');
+}
+
+function switchInfoTab(id,el){
+  if(id==='subclasses'){
+    // init subclass browser for current class or fighter
+    const initCls=currentClass||'fighter';
+    setTimeout(()=>{
+      const btn=document.querySelector('#sc-class-filter-btns .sc-btn');
+      filterSubclassView(initCls, document.querySelector('#sc-class-filter-btns .sc-btn[onclick*="'+initCls+'"]')||btn);
+    },10);
+  }
+  document.querySelectorAll('.info-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.info-modal-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('info-'+id)?.classList.add('active');
+  el.classList.add('active');
+}
+
+function closeInfo(){
+  document.getElementById('info-overlay').classList.remove('visible');
+}
+
+document.getElementById('info-overlay').addEventListener('click',function(e){
+  if(e.target===this) closeInfo();
+});
+
+
+// ── SUBCLASS INFO BROWSER ──────────────────────────────────────────────────
+function filterSubclassView(cls, btn){
+  document.querySelectorAll('#sc-class-filter-btns .sc-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+
+  const cd = CLASS_DATA_MAP[cls];
+  if(!cd){ document.getElementById('sc-info-grid').innerHTML='<div class="cs-no-feats">Class not found</div>'; return; }
+
+  const metas = cd.subclassMeta || [];
+  const cards = cd.subclassCards || {};
+
+  document.getElementById('sc-info-grid').innerHTML = metas.map(sc => {
+    const abilities = cards[sc.id] || [];
+    const abHtml = abilities.map(a=>`
+      <div class="entry">
+        <div class="elv"><span class="lv">LV</span>${a.level}</div>
+        <div>
+          <div class="ename">${a.name}</div>
+          <div class="edesc">${a.desc}</div>
+        </div>
+      </div>`).join('');
+    return `<div class="subclass-card" onclick="toggleSub(this)">
+      <div class="sub-head">
+        <div>
+          <div class="sub-name">${sc.name}</div>
+          <div class="sub-source">${sc.source||''}</div>
+          <div class="sub-blurb">${sc.blurb||''}</div>
+        </div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="sub-body">
+        <div class="sbanner">Adds ${abilities.length} cards to the ability deck</div>
+        ${abHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSub(card){card.classList.toggle('open');}
+
+
+// ── SPELL SLOTS ───────────────────────────────────────────────────────────────
+const SPELL_SLOTS={
+  full:[null,
+    [2,0,0,0,0,0,0,0,0],[3,0,0,0,0,0,0,0,0],[4,2,0,0,0,0,0,0,0],[4,3,0,0,0,0,0,0,0],
+    [4,3,2,0,0,0,0,0,0],[4,3,3,0,0,0,0,0,0],[4,3,3,1,0,0,0,0,0],[4,3,3,2,0,0,0,0,0],
+    [4,3,3,3,1,0,0,0,0],[4,3,3,3,2,0,0,0,0],[4,3,3,3,2,1,0,0,0],[4,3,3,3,2,1,0,0,0],
+    [4,3,3,3,2,1,1,0,0],[4,3,3,3,2,1,1,0,0],[4,3,3,3,2,1,1,1,0],[4,3,3,3,2,1,1,1,0],
+    [4,3,3,3,2,1,1,1,1],[4,3,3,3,3,1,1,1,1],[4,3,3,3,3,2,1,1,1],[4,3,3,3,3,2,2,1,1]],
+  half:[null,
+    [0,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0],[3,0,0,0,0,0,0,0,0],[3,0,0,0,0,0,0,0,0],
+    [4,2,0,0,0,0,0,0,0],[4,2,0,0,0,0,0,0,0],[4,3,0,0,0,0,0,0,0],[4,3,0,0,0,0,0,0,0],
+    [4,3,2,0,0,0,0,0,0],[4,3,2,0,0,0,0,0,0],[4,3,3,0,0,0,0,0,0],[4,3,3,0,0,0,0,0,0],
+    [4,3,3,1,0,0,0,0,0],[4,3,3,1,0,0,0,0,0],[4,3,3,2,0,0,0,0,0],[4,3,3,2,0,0,0,0,0],
+    [4,3,3,3,1,0,0,0,0],[4,3,3,3,1,0,0,0,0],[4,3,3,3,2,0,0,0,0],[4,3,3,3,2,0,0,0,0]],
+  warlock:[null,
+    [1,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0],[0,2,0,0,0,0,0,0,0],[0,2,0,0,0,0,0,0,0],
+    [0,0,2,0,0,0,0,0,0],[0,0,2,0,0,0,0,0,0],[0,0,0,2,0,0,0,0,0],[0,0,0,2,0,0,0,0,0],
+    [0,0,0,0,2,0,0,0,0],[0,0,0,0,2,0,0,0,0],[0,0,0,0,3,0,0,0,0],[0,0,0,0,3,0,0,0,0],
+    [0,0,0,0,3,0,0,0,0],[0,0,0,0,3,0,0,0,0],[0,0,0,0,3,0,0,0,0],[0,0,0,0,3,0,0,0,0],
+    [0,0,0,0,4,0,0,0,0],[0,0,0,0,4,0,0,0,0],[0,0,0,0,4,0,0,0,0],[0,0,0,0,4,0,0,0,0]],
+};
+const CLASS_SLOT_TYPE={wizard:'full',cleric:'full',druid:'full',paladin:'half',oathbreaker:'half',warlock:'warlock',fighter:null,barbarian:null,rogue:null};
+let usedSlots=[0,0,0,0,0,0,0,0,0];
+function getSlotTable(){const t=CLASS_SLOT_TYPE[currentClass];if(!t)return null;const lv=Math.min(currentLevel,20);return SPELL_SLOTS[t][lv]||null;}
+function useSlot(idx){const tbl=getSlotTable();if(!tbl)return;if(usedSlots[idx]<tbl[idx]){usedSlots[idx]++;renderSpellSlots();}}
+function restoreSlot(idx){if(usedSlots[idx]>0){usedSlots[idx]--;renderSpellSlots();}}
+function resetSlots(){usedSlots=[0,0,0,0,0,0,0,0,0];}
+function renderSpellSlots(){
+  const el=document.getElementById('cs-spell-slots');
+  const p=document.getElementById('cs-spell-slots-panel');
+  if(!el||!p)return;
+  const tbl=getSlotTable();
+  if(!tbl){p.style.display='none';return;}
+  p.style.display='';
+  const ord=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
+  el.innerHTML=tbl.map((count,i)=>{
+    if(count===0)return'';
+    const used=usedSlots[i]||0;
+    const dots=Array.from({length:count},(_,di)=>
+      `<div class="slot-dot${di<used?' used':''}" onclick="${di<used?`restoreSlot(${i})`:`useSlot(${i})`}" title="${di<used?'Restore':'Use'} ${ord[i]} slot"></div>`
+    ).join('');
+    return`<div class="slot-group"><div class="slot-level">${ord[i]}</div><div class="slot-dots">${dots}</div></div>`;
+  }).join('');
+  const note=document.getElementById('cs-slot-note');
+  if(note)note.textContent=currentClass==='warlock'?'(short rest)':'(long rest)';
+}
+
+// ── CON RECALC ─────────────────────────────────────────────────────────────────
+function recalcHP(){
+  hpLevels=hpLevels.map(h=>{
+    const conMod=mod(statTotal('con'));
+    const dwarfBonus=currentRace==='dwarf'?1:0;
+    return{...h,conMod,dwarfBonus,total:Math.max(1,h.halved+conMod+dwarfBonus)};
+  });
+  renderCharSheet();
+}
+
+// ── EQUIPMENT FILTER STATE ────────────────────────────────────────────────────
+let equipRarityFilter='all';
+let equipClassFilter='all';
+
+function setEquipCat(cat){
+  equipFilter=cat==='all'?'simple-melee':cat; // map 'all' to show all via rarity bypass below
+  equipFilter=cat; // allow 'all'
+  document.querySelectorAll('.equip-cat-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.cat===cat || (cat==='all'&&b.id==='ecat-all'));
+  });
+  renderEquipFiltered();
+}
+function setEquipRarity(r){
+  equipRarityFilter=equipRarityFilter===r?'all':r;
+  document.querySelectorAll('.rf-btn').forEach(b=>b.classList.toggle('active',b.dataset.r===equipRarityFilter));
+  renderEquipFiltered();
+}
+function setEquipClassFilter(cls){
+  equipClassFilter=equipClassFilter===cls?'all':cls;
+  document.querySelectorAll('.cpf-btn').forEach(b=>b.classList.toggle('active',b.dataset.cls===equipClassFilter));
+  renderEquipFiltered();
+}
+function getEquipPool(){
+  let items=EQUIP_ITEMS||[];
+  if(equipFilter&&equipFilter!=='all') items=items.filter(i=>i.cat===equipFilter);
+  if(equipRarityFilter&&equipRarityFilter!=='all'){
+    // Map button keys to display values (case-insensitive match)
+    const rm={common:'common',uncommon:'uncommon',rare:'rare',veryrare:'very rare',legendary:'legendary'};
+    const target=(rm[equipRarityFilter]||equipRarityFilter).toLowerCase();
+    items=items.filter(i=>(i.rarity||'').toLowerCase().replace('-',' ')===target);
+  }
+  if(equipClassFilter&&equipClassFilter!=='all'){
+    items=items.filter(i=>!i.prof||i.prof.includes(equipClassFilter)||i.prof.includes('all'));
+  }
+  if(equipSearch) items=items.filter(i=>
+    i.name.toLowerCase().includes(equipSearch)||
+    (i.desc||'').toLowerCase().includes(equipSearch)||
+    (i.props||[]).some(p=>p.toLowerCase().includes(equipSearch))
+  );
+  return items;
+}
+function renderEquipFiltered(){
+  // Update category counts
+  EQUIP_CATEGORIES&&EQUIP_CATEGORIES.forEach(c=>{
+    const btn=document.getElementById('ecat-'+c.id);
+    if(!btn)return;
+    const n=c.id==='all'?(EQUIP_ITEMS||[]).length:(EQUIP_ITEMS||[]).filter(x=>x.cat===c.id).length;
+    const cnt=btn.querySelector('.equip-cat-count');
+    if(cnt)cnt.textContent=n;
+  });
+  // Also update ecat-all count
+  const allBtn=document.getElementById('ecat-all');
+  if(allBtn){const cnt=allBtn.querySelector('.equip-cat-count');if(cnt)cnt.textContent=(EQUIP_ITEMS||[]).length;}
+  // Reuse existing renderEquipPage grid logic but with our pool
+  const pool=getEquipPool();
+  const gridEl=document.getElementById('equip-grid');
+  if(!gridEl)return;
+  const countEl=document.getElementById('equip-count');
+  if(countEl)countEl.textContent=pool.length+' items';
+  if(pool.length===0){
+    gridEl.innerHTML='<div style="grid-column:1/-1;padding:20px;color:var(--text-muted);text-align:center;font-style:italic">No items match filters</div>';
+    return;
+  }
+  gridEl.innerHTML=pool.map(item=>{
+    const isPro=isEquipProficient(item);
+    const rar=item.rarity?`<div class="equip-rarity ${getRarityClass(item.rarity)}">${item.rarity}</div>`:'';
+    const propsHtml=(item.props||[]).map(p=>`<span class="eprop">${p}</span>`).join('');
+    const inInv=inventory.some(x=>x.id===item.id);
+    return`<div class="equip-card${isPro?' proficient':''}" data-item-id="${item.id}">
+      <div class="equip-card-name" style="color:${({'Common':'var(--text)','Uncommon':'#5ab85a','Rare':'#5577cc','Very Rare':'#aa55dd','Legendary':'#ddaa22'})[item.rarity]||'var(--text)'}">${item.name}</div>
       ${rar}
       <div class="equip-card-stat">${item.stat||'—'} <span style="font-size:10px;font-weight:400;color:var(--text-dim)">${item.statType||''}</span></div>
       <div class="equip-card-props">${propsHtml}</div>
