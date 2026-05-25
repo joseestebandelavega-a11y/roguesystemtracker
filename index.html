@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -1591,6 +1592,106 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   background-clip:text;font-size:15px;
 }
 
+/* ── PARTY ROOM ─────────────────────────────────────────────────────────── */
+#tab-party{display:none;flex-direction:column;gap:12px;padding:16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100%;max-width:1100px;margin:0 auto}
+#tab-party.active{display:flex}
+
+/* Setup / connect area */
+.pty-setup{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:28px 24px;text-align:center;max-width:480px;margin:40px auto 0}
+.pty-setup h3{font-size:18px;font-weight:700;color:var(--text);font-family:Georgia,serif;margin-bottom:6px}
+.pty-setup p{font-size:12px;color:var(--text-dim);margin-bottom:20px}
+.pty-field-row{display:flex;flex-direction:column;align-items:center;gap:10px}
+.pty-inp{background:var(--surface2);border:1px solid var(--border-hi);border-radius:6px;color:var(--text);font-size:13px;padding:7px 12px;outline:none;width:220px}
+.pty-inp:focus{border-color:var(--fighter)}
+.pty-inp.code{text-transform:uppercase;letter-spacing:.15em;text-align:center;width:140px}
+.pty-btn{background:var(--fighter-pale);border:1px solid var(--fighter-dim);border-radius:6px;color:var(--fighter);font-size:12px;font-weight:600;padding:8px 18px;cursor:pointer;transition:all .15s;letter-spacing:.04em;white-space:nowrap}
+.pty-btn:hover{background:var(--fighter-dim);border-color:var(--fighter)}
+.pty-btn.ghost{background:var(--surface2);border-color:var(--border-hi);color:var(--text-dim)}
+.pty-btn.ghost:hover{border-color:var(--border-hi);color:var(--text)}
+.pty-divider{display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:11px;width:260px}
+.pty-divider::before,.pty-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.pty-join-row{display:flex;gap:6px;align-items:center}
+.pty-err{margin-top:10px;font-size:12px;color:#c44040;display:none}
+.pty-pw-row{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
+.pty-pw-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+
+/* Room header */
+.pty-header{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pty-code-lbl{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px}
+.pty-code-badge{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--fighter);letter-spacing:.2em}
+.pty-status{display:flex;align-items:center;gap:6px}
+.prv-dot{width:8px;height:8px;border-radius:50%;background:#4a8c3a;flex-shrink:0;transition:background .3s}
+.prv-dot.connecting{background:#b5860a}
+.prv-dot.offline{background:#c44040}
+.pty-status-txt{font-size:11px;color:var(--text-dim)}
+.pty-header-right{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap}
+.dm-unlock-row{display:flex;gap:6px;align-items:center}
+.dm-unlock-lbl{font-size:10px;color:var(--text-muted);letter-spacing:.05em;white-space:nowrap}
+
+/* Main layout */
+.pty-layout{display:grid;grid-template-columns:1fr 240px;gap:12px;flex:1;min-height:0}
+.pty-layout.no-dm .pty-right-col{display:none}
+.pty-layout.no-dm{grid-template-columns:1fr 200px}
+.pty-right-col{display:flex;flex-direction:column;gap:12px;min-width:0}
+
+/* Players panel */
+.pty-players-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pty-panel-head{background:var(--surface2);border-bottom:1px solid var(--border);padding:9px 13px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim)}
+.pty-player-list{padding:7px}
+.pty-player{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:4px;font-size:12px}
+.pty-pdot{width:7px;height:7px;border-radius:50%;background:#4a8c3a;flex-shrink:0}
+.pty-pname{color:var(--text);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pty-self{color:var(--text-muted);font-weight:400;font-size:10px}
+.pty-badge{font-size:9px;letter-spacing:.07em;text-transform:uppercase;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.pty-badge.dm{color:#c084fc;border:0.5px solid #6b21a8;background:rgba(107,33,168,.15)}
+.pty-empty{font-size:11px;color:var(--text-muted);padding:6px 8px;font-style:italic}
+
+/* Chat panel */
+.pty-chat-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0}
+.pty-log{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:5px;min-height:280px}
+.pty-log::-webkit-scrollbar{width:4px}
+.pty-log::-webkit-scrollbar-track{background:transparent}
+.pty-log::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px}
+.pty-msg{display:flex;flex-direction:column;gap:1px}
+.pty-mhead{display:flex;align-items:baseline;gap:7px}
+.pty-muser{font-size:11px;font-weight:700;color:var(--fighter)}
+.pty-muser.dm{color:#c084fc}
+.pty-mtime{font-size:10px;color:var(--text-muted)}
+.pty-mtext{font-size:13px;color:var(--text);line-height:1.45;word-break:break-word}
+.pty-sys{font-size:11px;color:var(--text-muted);text-align:center;padding:3px 0;font-style:italic}
+.pty-announce{background:rgba(192,132,252,.07);border-left:2px solid #7c3aed;border-radius:0 5px 5px 0;padding:7px 10px}
+.pty-announce .pty-muser{color:#c084fc}
+.pty-input-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border)}
+.pty-msg-inp{flex:1;background:var(--surface2);border:1px solid var(--border-hi);border-radius:6px;color:var(--text);font-size:13px;padding:7px 12px;outline:none}
+.pty-msg-inp:focus{border-color:var(--fighter)}
+.pty-msg-inp:disabled{opacity:.35;cursor:not-allowed}
+
+/* DM Panel */
+.dm-panel{background:var(--surface);border:1px solid #5b21b6;border-radius:10px;overflow:hidden;flex-direction:column;display:none}
+.dm-panel.active{display:flex}
+.dm-panel-head{background:#150a2a;border-bottom:1px solid #5b21b6;padding:10px 14px;display:flex;align-items:center;gap:8px}
+.dm-panel-icon{font-size:14px}
+.dm-panel-title{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#c084fc;font-weight:700}
+.dm-body{padding:12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}
+.dm-sec-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#a855f7;margin-bottom:4px}
+.dm-textarea{width:100%;background:var(--surface2);border:1px solid #5b21b6;border-radius:6px;color:var(--text);font-size:12px;padding:8px 10px;resize:vertical;min-height:72px;outline:none;font-family:inherit;line-height:1.45}
+.dm-textarea:focus{border-color:#c084fc}
+.dm-announce-btn{background:rgba(139,92,246,.15);border:1px solid #5b21b6;border-radius:6px;color:#c084fc;font-size:12px;font-weight:600;padding:7px 14px;cursor:pointer;width:100%;letter-spacing:.04em;transition:all .15s;margin-top:5px}
+.dm-announce-btn:hover{background:rgba(139,92,246,.28);border-color:#c084fc}
+.dm-map-placeholder{background:var(--surface2);border:1px dashed #5b21b6;border-radius:6px;padding:24px;text-align:center;color:#7c3aed;font-size:11px;opacity:.65}
+
+@media(max-width:860px){
+  .pty-layout{grid-template-columns:1fr}
+  .pty-layout.no-dm{grid-template-columns:1fr}
+  .pty-right-col{display:flex !important}
+  .pty-layout .pty-right-col{order:3}
+}
+@media(max-width:480px){
+  .pty-setup{margin:16px auto;padding:20px 16px}
+  .pty-header{gap:8px}
+  .pty-header-right{width:100%}
+}
+
 </style>
 </head>
 <body>
@@ -1603,6 +1704,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <div class="tab active" onclick="switchTab('character',this)">Character Sheet</div>
       <div class="tab" onclick="switchTab('decks',this)">Ability Deck</div>
       <div class="tab" onclick="switchTab('equipment',this)">Equipment</div>
+      <div class="tab" onclick="switchTab('party',this)">Party Room</div>
     </div>
     <button class="info-btn" onclick="openInfo('overview')" title="Rules &amp; subclass info">&#x2139;</button>
     <button class="nav-secret-btn" onclick="triggerOathbreaker()" title="">☠</button>
@@ -1906,6 +2008,105 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 
 </div>
 </div>
+
+
+<!-- PARTY ROOM -->
+<div id="tab-party" class="section">
+
+  <!-- Setup view (not yet in a room) -->
+  <div id="pty-setup-view" class="pty-setup">
+    <h3>Party Room</h3>
+    <p>Connect with your party in real time — shared chat, DM controls, and eventually a live map.</p>
+    <div class="pty-field-row">
+      <input class="pty-inp" id="party-name-inp" placeholder="Your name" maxlength="20">
+      <div class="pty-pw-row">
+        <div class="pty-pw-label">DM Password (optional — host only)</div>
+        <input type="password" class="pty-inp" id="party-host-pw" placeholder="Set DM password…" maxlength="64">
+      </div>
+      <button class="pty-btn" onclick="hostRoom()">Host a Room</button>
+      <div class="pty-divider">or join existing</div>
+      <div class="pty-join-row">
+        <input class="pty-inp code" id="party-code-inp" placeholder="ROOM CODE" maxlength="6">
+        <button class="pty-btn" onclick="joinRoom()">Join</button>
+      </div>
+      <div class="pty-err" id="party-connect-err"></div>
+    </div>
+  </div>
+
+  <!-- Active room view -->
+  <div id="pty-room-view" style="display:none;flex-direction:column;gap:12px;flex:1">
+
+    <!-- Room header -->
+    <div class="pty-header">
+      <div>
+        <div class="pty-code-lbl">Room Code</div>
+        <div class="pty-code-badge" id="prv-code">——</div>
+      </div>
+      <div class="pty-status">
+        <div class="prv-dot connecting" id="prv-dot"></div>
+        <div class="pty-status-txt" id="prv-txt">Connecting…</div>
+      </div>
+      <div class="pty-header-right">
+        <div class="dm-unlock-row" id="dm-unlock-row">
+          <span class="dm-unlock-lbl">DM unlock:</span>
+          <input type="password" class="pty-inp" id="dm-pw-inp" placeholder="DM password" style="width:130px;padding:5px 10px">
+          <button class="pty-btn ghost" onclick="tryDMUnlock()" style="padding:5px 12px">Unlock</button>
+        </div>
+        <button class="pty-btn ghost" onclick="leaveRoom()" style="padding:5px 12px">Leave</button>
+      </div>
+    </div>
+
+    <!-- Two-column layout: chat left, sidebar right -->
+    <div class="pty-layout no-dm" id="pty-layout" style="flex:1">
+
+      <!-- Chat panel -->
+      <div class="pty-chat-panel">
+        <div class="pty-panel-head">Chat</div>
+        <div class="pty-log" id="pty-log"></div>
+        <div class="pty-input-row">
+          <input class="pty-msg-inp" id="pty-msg-inp" placeholder="Message the party…" maxlength="500"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPartyMsg()}">
+          <button class="pty-btn" onclick="sendPartyMsg()" style="padding:7px 16px">Send</button>
+        </div>
+      </div>
+
+      <!-- Right column: players + DM panel -->
+      <div class="pty-right-col">
+
+        <!-- Connected players -->
+        <div class="pty-players-panel">
+          <div class="pty-panel-head">Connected Players</div>
+          <div class="pty-player-list" id="party-player-list"></div>
+        </div>
+
+        <!-- DM Panel (hidden until DM unlocked) -->
+        <div class="dm-panel" id="dm-panel">
+          <div class="dm-panel-head">
+            <div class="dm-panel-icon">👑</div>
+            <div class="dm-panel-title">Dungeon Master Controls</div>
+          </div>
+          <div class="dm-body">
+            <div>
+              <div class="dm-sec-lbl">Private Notes</div>
+              <textarea class="dm-textarea" id="dm-notes-area" placeholder="DM notes — only visible to you…" rows="4"></textarea>
+            </div>
+            <div>
+              <div class="dm-sec-lbl">Party Announcement</div>
+              <textarea class="dm-textarea" id="dm-announce-area" placeholder="Send a dramatic announcement to the party…" rows="3"></textarea>
+              <button class="dm-announce-btn" onclick="dmAnnounce()">📣 Announce to Party</button>
+            </div>
+            <div>
+              <div class="dm-sec-lbl">Map</div>
+              <div class="dm-map-placeholder">Map sharing — coming soon</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /pty-right-col -->
+    </div><!-- /pty-layout -->
+
+  </div><!-- /pty-room-view -->
+</div><!-- /tab-party -->
 
 
 <!-- INFO MODAL -->
@@ -5409,6 +5610,7 @@ function switchTab(id,el){
   if(id==='decks') render();
   if(id==='character') renderCharSheet();
   if(id==='equipment') renderEquipPage();
+  if(id==='party' && partyPeer) _partyStatus();
 }
 
 function openInfo(tab){
@@ -5919,6 +6121,330 @@ document.addEventListener('input', function(e){
                   'cs-hp-cur','cs-hp-temp','cs-notes-text','floor-notes-text','cs-level-inp'];
   if(saveable.includes(e.target.id)) scheduleSave();
 });
+
+// ── PARTY ROOM (PeerJS mesh + hub failover) ───────────────────────────────
+
+let partyPeer    = null;   // Our main PeerJS peer
+let partyHubPeer = null;   // Secondary hub peer (only during hub takeover)
+let partyConns   = {};     // peerId → DataConnection
+let partyRoomCode= null;
+let partyMyName  = '';
+let partyIsDM    = false;
+let partyDMHash  = null;   // SHA-256 hash of DM password
+let partyIsHub   = false;
+let _ptyHubId    = null;   // Peer ID of the current hub
+let partyPlayers = {};     // peerId → {name, isDM}
+
+function _hubId(code){ return 'rsg-h-'+code.toUpperCase(); }
+
+function _genCode(){
+  const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s='';for(let i=0;i<6;i++)s+=ch[Math.floor(Math.random()*ch.length)];
+  return s;
+}
+
+function _escH(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function _hashPW(pw){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('rsg-salt-2025-'+pw));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function _partyErr(msg){
+  const el=document.getElementById('party-connect-err');
+  if(!el)return;
+  el.textContent=msg;el.style.display='';
+  setTimeout(()=>{if(el)el.style.display='none';},4000);
+}
+
+function _partyStatus(){
+  const n=Object.keys(partyConns).length;
+  const dot=document.getElementById('prv-dot');
+  const txt=document.getElementById('prv-txt');
+  if(!dot||!txt)return;
+  dot.className='prv-dot'+(n===0?' connecting':'');
+  txt.textContent=partyIsHub
+    ?(n===0?'Waiting for players…':n+' player'+(n!==1?'s':'')+' connected')
+    :(n===0?'Reconnecting…':'Connected');
+}
+
+function _renderPlayers(){
+  const list=document.getElementById('party-player-list');
+  if(!list)return;
+  const myId=partyPeer?.id;
+  let html='';
+  Object.entries(partyPlayers).forEach(([id,p])=>{
+    const self=id===myId;
+    html+=`<div class="pty-player">
+      <div class="pty-pdot"></div>
+      <div class="pty-pname">${_escH(p.name)}${self?'<span class="pty-self"> (you)</span>':''}</div>
+      ${p.isDM?'<div class="pty-badge dm">DM</div>':''}
+    </div>`;
+  });
+  list.innerHTML=html||'<div class="pty-empty">No players yet</div>';
+}
+
+function _appendMsg({user,text,ts,isDM,announce}){
+  const log=document.getElementById('pty-log');
+  if(!log)return;
+  const t=new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const d=document.createElement('div');
+  d.className='pty-msg'+(announce?' pty-announce':'');
+  d.innerHTML=`<div class="pty-mhead"><span class="pty-muser${isDM?' dm':''}">${_escH(user)}</span><span class="pty-mtime">${t}</span></div><div class="pty-mtext">${_escH(text)}</div>`;
+  log.appendChild(d);log.scrollTop=log.scrollHeight;
+}
+
+function _sysMsg(text){
+  const log=document.getElementById('pty-log');
+  if(!log)return;
+  const d=document.createElement('div');
+  d.className='pty-sys';d.textContent='— '+text+' —';
+  log.appendChild(d);log.scrollTop=log.scrollHeight;
+}
+
+function _broadcast(data,excludeId){
+  Object.entries(partyConns).forEach(([id,c])=>{
+    if(id!==excludeId&&c.open)try{c.send(data);}catch(e){}
+  });
+}
+
+function _setupConn(conn){
+  conn.on('open',()=>{
+    partyConns[conn.peer]=conn;
+    if(partyIsHub){
+      // Welcome the new joiner with the full peer list + DM hash
+      const peers=Object.entries(partyPlayers).map(([id,p])=>({id,name:p.name,isDM:p.isDM}));
+      try{conn.send({type:'welcome',peers,dmHash:partyDMHash,roomCode:partyRoomCode,
+        hostId:partyPeer.id,hostName:partyMyName});}catch(e){}
+      // Tell everyone else a new peer joined
+      const joinName=conn.metadata?.name||'Player';
+      _broadcast({type:'peer-join',id:conn.peer,name:joinName},conn.peer);
+      partyPlayers[conn.peer]={name:joinName,isDM:false};
+    }
+    // Send our identity
+    try{conn.send({type:'hello',name:partyMyName,isDM:partyIsDM,id:partyPeer.id});}catch(e){}
+    _renderPlayers();_partyStatus();
+  });
+  conn.on('data',d=>_handleData(d,conn));
+  conn.on('close',()=>{
+    const p=partyPlayers[conn.peer];
+    const leftName=p?.name||'A player';
+    delete partyConns[conn.peer];
+    delete partyPlayers[conn.peer];
+    _sysMsg(leftName+' left the room');
+    _renderPlayers();_partyStatus();
+    if(partyIsHub) _broadcast({type:'peer-leave',id:conn.peer,name:leftName});
+    // Hub failover: if the hub disconnected, try to take over
+    if(!partyIsHub&&conn.peer===_ptyHubId) _tryBecomeHub();
+  });
+  conn.on('error',e=>console.warn('[party]',e));
+}
+
+function _handleData(d,fromConn){
+  switch(d.type){
+    case 'welcome':
+      _ptyHubId=fromConn.peer;
+      partyDMHash=d.dmHash;
+      _sysMsg('Joined room '+d.roomCode);
+      // Add the hub as a player
+      if(d.hostId) partyPlayers[d.hostId]={name:d.hostName||'Host',isDM:false};
+      // Mesh: connect to every other peer already in the room
+      (d.peers||[]).forEach(p=>{
+        if(p.id!==partyPeer.id&&!partyConns[p.id]){
+          partyPlayers[p.id]={name:p.name,isDM:p.isDM};
+          _setupConn(partyPeer.connect(p.id,{metadata:{name:partyMyName}}));
+        }
+      });
+      _renderPlayers();
+      // Show DM unlock only if a DM password is set in this room
+      if(!d.dmHash) document.getElementById('dm-unlock-row').style.display='none';
+      break;
+    case 'hello':
+      if(d.id) partyPlayers[d.id]={name:d.name,isDM:d.isDM};
+      _renderPlayers();break;
+    case 'peer-join':
+      _sysMsg(d.name+' joined the room');
+      partyPlayers[d.id]={name:d.name,isDM:false};
+      _renderPlayers();break;
+    case 'peer-leave':
+      if(partyPlayers[d.id]){
+        _sysMsg(d.name+' left');
+        delete partyPlayers[d.id];_renderPlayers();
+      }break;
+    case 'chat':
+      _appendMsg({user:d.user,text:d.text,ts:d.ts,isDM:d.isDM,announce:false});break;
+    case 'dm-announce':
+      _appendMsg({user:d.user,text:d.text,ts:d.ts,isDM:true,announce:true});break;
+    case 'dm-ping':
+      if(d.id&&partyPlayers[d.id]){
+        partyPlayers[d.id].isDM=d.isDM;
+        _renderPlayers();
+        if(d.isDM) _sysMsg(partyPlayers[d.id].name+' is the Dungeon Master');
+      }break;
+    case 'hub-elected':
+      _ptyHubId=d.hubId;
+      _sysMsg('Room connection restored');break;
+  }
+}
+
+function _tryBecomeHub(){
+  if(!partyRoomCode||partyIsHub) return;
+  // Random delay (0–3 s) so only one peer wins the election
+  setTimeout(()=>{
+    if(partyIsHub) return;
+    const hid=_hubId(partyRoomCode);
+    const hp=new Peer(hid,{debug:0});
+    hp.on('open',()=>{
+      partyIsHub=true; partyHubPeer=hp; _ptyHubId=hid;
+      _broadcast({type:'hub-elected',hubId:hid});
+      _sysMsg('You are now hosting the room');
+      hp.on('connection',conn=>_setupConn(conn));
+    });
+    hp.on('error',()=>hp.destroy());
+  }, Math.random()*3000);
+}
+
+async function hostRoom(){
+  const name=(document.getElementById('party-name-inp')?.value||'').trim()||'Host';
+  const pw=(document.getElementById('party-host-pw')?.value||'').trim();
+  partyMyName=name;
+  const code=_genCode();
+  partyRoomCode=code; partyIsHub=true;
+  partyDMHash=pw?(await _hashPW(pw)):null;
+
+  partyPeer=new Peer(_hubId(code),{debug:0});
+
+  partyPeer.on('open',(id)=>{
+    _ptyHubId=id;
+    partyPlayers[id]={name,isDM:false};
+    _showRoom(code);
+    _sysMsg('Room created — share code: '+code);
+    if(pw){
+      partyIsDM=true;partyPlayers[id].isDM=true;
+      _showDMPanel();_sysMsg('You are the Dungeon Master');
+    }
+    // Hide DM unlock if no password set
+    if(!pw) document.getElementById('dm-unlock-row').style.display='none';
+    _renderPlayers();_partyStatus();
+  });
+  partyPeer.on('connection',conn=>_setupConn(conn));
+  partyPeer.on('error',err=>{
+    if(err.type==='unavailable-id'){
+      // Room code collision — fall back to joining
+      partyIsHub=false; partyPeer.destroy();
+      _joinInternal(code,name);
+    } else {
+      _partyErr('Error: '+err.message); partyIsHub=false;
+    }
+  });
+}
+
+function joinRoom(){
+  const code=(document.getElementById('party-code-inp')?.value||'').trim().toUpperCase();
+  const name=(document.getElementById('party-name-inp')?.value||'').trim()||'Player';
+  if(!code||code.length!==6){_partyErr('Enter a 6-character room code');return;}
+  _joinInternal(code,name);
+}
+
+function _joinInternal(code,name){
+  partyMyName=name; partyRoomCode=code; partyIsHub=false;
+  partyPeer=new Peer({debug:0});
+  partyPeer.on('open',(id)=>{
+    partyPlayers[id]={name,isDM:false};
+    const conn=partyPeer.connect(_hubId(code),{metadata:{name}});
+    _ptyHubId=_hubId(code);
+    _setupConn(conn);
+    _showRoom(code);
+    _sysMsg('Connecting to room '+code+'…');
+    _renderPlayers();
+  });
+  partyPeer.on('connection',conn=>_setupConn(conn));
+  partyPeer.on('error',err=>{
+    if(err.type==='peer-unavailable'){
+      _partyErr('Room "'+code+'" not found — check the code.');
+    } else {
+      _partyErr('Connection failed: '+err.message);
+    }
+    leaveRoom();
+  });
+}
+
+function sendPartyMsg(){
+  const inp=document.getElementById('pty-msg-inp');
+  const text=(inp?.value||'').trim();
+  if(!text||!partyPeer)return;
+  const msg={type:'chat',user:partyMyName,text,ts:Date.now(),isDM:partyIsDM};
+  _broadcast(msg);
+  _appendMsg({user:partyMyName,text,ts:msg.ts,isDM:partyIsDM,announce:false});
+  inp.value='';
+}
+
+function dmAnnounce(){
+  if(!partyIsDM)return;
+  const area=document.getElementById('dm-announce-area');
+  const text=(area?.value||'').trim();
+  if(!text)return;
+  const msg={type:'dm-announce',user:partyMyName,text,ts:Date.now()};
+  _broadcast(msg);
+  _appendMsg({user:partyMyName,text,ts:msg.ts,isDM:true,announce:true});
+  area.value='';
+}
+
+async function tryDMUnlock(){
+  const pw=(document.getElementById('dm-pw-inp')?.value||'').trim();
+  if(!pw){_partyErr('Enter the DM password');return;}
+  if(!partyDMHash){_partyErr('No DM password is set for this room');return;}
+  const h=await _hashPW(pw);
+  if(h===partyDMHash){
+    partyIsDM=true;
+    if(partyPeer&&partyPlayers[partyPeer.id]) partyPlayers[partyPeer.id].isDM=true;
+    _showDMPanel();
+    _broadcast({type:'dm-ping',id:partyPeer?.id,isDM:true});
+    _renderPlayers();
+    _sysMsg('You are now the Dungeon Master');
+  } else {
+    _partyErr('Incorrect DM password');
+    const el=document.getElementById('dm-pw-inp');
+    if(el){el.style.borderColor='var(--red)';setTimeout(()=>el.style.borderColor='',1500);}
+  }
+}
+
+function leaveRoom(){
+  Object.values(partyConns).forEach(c=>{try{c.close();}catch(e){}});
+  if(partyPeer){try{partyPeer.destroy();}catch(e){}}
+  if(partyHubPeer){try{partyHubPeer.destroy();}catch(e){}}
+  partyPeer=null;partyHubPeer=null;partyConns={};partyPlayers={};
+  partyRoomCode=null;partyIsHub=false;partyIsDM=false;partyDMHash=null;_ptyHubId=null;
+  const setupV=document.getElementById('pty-setup-view');
+  const roomV=document.getElementById('pty-room-view');
+  if(setupV) setupV.style.display='';
+  if(roomV)  roomV.style.display='none';
+  const log=document.getElementById('pty-log');if(log)log.innerHTML='';
+  const dmP=document.getElementById('dm-panel');if(dmP)dmP.classList.remove('active');
+  const unlk=document.getElementById('dm-unlock-row');if(unlk)unlk.style.display='';
+}
+
+function _showRoom(code){
+  const sv=document.getElementById('pty-setup-view');
+  const rv=document.getElementById('pty-room-view');
+  if(sv) sv.style.display='none';
+  if(rv){rv.style.display='flex';}
+  const cBadge=document.getElementById('prv-code');
+  if(cBadge) cBadge.textContent=code;
+}
+
+function _showDMPanel(){
+  const p=document.getElementById('dm-panel');
+  if(p) p.classList.add('active');
+  const ul=document.getElementById('dm-unlock-row');
+  if(ul) ul.style.display='none';
+  const layout=document.getElementById('pty-layout');
+  if(layout) layout.classList.remove('no-dm');
+}
+
+// ── END PARTY ROOM ───────────────────────────────────────────────────────────
 
 // Save button in nav
 const _saveBtn = document.createElement('button');
