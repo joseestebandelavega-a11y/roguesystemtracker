@@ -602,7 +602,9 @@ body{
 body::before{
   content:none;
 }
-.tabs-bar,.content{position:relative;z-index:1}
+.tabs-bar,.content{position:relative}
+.tabs-bar{z-index:100 !important}
+.content{z-index:1}
 
 /* HEADER refinement (within character tab) */
 .header{
@@ -963,6 +965,87 @@ body::before{
     0 0 0 1px rgba(226,161,75,.15),
     0 40px 80px -20px rgba(0,0,0,.8);
   padding:32px 40px;
+  position:relative;
+  overflow:hidden;
+}
+/* Dice tumble: spin & bounce while numbers cycle */
+.cs-roll-d20{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:8px auto 12px;
+  width:160px;
+  height:160px;
+  font-size:0;
+  perspective:600px;
+}
+.die-svg{
+  width:100%;
+  height:100%;
+  display:block;
+  filter:drop-shadow(0 10px 22px rgba(0,0,0,.55));
+}
+.die-num{
+  font-family:var(--font-display),Georgia,serif;
+  font-weight:700;
+  fill:#f6e1b4;
+  font-size:24px;
+  text-anchor:middle;
+  dominant-baseline:central;
+  paint-order:stroke;
+  stroke:#1a1206;
+  stroke-width:0.8px;
+  pointer-events:none;
+}
+.cs-roll-d20.rolling .die-svg{
+  animation:die-tumble .65s cubic-bezier(.34,.05,.4,1.2) both;
+}
+@keyframes die-tumble{
+  0%{transform:translateY(-140px) rotate(-720deg) scale(.45);opacity:0;filter:blur(2px)}
+  20%{opacity:1;filter:blur(.5px)}
+  50%{transform:translateY(18px) rotate(180deg) scale(1.18);filter:blur(0)}
+  68%{transform:translateY(-8px) rotate(420deg) scale(.95)}
+  84%{transform:translateY(4px) rotate(700deg) scale(1.04)}
+  100%{transform:translateY(0) rotate(720deg) scale(1)}
+}
+/* Settling overshoot when the final number lands */
+@keyframes d20-land{
+  0%{transform:scale(1.3);filter:brightness(1.5)}
+  60%{transform:scale(.95)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
+.cs-roll-d20.landed .die-svg{animation:d20-land .35s cubic-bezier(.4,1.4,.5,1) both}
+.cs-roll-d20.crit.landed .die-svg{animation:d20-land .35s cubic-bezier(.4,1.4,.5,1) both, crit-flash 1.4s ease-in-out .35s infinite}
+.cs-roll-d20.fumble.landed .die-svg{animation:d20-land .35s cubic-bezier(.4,1.4,.5,1) both, fumble-shake .12s linear .35s 5}
+
+/* Crit/fumble face colour shifts */
+.cs-roll-d20.crit .die-face-front{fill:url(#dieFaceFrontCrit)}
+.cs-roll-d20.crit .die-num{fill:#dff5d2}
+.cs-roll-d20.fumble .die-face-front{fill:url(#dieFaceFrontFumble)}
+.cs-roll-d20.fumble .die-num{fill:#ffd0d0}
+
+@keyframes crit-flash{
+  0%,100%{filter:drop-shadow(0 0 16px rgba(125,208,106,.4))}
+  50%{filter:drop-shadow(0 0 38px rgba(125,208,106,.95))}
+}
+@keyframes fumble-shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-7px)}
+  75%{transform:translateX(7px)}
+}
+
+/* Sparks burst on crit */
+.crit-sparks{position:absolute;inset:0;pointer-events:none;display:none}
+.cs-roll-d20.crit.landed ~ .crit-sparks{display:block}
+.crit-sparks span{
+  position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;
+  background:radial-gradient(circle,#fff,#f6e1b4 40%,rgba(226,161,75,0) 70%);
+  animation:spark-fly 1s ease-out forwards;
+}
+@keyframes spark-fly{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:1}
+  100%{transform:translate(var(--dx),var(--dy)) scale(.6);opacity:0}
 }
 .cs-roll-lbl{font-family:var(--font-ui);letter-spacing:.22em;color:var(--fighter)}
 .cs-roll-d20{font-family:var(--font-display);font-weight:700;color:#f6e1b4;text-shadow:0 0 30px rgba(226,161,75,.4)}
@@ -1059,7 +1142,7 @@ body::before{
   background:linear-gradient(90deg,transparent 10%,rgba(226,161,75,.35) 50%,transparent 90%);
   pointer-events:none;
 }
-.tabs-bar{position:sticky;top:0}
+.tabs-bar{position:sticky;top:0;z-index:100}
 
 /* content max width feels a touch tighter and more elegant */
 .content{padding:24px 28px 64px}
@@ -1195,7 +1278,33 @@ body::before{
 .cs-stat-mod{font-size:26px;margin-top:1px;line-height:1}
 .cs-stat-score{font-size:10px;margin-top:3px;color:#a8a08e}
 
-/* ── AC shield: nudge label up off the rim ─────────────────── */
+/* ─── EQUIPMENT GRID — lock column count so it doesn't reflow
+       when switching categories / filters ─────────────────────── */
+
+/* Center the stat row (STR/DEX/CON/INT/WIS/CHA) within its container */
+.cs-stat-row{justify-content:center !important}
+
+/* Body is `display:flex; flex-direction:column; align-items:center`, which
+   shrinks block sections to their content width. Force every section to
+   span the full viewport so the equip-page grid keeps a stable parent
+   width regardless of how many items are in the current category. */
+body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
+#tab-equipment{width:100%;max-width:100%;box-sizing:border-box}
+
+.equip-grid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:10px;
+  align-content:start;
+}
+@media (max-width: 1180px){
+  .equip-grid{grid-template-columns:repeat(2, minmax(0, 1fr)) !important}
+}
+@media (max-width: 760px){
+  .equip-grid{grid-template-columns:1fr !important}
+}
+.equip-card{min-width:0}
+.equip-card-name,.equip-card-detail{overflow-wrap:anywhere}
 .cs-ac-inner{padding-bottom:14px;padding-top:6px;gap:1px}
 .cs-ac-input{font-size:26px;width:58px;margin-top:-2px}
 .cs-ac-lbl{
@@ -1208,6 +1317,11 @@ body::before{
   text-align:center;
 }
 .cs-ac-lbl span{display:block}
+
+/* Push the armor/DEX tip text BELOW the shield so it doesn't crowd the
+   number and label inside the silhouette. */
+.cs-ac-wrap{overflow:visible}
+#cs-ac-tip{display:none !important}
 /* ── Item Roll Modal ─────────────────────────────────────────────── */
 .item-roll-ov{display:none;position:fixed;inset:0;background:rgba(4,6,12,.92);
   z-index:300;align-items:center;justify-content:center;padding:16px}
@@ -3506,6 +3620,99 @@ function doRoll(label,stat,isProf,skillId){
   execRoll();
   document.getElementById('cs-roll-ov').classList.add('open');
 }
+function dieSVG(n){
+  // d20 viewed face-on: 10 visible faces matching the reference layout
+  // Lighting: source upper-left → upper-left faces brighter, lower-right darker
+  // Numbers on side faces are decorative (oriented like the reference)
+  // The CENTER face holds the rolled number `n`
+  return '<svg class="die-svg" viewBox="0 0 100 100" aria-hidden="true">'
+    +'<defs>'
+      // Edge / rim gradient (gold)
+      +'<linearGradient id="dieRim" x1="0" y1="0" x2="0" y2="1">'
+        +'<stop offset="0" stop-color="#f6e1b4"/>'
+        +'<stop offset="0.55" stop-color="#e2a14b"/>'
+        +'<stop offset="1" stop-color="#7a4f0e"/>'
+      +'</linearGradient>'
+      // Face gradients — lit from upper-left
+      +'<linearGradient id="dieFaceFront" x1="0" y1="0" x2="0.8" y2="1">'
+        +'<stop offset="0" stop-color="#4a3924"/>'
+        +'<stop offset="1" stop-color="#1a1206"/>'
+      +'</linearGradient>'
+      +'<linearGradient id="dieFaceFrontCrit" x1="0" y1="0" x2="0.8" y2="1">'
+        +'<stop offset="0" stop-color="#3a6f30"/>'
+        +'<stop offset="1" stop-color="#0f2a0a"/>'
+      +'</linearGradient>'
+      +'<linearGradient id="dieFaceFrontFumble" x1="0" y1="0" x2="0.8" y2="1">'
+        +'<stop offset="0" stop-color="#6a2828"/>'
+        +'<stop offset="1" stop-color="#2a0e0e"/>'
+      +'</linearGradient>'
+      +'<linearGradient id="faceL1" x1="0" y1="0" x2="1" y2="1">'  // top-left, brightest
+        +'<stop offset="0" stop-color="#403048"/>'
+        +'<stop offset="1" stop-color="#2a2030"/>'
+      +'</linearGradient>'
+      +'<linearGradient id="faceL2" x1="0" y1="0" x2="1" y2="1">'  // mid-bright
+        +'<stop offset="0" stop-color="#36283e"/>'
+        +'<stop offset="1" stop-color="#221a28"/>'
+      +'</linearGradient>'
+      +'<linearGradient id="faceL3" x1="0" y1="0" x2="1" y2="1">'  // medium
+        +'<stop offset="0" stop-color="#2a2030"/>'
+        +'<stop offset="1" stop-color="#181020"/>'
+      +'</linearGradient>'
+      +'<linearGradient id="faceL4" x1="0" y1="0" x2="1" y2="1">'  // dark
+        +'<stop offset="0" stop-color="#1f1828"/>'
+        +'<stop offset="1" stop-color="#0d091a"/>'
+      +'</linearGradient>'
+      +'<linearGradient id="faceL5" x1="0" y1="0" x2="1" y2="1">'  // darkest
+        +'<stop offset="0" stop-color="#181020"/>'
+        +'<stop offset="1" stop-color="#080513"/>'
+      +'</linearGradient>'
+      // soft ambient highlight on the front face
+      +'<radialGradient id="frontShine" cx="0.35" cy="0.3" r="0.85">'
+        +'<stop offset="0" stop-color="rgba(255,220,170,0.18)"/>'
+        +'<stop offset="0.6" stop-color="rgba(255,220,170,0)"/>'
+      +'</radialGradient>'
+    +'</defs>'
+
+    // ─── Hex silhouette drop ─────────────────────────────────────
+    +'<polygon points="50,5 89,27.5 89,72.5 50,95 11,72.5 11,27.5" fill="#0a070f"/>'
+
+    // ─── 10 visible faces (clockwise-ish), lit from upper-left ───
+    // 10  (top-left)
+    +'<polygon class="die-f" points="50,5 50,22 11,27.5"   fill="url(#faceL1)"/>'
+    // 12  (top-right)
+    +'<polygon class="die-f" points="50,5 50,22 89,27.5"   fill="url(#faceL2)"/>'
+    // 8   (mid-left)
+    +'<polygon class="die-f" points="50,22 24,68 11,27.5"  fill="url(#faceL2)"/>'
+    // 2   (mid-right)
+    +'<polygon class="die-f" points="50,22 76,68 89,27.5"  fill="url(#faceL3)"/>'
+    // 16  (far-left strip)
+    +'<polygon class="die-f" points="11,27.5 11,72.5 24,68" fill="url(#faceL3)"/>'
+    // 18  (far-right strip)
+    +'<polygon class="die-f" points="89,27.5 89,72.5 76,68" fill="url(#faceL4)"/>'
+    // 19  (lower-left)
+    +'<polygon class="die-f" points="24,68 50,95 11,72.5"  fill="url(#faceL4)"/>'
+    // 4   (lower-right)
+    +'<polygon class="die-f" points="76,68 50,95 89,72.5"  fill="url(#faceL5)"/>'
+    // 14  (bottom centre — point down)
+    +'<polygon class="die-f" points="24,68 76,68 50,95"    fill="url(#faceL4)"/>'
+    // 20  (CENTRE — point up, holds rolled number)
+    +'<polygon class="die-face-front" points="50,22 76,68 24,68" fill="url(#dieFaceFront)"/>'
+    +'<polygon points="50,22 76,68 24,68" fill="url(#frontShine)" pointer-events="none"/>'
+
+    // ─── Edge rim / gold seams ────────────────────────────────────
+    // outer hex
+    +'<polygon points="50,5 89,27.5 89,72.5 50,95 11,72.5 11,27.5" fill="none" stroke="url(#dieRim)" stroke-width="2.2" stroke-linejoin="round"/>'
+    // internal seams (incl. the two slim-side diagonals on left & right)
+    +'<path d="M50,5 L50,22 M11,27.5 L50,22 L89,27.5 M50,22 L24,68 M50,22 L76,68 M11,27.5 L24,68 M89,27.5 L76,68 M24,68 L11,72.5 M24,68 L76,68 M76,68 L89,72.5 M24,68 L50,95 M76,68 L50,95" '
+      +'fill="none" stroke="url(#dieRim)" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
+    // brighter highlight on the centre face's upper edge (catches light)
+    +'<path d="M50,22 L24,68 M50,22 L76,68" fill="none" stroke="#f6e1b4" stroke-width="0.55" opacity="0.45" stroke-linecap="round"/>'
+
+    // ─── ROLLED NUMBER on the centre face ─────────────────────────
+    +'<text class="die-num" x="50" y="54">'+n+'</text>'
+
+  +'</svg>';
+}
 function execRoll(){
   const roll=d(20),pb=profBonus(currentLevel);
   const base=mod(statTotal(_rl.stat));
@@ -3524,9 +3731,58 @@ function execRoll(){
   const isCrit=roll===20,isFumble=roll===1;
   document.getElementById('cs-roll-lbl').textContent=_rl.label;
   const d20el=document.getElementById('cs-roll-d20');
-  d20el.textContent=roll;d20el.className='cs-roll-d20'+(isCrit?' crit':isFumble?' fumble':'');
-  document.getElementById('cs-roll-detail').textContent=detail+` = ${total}`;
-  document.getElementById('cs-roll-total').innerHTML=`Total: <em>${total}</em>${isCrit?' ✦ Critical!':isFumble?' ✗ Fumble!':''}`;
+  const detailEl=document.getElementById('cs-roll-detail');
+  const totalEl=document.getElementById('cs-roll-total');
+
+  // clear & start the tumble
+  clearInterval(window._diceCycle);clearTimeout(window._diceLand);clearTimeout(window._diceSparks);
+  d20el.className='cs-roll-d20 rolling';
+  d20el.innerHTML=dieSVG(1+Math.floor(Math.random()*20));
+  // hide detail/total until landing
+  detailEl.style.opacity='0';detailEl.style.transition='opacity .25s ease';
+  totalEl.style.opacity='0';totalEl.style.transition='opacity .25s ease';
+  detailEl.textContent='\u00A0';
+  totalEl.innerHTML='Total: <em>\u2014</em>';
+
+  // cycle random numbers fast while dice tumbles
+  window._diceCycle=setInterval(()=>{
+    const t=d20el.querySelector('.die-num');
+    if(t) t.textContent=1+Math.floor(Math.random()*20);
+  },55);
+
+  // land
+  window._diceLand=setTimeout(()=>{
+    clearInterval(window._diceCycle);
+    const t=d20el.querySelector('.die-num');
+    if(t) t.textContent=roll;
+    d20el.className='cs-roll-d20 landed'+(isCrit?' crit':isFumble?' fumble':'');
+    detailEl.textContent=detail+` = ${total}`;
+    totalEl.innerHTML=`Total: <em>${total}</em>${isCrit?' \u2726 Critical!':isFumble?' \u2717 Fumble!':''}`;
+    detailEl.style.opacity='1';
+    totalEl.style.opacity='1';
+    if(isCrit) burstSparks();
+  },650);
+}
+function burstSparks(){
+  const box=document.querySelector('.cs-roll-box');
+  if(!box) return;
+  let layer=box.querySelector('.crit-sparks');
+  if(!layer){
+    layer=document.createElement('div');
+    layer.className='crit-sparks';
+    box.appendChild(layer);
+  }
+  layer.innerHTML='';
+  for(let i=0;i<14;i++){
+    const s=document.createElement('span');
+    const a=(i/14)*Math.PI*2 + Math.random()*0.4;
+    const dist=70+Math.random()*60;
+    s.style.setProperty('--dx',Math.cos(a)*dist+'px');
+    s.style.setProperty('--dy',Math.sin(a)*dist+'px');
+    s.style.animationDelay=(Math.random()*0.1)+'s';
+    layer.appendChild(s);
+  }
+  window._diceSparks=setTimeout(()=>{ if(layer) layer.innerHTML=''; },1200);
 }
 function reRoll(){execRoll();}
 function closeRoll(){document.getElementById('cs-roll-ov').classList.remove('open');}
