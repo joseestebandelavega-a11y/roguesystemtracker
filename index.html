@@ -2018,7 +2018,17 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
     <div class="equip-filter-panel">
       <div class="equip-filter-hd">Categories</div>
       <div class="equip-cats">
-<div class="equip-cat-btn active" id="ecat-all" data-cat="all" onclick="setEquipCat('all')"><span class="equip-cat-icon">📦</span>All Items<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-simple-melee" data-cat="simple-melee" onclick="setEquipCat('simple-melee')"><span class="equip-cat-icon">🗡</span>Simple Melee<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-simple-ranged" data-cat="simple-ranged" onclick="setEquipCat('simple-ranged')"><span class="equip-cat-icon">🏹</span>Simple Ranged<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-martial-melee" data-cat="martial-melee" onclick="setEquipCat('martial-melee')"><span class="equip-cat-icon">⚔</span>Martial Melee<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-martial-ranged" data-cat="martial-ranged" onclick="setEquipCat('martial-ranged')"><span class="equip-cat-icon">🎯</span>Martial Ranged<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-armor" data-cat="armor" onclick="setEquipCat('armor')"><span class="equip-cat-icon">🛡</span>Armor & Shields<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-gear" data-cat="gear" onclick="setEquipCat('gear')"><span class="equip-cat-icon">🎒</span>Adventuring Gear<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-magic-weapons" data-cat="magic" onclick="setEquipCat('magic-weapons')"><span class="equip-cat-icon">✨</span>Magic Items<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn active" id="ecat-all" data-cat="all" onclick="setEquipCat('all')"><span class="equip-cat-icon">📦</span>All Items<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-simple-melee" data-cat="simple-melee" onclick="setEquipCat('simple-melee')"><span class="equip-cat-icon">🗡</span>Simple Melee<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-simple-ranged" data-cat="simple-ranged" onclick="setEquipCat('simple-ranged')"><span class="equip-cat-icon">🏹</span>Simple Ranged<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-martial-melee" data-cat="martial-melee" onclick="setEquipCat('martial-melee')"><span class="equip-cat-icon">⚔</span>Martial Melee<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-martial-ranged" data-cat="martial-ranged" onclick="setEquipCat('martial-ranged')"><span class="equip-cat-icon">🎯</span>Martial Ranged<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-armor" data-cat="armor" onclick="setEquipCat('armor')"><span class="equip-cat-icon">🛡</span>Armor & Shields<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-gear" data-cat="gear" onclick="setEquipCat('gear')"><span class="equip-cat-icon">🎒</span>Adventuring Gear<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-consumables" data-cat="consumables" onclick="setEquipCat('consumables')"><span class="equip-cat-icon">🧪</span>Potions & Scrolls<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-magic-weapons" data-cat="magic-weapons" onclick="setEquipCat('magic-weapons')"><span class="equip-cat-icon">⚔</span>Magic Weapons<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-magic-armor" data-cat="magic-armor" onclick="setEquipCat('magic-armor')"><span class="equip-cat-icon">🛡</span>Magic Armor<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-wondrous" data-cat="wondrous" onclick="setEquipCat('wondrous')"><span class="equip-cat-icon">✨</span>Wondrous Items<span class="equip-cat-count">0</span></div>
       </div>
       <div class="class-prof-filter">
         <div class="cpf-lbl">Class Proficiency Filter</div>
@@ -4926,57 +4936,18 @@ const EQUIP_ITEMS = [
  cost:"18000gp",wt:0,props:["Legendary","Plate"],rarity:"Legendary",
  desc:"Resistance to nonmagical bludgeoning/piercing/slashing while attuned. 1/day use action: immunity to nonmagical damage for 10 minutes."},
 // ─── WONDROUS ITEMS ───────────────────────────────────────────────────────────
-{id:"wi01",cat:"wondrous",name:"Cloak of Protection",stat:"+1 AC & saves",statType:"Magic",
- cost:"3500gp",wt:0,props:["Uncommon","Attunement"],rarity:"Uncommon",
- desc:"+1 bonus to AC and all saving throws while attuned."},
-{id:"wi02",cat:"wondrous",name:"Ring of Protection",stat:"+1 AC & saves",statType:"Magic",
- cost:"3500gp",wt:0,props:["Rare","Ring","Attunement"],rarity:"Rare",
- desc:"+1 bonus to AC and all saving throws while attuned."},
-{id:"wi03",cat:"wondrous",name:"Gauntlets of Ogre Power",stat:"STR 19",statType:"Magic",
- cost:"8000gp",wt:1,props:["Uncommon","Attunement"],rarity:"Uncommon",
- desc:"STR score becomes 19 (if not already higher) while wearing these gauntlets."},
-{id:"wi04",cat:"wondrous",name:"Headband of Intellect",stat:"INT 19",statType:"Magic",
- cost:"8000gp",wt:0,props:["Uncommon","Attunement"],rarity:"Uncommon",
- desc:"INT score becomes 19 (if not already higher) while wearing this headband."},
-{id:"wi05",cat:"wondrous",name:"Amulet of Health",stat:"CON 19",statType:"Magic",
- cost:"8000gp",wt:0,props:["Rare","Attunement"],rarity:"Rare",
- desc:"CON score becomes 19 (if not already higher) while wearing this amulet."},
-{id:"wi06",cat:"wondrous",name:"Boots of Speed",stat:"Dbl speed, OA disadv.",statType:"Magic",
- cost:"4000gp",wt:1,props:["Rare","Boots","Attunement"],rarity:"Rare",
- desc:"Bonus action: double walking speed and opportunity attacks against you have disadvantage. Lasts 10 minutes (recharge at dawn)."},
-{id:"wi07",cat:"wondrous",name:"Boots of Elvenkind",stat:"Stealth advantage",statType:"Magic",
- cost:"2500gp",wt:1,props:["Uncommon","Boots"],rarity:"Uncommon",
- desc:"Your steps make no sound. Advantage on DEX (Stealth) checks that rely on moving quietly."},
-{id:"wi08",cat:"wondrous",name:"Cloak of Elvenkind",stat:"Stealth advantage",statType:"Magic",
- cost:"5000gp",wt:1,props:["Uncommon","Cloak","Attunement"],rarity:"Uncommon",
- desc:"While hood is up: advantage on DEX (Stealth) checks; creatures making WIS (Perception) checks to detect you have disadvantage."},
 {id:"wi09",cat:"wondrous",name:"Slippers of Spider Climbing",stat:"Climb speed",statType:"Magic",
  cost:"5000gp",wt:0.5,props:["Uncommon","Attunement"],rarity:"Uncommon",
  desc:"Climb speed = walking speed on difficult surfaces including upside-down ceilings. Cannot use if hands free required."},
 {id:"wi10",cat:"wondrous",name:"Ring of Spell Storing",stat:"5 levels of spells",statType:"Magic",
  cost:"24000gp",wt:0,props:["Rare","Ring","Attunement"],rarity:"Rare",
  desc:"Stores up to 5 spell levels. Any attuned spellcaster can cast stored spells (using the original caster's ability and save DC)."},
-{id:"wi11",cat:"wondrous",name:"Necklace of Fireballs",stat:"Various fireball sizes",statType:"Magic",
- cost:"5000gp",wt:0,props:["Rare","Necklace"],rarity:"Rare",
- desc:"1d6+3 beads. Throw 1–3 as a bonus action; each deals 2d6 fire per bead in a 20-ft radius (DEX DC 15 for half). Damaging the beads causes all to explode."},
 {id:"wi12",cat:"wondrous",name:"Stone of Good Luck",stat:"+1 checks & saves",statType:"Magic",
  cost:"4000gp",wt:0,props:["Uncommon","Attunement"],rarity:"Uncommon",
  desc:"+1 bonus to ability checks and saving throws while attuned to this stone (also called a Luckstone)."},
-{id:"wi13",cat:"wondrous",name:"Periapt of Wound Closure",stat:"Stabilize & double dice",statType:"Magic",
- cost:"5000gp",wt:0,props:["Uncommon","Attunement"],rarity:"Uncommon",
- desc:"Stabilize automatically at start of turn when at 0 HP. When you roll dice to recover HP, double the number of dice rolled."},
-{id:"wi14",cat:"wondrous",name:"Wand of Magic Missiles",stat:"7 charges",statType:"Magic",
- cost:"2400gp",wt:1,props:["Uncommon","Wand"],rarity:"Uncommon",
- desc:"7 charges (1d6+1 regained at dawn). Spend 1–3 charges to cast Magic Missile at 1st–3rd level (no attack roll required)."},
-{id:"wi15",cat:"wondrous",name:"Wand of Fireballs",stat:"7 charges",statType:"Magic",
- cost:"24000gp",wt:1,props:["Rare","Wand","Attunement"],rarity:"Rare",
- desc:"7 charges (1d6+1 regained at dawn). Spend 1–3 charges to cast Fireball at 3rd–5th level (DC 15 DEX)."},
 {id:"wi16",cat:"wondrous",name:"Wand of Lightning Bolts",stat:"7 charges",statType:"Magic",
  cost:"24000gp",wt:1,props:["Rare","Wand","Attunement"],rarity:"Rare",
  desc:"7 charges. Spend 1–3 charges to cast Lightning Bolt at 3rd–5th level (DC 15 DEX)."},
-{id:"wi17",cat:"wondrous",name:"Staff of Healing",stat:"10 charges",statType:"Magic",
- cost:"16000gp",wt:4,props:["Rare","Staff","Attunement: Bard/Cleric/Druid"],rarity:"Rare",
- desc:"10 charges (1d6+4 regained at dawn). Cure Wounds (1 charge per spell level, up to 4th), Lesser Restoration (2), Mass Cure Wounds (5)."},
 {id:"wi18",cat:"wondrous",name:"Ioun Stone of Intellect",stat:"INT 19",statType:"Magic",
  cost:"8000gp",wt:0,props:["Very Rare","Attunement"],rarity:"Very Rare",
  desc:"Orbits your head. INT score becomes 19 (if not higher). More prestigious (and expensive) than a Headband."},
@@ -4990,68 +4961,68 @@ const EQUIP_ITEMS = [
 {id:"mu02",cat:"magic-weapons",name:"Vicious Weapon",stat:"+7 dmg on 20",statType:"Any weapon",cost:"350 gp",wt:0,rarity:"Rare",
  props:["Counts as magical"],prof:["fighter","barbarian","paladin","rogue","cleric","druid"],
  desc:"When you roll a 20 on your attack roll with this magic weapon, the target takes an extra 7 damage of the weapon's type."},
-{id:"mu06",cat:"magic-wondrous",name:"Boots of Elvenkind",stat:"Stealth adv",statType:"Wondrous Item",cost:"2,500 gp",wt:1,rarity:"Uncommon",
+{id:"mu06",cat:"wondrous",name:"Boots of Elvenkind",stat:"Stealth adv",statType:"Wondrous Item",cost:"2,500 gp",wt:1,rarity:"Uncommon",
  props:["No attunement required"],prof:["all"],
  desc:"While you wear these boots, your steps make no sound, regardless of the surface you are moving across. You also have advantage on Dexterity (Stealth) checks that rely on moving silently."},
-{id:"mu07",cat:"magic-wondrous",name:"Cloak of Elvenkind",stat:"Stealth adv",statType:"Wondrous Item",cost:"5,000 gp",wt:1,rarity:"Uncommon",
+{id:"mu07",cat:"wondrous",name:"Cloak of Elvenkind",stat:"Stealth adv",statType:"Wondrous Item",cost:"5,000 gp",wt:1,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"While you wear this cloak with its hood up, Wisdom (Perception) checks made to see you have disadvantage. You also have advantage on Dexterity (Stealth) checks made to hide."},
-{id:"mu08",cat:"magic-wondrous",name:"Cloak of Protection",stat:"+1 AC & saves",statType:"Wondrous Item",cost:"3,500 gp",wt:1,rarity:"Uncommon",
+{id:"mu08",cat:"wondrous",name:"Cloak of Protection",stat:"+1 AC & saves",statType:"Wondrous Item",cost:"3,500 gp",wt:1,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"You gain a +1 bonus to AC and saving throws while you wear this cloak."},
-{id:"mu09",cat:"magic-wondrous",name:"Ring of Protection",stat:"+1 AC & saves",statType:"Ring",cost:"3,500 gp",wt:0,rarity:"Uncommon",
+{id:"mu09",cat:"wondrous",name:"Ring of Protection",stat:"+1 AC & saves",statType:"Ring",cost:"3,500 gp",wt:0,rarity:"Uncommon",
  props:["Attunement","Ring slot"],prof:["all"],
  desc:"You gain a +1 bonus to AC and saving throws while wearing this ring."},
-{id:"mu10",cat:"magic-wondrous",name:"Gauntlets of Ogre Power",stat:"STR 19",statType:"Wondrous Item",cost:"8,000 gp",wt:1,rarity:"Uncommon",
+{id:"mu10",cat:"wondrous",name:"Gauntlets of Ogre Power",stat:"STR 19",statType:"Wondrous Item",cost:"8,000 gp",wt:1,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"Your Strength score is 19 while you wear these gauntlets. They have no effect on you if your Strength is already 19 or higher."},
-{id:"mu11",cat:"magic-wondrous",name:"Headband of Intellect",stat:"INT 19",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Uncommon",
+{id:"mu11",cat:"wondrous",name:"Headband of Intellect",stat:"INT 19",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"Your Intelligence score is 19 while you wear this headband. It has no effect on you if your Intelligence is already 19 or higher."},
-{id:"mu12",cat:"magic-wondrous",name:"Amulet of Health",stat:"CON 19",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Uncommon",
+{id:"mu12",cat:"wondrous",name:"Amulet of Health",stat:"CON 19",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"Your Constitution score is 19 while you wear this amulet. It has no effect on you if your Constitution is already 19 or higher."},
-{id:"mu13",cat:"magic-wondrous",name:"Bag of Holding",stat:"500 lb / 64 cu ft",statType:"Wondrous Item",cost:"4,000 gp",wt:15,rarity:"Uncommon",
+{id:"mu13",cat:"wondrous",name:"Bag of Holding",stat:"500 lb / 64 cu ft",statType:"Wondrous Item",cost:"4,000 gp",wt:15,rarity:"Uncommon",
  props:["No attunement required"],prof:["all"],
  desc:"This bag has an interior space considerably larger than its outside dimensions. The bag can hold up to 500 pounds, not exceeding a volume of 64 cubic feet. Weighs 15 lb regardless of contents."},
-{id:"mu14",cat:"magic-wondrous",name:"Sending Stones",stat:"25 words/day",statType:"Wondrous Item",cost:"3,000 gp",wt:0,rarity:"Uncommon",
+{id:"mu14",cat:"wondrous",name:"Sending Stones",stat:"25 words/day",statType:"Wondrous Item",cost:"3,000 gp",wt:0,rarity:"Uncommon",
  props:["No attunement required","Paired set"],prof:["all"],
  desc:"While you touch one stone, you can use an action to cast the Sending spell from it. One stone is usable once per day."},
-{id:"mu15",cat:"magic-wondrous",name:"Wand of Magic Missiles",stat:"7 charges",statType:"Wand",cost:"4,000 gp",wt:1,rarity:"Uncommon",
+{id:"mu15",cat:"wondrous",name:"Wand of Magic Missiles",stat:"7 charges",statType:"Wand",cost:"4,000 gp",wt:1,rarity:"Uncommon",
  props:["No attunement required","7 charges"],prof:["all"],
  desc:"This wand has 7 charges. While holding it, you can use an action to expend 1 to 7 of its charges to cast the Magic Missile spell from it. Regains 1d6+1 expended charges daily at dawn."},
 // ─── RARE MAGIC ITEMS ────────────────────────────────────────────────────────
-{id:"mr04",cat:"magic-weapons",name:"Giant Slayer",stat:"+2d6 vs giants",statType:"Axe or Sword",cost:"5,000 gp",wt:3,rarity:"Rare",
+{id:"mw13",cat:"magic-weapons",name:"Giant Slayer",stat:"+2d6 vs giants",statType:"Axe or Sword",cost:"5,000 gp",wt:3,rarity:"Rare",
  props:["Attunement","Extra effect vs Giants"],prof:["fighter","barbarian","paladin"],
  desc:"You gain a +1 bonus to attack and damage rolls made with this magic weapon. When you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone."},
-{id:"mr09",cat:"magic-wondrous",name:"Belt of Giant Strength (Hill)",stat:"STR 21",statType:"Wondrous Item",cost:"12,000 gp",wt:1,rarity:"Rare",
+{id:"mr09",cat:"wondrous",name:"Belt of Giant Strength (Hill)",stat:"STR 21",statType:"Wondrous Item",cost:"12,000 gp",wt:1,rarity:"Rare",
  props:["Attunement"],prof:["all"],
  desc:"While wearing this belt, your Strength score changes to 21. The belt has no effect on you if your Strength is already 21 or higher."},
-{id:"mr10",cat:"magic-wondrous",name:"Boots of Speed",stat:"Double speed, 10 min/day",statType:"Wondrous Item",cost:"4,000 gp",wt:1,rarity:"Rare",
+{id:"mr10",cat:"wondrous",name:"Boots of Speed",stat:"Double speed, 10 min/day",statType:"Wondrous Item",cost:"4,000 gp",wt:1,rarity:"Rare",
  props:["Attunement"],prof:["all"],
  desc:"While you wear these boots, you can use a bonus action and click the boots' heels together to double your walking speed. When you use this property, opportunity attacks made against you have disadvantage. The effect ends when you use a bonus action to click the heels together again, or when 10 minutes have elapsed."},
-{id:"mr11",cat:"magic-wondrous",name:"Necklace of Fireballs",stat:"9 beads, 5d6 each",statType:"Wondrous Item",cost:"3,600 gp",wt:0,rarity:"Rare",
+{id:"mr11",cat:"wondrous",name:"Necklace of Fireballs",stat:"9 beads, 5d6 each",statType:"Wondrous Item",cost:"3,600 gp",wt:0,rarity:"Rare",
  props:["No attunement","9 beads"],prof:["all"],
  desc:"This necklace has 1d6+3 beads hanging from it. You can use an action to detach a bead and throw it up to 60 feet away. When it reaches the end of its trajectory, the bead detonates as a 3rd-level Fireball (save DC 15)."},
-{id:"mr12",cat:"magic-wondrous",name:"Cape of the Mountebank",stat:"Dimension Door 1/day",statType:"Wondrous Item",cost:"8,000 gp",wt:1,rarity:"Rare",
+{id:"mr12",cat:"wondrous",name:"Cape of the Mountebank",stat:"Dimension Door 1/day",statType:"Wondrous Item",cost:"8,000 gp",wt:1,rarity:"Rare",
  props:["No attunement"],prof:["all"],
  desc:"This cape smells faintly of brimstone. While wearing it, you can use it to cast the Dimension Door spell as an action. This property of the cape can't be used again until the next dawn."},
-{id:"mr13",cat:"magic-wondrous",name:"Wand of Fireballs",stat:"7 charges",statType:"Wand",cost:"8,000 gp",wt:1,rarity:"Rare",
+{id:"mr13",cat:"wondrous",name:"Wand of Fireballs",stat:"7 charges",statType:"Wand",cost:"8,000 gp",wt:1,rarity:"Rare",
  props:["Attunement: spellcaster","7 charges"],prof:["wizard","cleric","druid","paladin","warlock"],
  desc:"This wand has 7 charges. While holding it, you can use an action to expend 1 to 7 of its charges to cast the Fireball spell (save DC 15) from it. Regains 1d6+1 charges daily at dawn."},
-{id:"mr14",cat:"magic-wondrous",name:"Periapt of Wound Closure",stat:"Double HD healing",statType:"Wondrous Item",cost:"5,000 gp",wt:0,rarity:"Uncommon",
+{id:"mr14",cat:"wondrous",name:"Periapt of Wound Closure",stat:"Double HD healing",statType:"Wondrous Item",cost:"5,000 gp",wt:0,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"While you wear this pendant, you stabilize whenever you are dying at the start of your turn. In addition, whenever you roll a Hit Die to regain hit points, double the number of hit points it restores."},
-{id:"mr15",cat:"magic-wondrous",name:"Eyes of the Eagle",stat:"Perception adv.",statType:"Wondrous Item",cost:"2,500 gp",wt:0,rarity:"Uncommon",
+{id:"mr15",cat:"wondrous",name:"Eyes of the Eagle",stat:"Perception adv.",statType:"Wondrous Item",cost:"2,500 gp",wt:0,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"These crystal lenses fit over the eyes. While wearing them, you have advantage on Wisdom (Perception) checks that rely on sight. In conditions of clear visibility, you can make out details of even extremely distant creatures and objects as small as 2 feet across."},
-{id:"mr16",cat:"magic-wondrous",name:"Ring of Evasion",stat:"3 charges, negate DEX fail",statType:"Ring",cost:"5,000 gp",wt:0,rarity:"Rare",
+{id:"mr16",cat:"wondrous",name:"Ring of Evasion",stat:"3 charges, negate DEX fail",statType:"Ring",cost:"5,000 gp",wt:0,rarity:"Rare",
  props:["Attunement","3 charges"],prof:["all"],
  desc:"This ring has 3 charges. When you fail a Dexterity saving throw while wearing it, you can use your reaction to expend 1 of its charges to succeed on that saving throw instead. The ring regains 1d3 expended charges daily at dawn."},
-{id:"mr17",cat:"magic-wondrous",name:"Staff of Healing",stat:"10 charges, heal spells",statType:"Staff",cost:"16,000 gp",wt:4,rarity:"Rare",
+{id:"mr17",cat:"wondrous",name:"Staff of Healing",stat:"10 charges, heal spells",statType:"Staff",cost:"16,000 gp",wt:4,rarity:"Rare",
  props:["Attunement: bard/cleric/druid","10 charges"],prof:["cleric","druid"],
  desc:"This staff has 10 charges. While holding it, you can use an action to expend 1 or more of its charges to cast one of the following spells: Cure Wounds (1 charge per spell level, up to 4th), Lesser Restoration (2 charges), or Mass Cure Wounds (5 charges). Regains 1d6+4 charges daily at dawn."},
-{id:"mr18",cat:"magic-wondrous",name:"Portable Hole",stat:"10 ft deep cylinder",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Rare",
+{id:"mr18",cat:"wondrous",name:"Portable Hole",stat:"10 ft deep cylinder",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Rare",
  props:["No attunement"],prof:["all"],
  desc:"This fine black cloth, soft as silk, is folded up to the dimensions of a handkerchief. It unfolds into a circular sheet 6 feet in diameter. You can use an action to unfold a portable hole and place it on or against a solid surface, whereupon the hole creates an extradimensional hole 10 feet deep."},
 // ─── VERY RARE MAGIC ITEMS ───────────────────────────────────────────────────
@@ -5070,21 +5041,18 @@ const EQUIP_ITEMS = [
 {id:"mvr05",cat:"magic-armor",name:"Studded Leather of Elvenkind",stat:"+1 AC & Stealth adv.",statType:"Light armor",cost:"2,000 gp",wt:13,rarity:"Uncommon",
  props:["Attunement"],prof:["fighter","rogue","barbarian","warlock","druid"],
  desc:"You have a +1 bonus to AC while wearing this armor, and Dexterity (Stealth) checks made while wearing it have advantage if you are proficient with the armor."},
-{id:"mvr06",cat:"magic-wondrous",name:"Belt of Giant Strength (Stone)",stat:"STR 23",statType:"Wondrous Item",cost:"18,000 gp",wt:1,rarity:"Very Rare",
+{id:"mvr06",cat:"wondrous",name:"Belt of Giant Strength (Stone)",stat:"STR 23",statType:"Wondrous Item",cost:"18,000 gp",wt:1,rarity:"Very Rare",
  props:["Attunement"],prof:["all"],
  desc:"While wearing this belt, your Strength score changes to 23. The belt has no effect on you if your Strength is already 23 or higher."},
-{id:"mvr07",cat:"magic-wondrous",name:"Ioun Stone (Absorption)",stat:"Absorb spells LV 1-4",statType:"Wondrous Item",cost:"24,000 gp",wt:0,rarity:"Very Rare",
+{id:"mvr07",cat:"wondrous",name:"Ioun Stone (Absorption)",stat:"Absorb spells LV 1-4",statType:"Wondrous Item",cost:"24,000 gp",wt:0,rarity:"Very Rare",
  props:["Attunement","Orbits head"],prof:["all"],
  desc:"While this pale lavender ellipsoid orbits your head, you can use your reaction to cancel a spell of 4th level or lower cast by a creature you can see. The stone can absorb 20 levels of spells before it burns out and turns dull gray."},
-{id:"mvr08",cat:"magic-wondrous",name:"Tome of Clear Thought",stat:"+2 INT (permanent)",statType:"Wondrous Item",cost:"27,500 gp",wt:5,rarity:"Very Rare",
+{id:"mvr08",cat:"wondrous",name:"Tome of Clear Thought",stat:"+2 INT (permanent)",statType:"Wondrous Item",cost:"27,500 gp",wt:5,rarity:"Very Rare",
  props:["48 hours to study","100-year recharge"],prof:["all"],
  desc:"If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Intelligence score increases by 2, as does your maximum for that score. The manual then loses its magic."},
-{id:"mvr09",cat:"magic-wondrous",name:"Manual of Bodily Health",stat:"+2 CON (permanent)",statType:"Wondrous Item",cost:"27,500 gp",wt:5,rarity:"Very Rare",
+{id:"mvr09",cat:"wondrous",name:"Manual of Bodily Health",stat:"+2 CON (permanent)",statType:"Wondrous Item",cost:"27,500 gp",wt:5,rarity:"Very Rare",
  props:["48 hours to study","100-year recharge"],prof:["all"],
  desc:"If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Constitution score increases by 2, as does your maximum for that score. The manual then loses its magic."},
-{id:"mvr10",cat:"magic-wondrous",name:"Potion of Speed",stat:"Haste effect 1 min",statType:"Consumable",cost:"400 gp",wt:0.5,rarity:"Very Rare",
- props:["Consumable"],prof:["all"],
- desc:"When you drink this potion, you gain the effect of the Haste spell for 1 minute (no concentration required). The potion's yellow fluid is streaked with black and swirls on its own."},
 // ─── LEGENDARY MAGIC ITEMS ───────────────────────────────────────────────────
 {id:"ml01",cat:"magic-weapons",name:"Holy Avenger",stat:"+3, +2d10 vs fiends/undead",statType:"Sword",cost:"165,000 gp",wt:3,rarity:"Legendary",
  props:["Attunement: paladin only","30 ft aura"],prof:["paladin"],
@@ -5095,13 +5063,13 @@ const EQUIP_ITEMS = [
 {id:"ml04",cat:"magic-armor",name:"Plate Armor of Etherealness",stat:"AC 18 + Etherealness",statType:"Plate armor",cost:"48,000 gp",wt:65,rarity:"Legendary",
  props:["Attunement","STR 15","10 charges"],prof:["fighter","paladin"],
  desc:"While you're wearing this armor, you can speak its command word as an action to gain the effect of the Etherealness spell, which lasts for 10 minutes or until you remove the armor or use an action to speak the command word again. This property of the armor can't be used again until the next dawn. The armor has 10 charges."},
-{id:"ml05",cat:"magic-wondrous",name:"Belt of Giant Strength (Storm)",stat:"STR 29",statType:"Wondrous Item",cost:"200,000 gp",wt:1,rarity:"Legendary",
+{id:"ml05",cat:"wondrous",name:"Belt of Giant Strength (Storm)",stat:"STR 29",statType:"Wondrous Item",cost:"200,000 gp",wt:1,rarity:"Legendary",
  props:["Attunement"],prof:["all"],
  desc:"While wearing this belt, your Strength score changes to 29. The belt has no effect on you if your Strength is already 29 or higher. Storm giant belts are the rarest and most powerful of the giant belts."},
-{id:"ml06",cat:"magic-wondrous",name:"Deck of Many Things",stat:"Variable — draw a card",statType:"Wondrous Item",cost:"priceless",wt:0,rarity:"Legendary",
+{id:"ml06",cat:"wondrous",name:"Deck of Many Things",stat:"Variable — draw a card",statType:"Wondrous Item",cost:"priceless",wt:0,rarity:"Legendary",
  props:["No attunement","Declare draws before drawing"],prof:["all"],
  desc:"Usually found in a box or pouch, this deck contains a number of cards made of ivory or vellum. Before you draw a card, you must declare how many cards you intend to draw and then draw them randomly. Any cards drawn in excess of this number have no effect. Drawing a card can grant wishes, summon undead, cause death, or grant powerful artifacts — or take them away."},
-{id:"ml07",cat:"magic-wondrous",name:"Cubic Gate",stat:"Six planes of existence",statType:"Wondrous Item",cost:"priceless",wt:0,rarity:"Legendary",
+{id:"ml07",cat:"wondrous",name:"Cubic Gate",stat:"Six planes of existence",statType:"Wondrous Item",cost:"priceless",wt:0,rarity:"Legendary",
  props:["No attunement","6 charges"],prof:["all"],
  desc:"This cube is 3 inches across and radiates palpable magical energy. The six sides of the cube are each keyed to a different plane of existence. You can use an action to press one side of the cube to cast the Gate spell with it, opening a portal to the keyed plane."},
 
@@ -6561,60 +6529,62 @@ function _cvPDown(e){
 
   const myId=partyPeer?.id;
 
-  // Token hit check — my token first, then DM any
-  if(myId&&_cvTokens[myId]){
-    const tp=_w2s(_cvTokens[myId].wx,_cvTokens[myId].wy);
-    const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
-    if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=myId; return; }
-  }
-  if(partyIsDM){
-    for(const [pid,tok] of Object.entries(_cvTokens)){
-      if(pid===myId) continue;
-      const tp=_w2s(tok.wx,tok.wy);
+  // Pan-tool-only: token drag, room roll, image interactions
+  if(_cvTool==='pan'){
+    // Token hit check — my token first, then DM any
+    if(myId&&_cvTokens[myId]){
+      const tp=_w2s(_cvTokens[myId].wx,_cvTokens[myId].wy);
       const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
-      if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
+      if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=myId; return; }
     }
-  }
-
-  // Room roll-button click (DM only, untyped rooms)
-  if(partyIsDM){
-    const w=_s2w(sx,sy);
-    for(const r of _cvRooms){
-      const isHall=r.gw===1||r.gh===1;
-      if(!isHall&&!r.type&&w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
-        _cvDmRollRoom(r.id); return;
+    if(partyIsDM){
+      for(const [pid,tok] of Object.entries(_cvTokens)){
+        if(pid===myId) continue;
+        const tp=_w2s(tok.wx,tok.wy);
+        const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
+        if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
       }
     }
-    // Image resize handle hit-test (selected image only)
-    if(_cvSelImgId){
-      const selImg=_cvImages.find(i=>i.id===_cvSelImgId);
-      if(selImg){
-        const t2=TILE*_cvZoom;
-        const ps=_w2s(selImg.wx,selImg.wy);
-        const imgSX=ps.x,imgSY=ps.y,imgEX=ps.x+selImg.ww*t2,imgEY=ps.y+selImg.wh*t2;
-        const hs=10;
-        const corners=[[imgSX,imgSY,'nw'],[imgEX,imgSY,'ne'],[imgEX,imgEY,'se'],[imgSX,imgEY,'sw']];
-        for(const [cx2,cy2,cname] of corners){
-          if(Math.abs(sx-cx2)<hs&&Math.abs(sy-cy2)<hs){
-            _cvResizingImg={id:selImg.id,corner:cname,
-              origWW:selImg.ww,origWH:selImg.wh,origWX:selImg.wx,origWY:selImg.wy,
-              startSX:sx,startSY:sy};
-            return;
+
+    if(partyIsDM){
+      const w=_s2w(sx,sy);
+      // Room roll-button click (untyped rooms)
+      for(const r of _cvRooms){
+        const isHall=r.gw===1||r.gh===1;
+        if(!isHall&&!r.type&&w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
+          _cvDmRollRoom(r.id); return;
+        }
+      }
+      // Image resize handle hit-test (selected image only)
+      if(_cvSelImgId){
+        const selImg=_cvImages.find(i=>i.id===_cvSelImgId);
+        if(selImg){
+          const t2=TILE*_cvZoom;
+          const ps=_w2s(selImg.wx,selImg.wy);
+          const imgSX=ps.x,imgSY=ps.y,imgEX=ps.x+selImg.ww*t2,imgEY=ps.y+selImg.wh*t2;
+          const hs=10;
+          const corners=[[imgSX,imgSY,'nw'],[imgEX,imgSY,'ne'],[imgEX,imgEY,'se'],[imgSX,imgEY,'sw']];
+          for(const [cx2,cy2,cname] of corners){
+            if(Math.abs(sx-cx2)<hs&&Math.abs(sy-cy2)<hs){
+              _cvResizingImg={id:selImg.id,corner:cname,
+                origWW:selImg.ww,origWH:selImg.wh,origWX:selImg.wx,origWY:selImg.wy,
+                startSX:sx,startSY:sy};
+              return;
+            }
           }
         }
       }
-    }
-    // Image body drag
-    const w2=_s2w(sx,sy);
-    for(let i=_cvImages.length-1;i>=0;i--){
-      const img=_cvImages[i];
-      if(w2.x>=img.wx&&w2.x<=img.wx+img.ww&&w2.y>=img.wy&&w2.y<=img.wy+img.wh){
-        _cvSelImgId=img.id;
-        _cvDragImgData={id:img.id,startSX:sx,startSY:sy,origWX:img.wx,origWY:img.wy}; return;
+      // Image body drag
+      const w2=_s2w(sx,sy);
+      for(let i=_cvImages.length-1;i>=0;i--){
+        const img=_cvImages[i];
+        if(w2.x>=img.wx&&w2.x<=img.wx+img.ww&&w2.y>=img.wy&&w2.y<=img.wy+img.wh){
+          _cvSelImgId=img.id;
+          _cvDragImgData={id:img.id,startSX:sx,startSY:sy,origWX:img.wx,origWY:img.wy}; return;
+        }
       }
+      _cvSelImgId=null;
     }
-    _cvSelImgId=null;
-
   }
 
   // Pin placement (DM only)
