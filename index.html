@@ -1594,9 +1594,10 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 }
 
 /* ── PARTY ROOM ─────────────────────────────────────────────────────────── */
-body.party-mode .content{max-width:1400px}
-body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
-#tab-party{display:none;flex-direction:column;gap:12px;padding:16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100%;max-width:1400px;margin:0 auto}
+body.party-mode{align-items:stretch}
+body.party-mode .content{max-width:none;padding:0;margin:0;width:100%}
+body.party-mode .header,body.party-mode .tabs-inner{max-width:none;width:100%;box-sizing:border-box}
+#tab-party{display:none;flex-direction:column;gap:12px;padding:16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100%}
 #tab-party.active{display:flex}
 
 /* Setup / connect area */
@@ -1635,7 +1636,7 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 /* Party room two-column layout: char sheet (left) + tools (right) */
 .pty-row{display:flex;flex-direction:row;gap:14px;align-items:stretch;flex:1;min-width:0}
 .pty-cs-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
-.pty-tools-col{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:0;height:calc(100vh - 100px);position:sticky;top:10px}
+.pty-tools-col{width:clamp(380px,32%,560px);flex-shrink:0;display:flex;flex-direction:column;gap:0;height:calc(100vh - 100px);position:sticky;top:10px}
 .pty-tools-scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px;padding-bottom:8px}
 .pty-tools-scroll > *{flex-shrink:0}
 .pty-tools-scroll::-webkit-scrollbar{width:5px}
@@ -1715,7 +1716,7 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 .vtc-swatch{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);flex-shrink:0;cursor:default}
 .vtc-slider{width:60px;accent-color:var(--fighter);cursor:pointer;vertical-align:middle}
 .vtc-zoom-lbl{font-size:10px;color:var(--text-dim);min-width:32px;text-align:center}
-.vtc-cont{position:relative;height:clamp(280px,48vh,520px);background:#0f1219;overflow:hidden}
+.vtc-cont{position:relative;height:clamp(320px,52vh,640px);background:#0f1219;overflow:hidden}
 #pty-canvas{display:block;width:100%;height:100%;touch-action:none}
 
 /* Players panel */
