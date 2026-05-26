@@ -1631,8 +1631,9 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 
 /* Party room two-column layout */
 .pty-main-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
-.pty-side-col{width:640px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 80px);overflow-y:auto;position:sticky;top:10px}
-.pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pty-side-col{width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 80px);overflow-y:auto;position:sticky;top:10px}
+.pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:100%}
+.vtc-pin-form{position:absolute;z-index:50;background:var(--surface2);border:1px solid var(--border-hi);border-radius:8px;padding:10px;display:none;flex-direction:column;gap:8px;min-width:170px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
 
 /* VTT Canvas */
 .vtc-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
@@ -2079,7 +2080,10 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   </div>
 
   <!-- Active room view -->
-  <div id="pty-room-view" style="display:none;flex-direction:row;gap:12px;flex:1;align-items:flex-start">
+  <div id="pty-room-view" style="display:none;flex-direction:column;gap:12px;flex:1">
+
+    <!-- Top row: canvas + side panel -->
+    <div style="display:flex;flex-direction:row;gap:12px;align-items:flex-start">
 
     <!-- Main column: header + canvas + chat -->
     <div class="pty-main-col">
@@ -2135,6 +2139,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
             </label>
             <button class="vtc-btn" onclick="_cvDmDeleteSelImg()" title="Delete selected image">✖ Img</button>
             <button class="vtc-btn vtc-btn-danger" onclick="_cvDmClearDrawings()" title="Erase all player drawings">🗑 Drawings</button>
+            <button class="vtc-btn" id="vtc-pin" onclick="_cvSetTool('pin')" title="Drop a named pin (enemy/NPC)">📍 Pin</button>
             <button class="vtc-btn" id="vtc-go-up" onclick="_cvDmGoUpFloor()" style="display:none" title="Go up to previous floor">⬆ Up</button>
             <button class="vtc-btn" id="vtc-go-down" onclick="_cvDmNewFloor()" title="Descend to next floor">⬇ Down</button>
           </div>
@@ -2142,7 +2147,20 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
         <div class="vtc-cont" id="vtc-cont">
           <canvas id="pty-canvas"></canvas>
           <div id="vtc-floor-counter" style="position:absolute;top:6px;left:8px;font-size:10px;color:rgba(255,255,255,.55);pointer-events:none;display:none"></div>
-          <div style="position:absolute;bottom:6px;right:8px;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none;letter-spacing:.04em">Pan: drag · Draw: ✏ · Zoom: scroll · Right-click room: delete</div>
+          <div style="position:absolute;bottom:6px;right:8px;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none;letter-spacing:.04em">Pan: drag · Draw: ✏ · Zoom: scroll · Right-click: delete</div>
+          <!-- Pin placement form -->
+          <div id="vtc-pin-form" class="vtc-pin-form">
+            <input id="vtc-pin-name" class="pty-inp" placeholder="Name…" maxlength="40" style="padding:5px 8px;font-size:12px"
+              onkeydown="if(event.key==='Enter')_cvConfirmPin();if(event.key==='Escape')_cvCancelPin()">
+            <select id="vtc-pin-type" class="pty-inp" style="padding:5px 8px;font-size:12px;cursor:pointer">
+              <option value="enemy">⚔ Enemy</option>
+              <option value="npc">💬 NPC</option>
+            </select>
+            <div style="display:flex;gap:6px">
+              <button class="pty-btn" onclick="_cvConfirmPin()" style="flex:1;padding:5px 0;font-size:11px">Place</button>
+              <button class="pty-btn ghost" onclick="_cvCancelPin()" style="flex:1;padding:5px 0;font-size:11px">Cancel</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2159,16 +2177,13 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 
     </div><!-- /pty-main-col -->
 
-    <!-- Side column: players + character sheet + DM panel -->
+    <!-- Side column: players + DM panel -->
     <div class="pty-side-col">
 
       <div class="pty-players-panel">
         <div class="pty-panel-head">Connected Players</div>
         <div class="pty-player-list" id="party-player-list"></div>
       </div>
-
-      <!-- Full character sheet transplanted here when party tab is active -->
-      <div id="pty-cs-full" class="pty-cs-full-wrap"></div>
 
       <div class="dm-panel" id="dm-panel">
         <div class="dm-panel-head">
@@ -2189,6 +2204,11 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       </div>
 
     </div><!-- /pty-side-col -->
+
+    </div><!-- /top row -->
+
+    <!-- Full-width character sheet row -->
+    <div id="pty-cs-full" class="pty-cs-full-wrap"></div>
 
   </div><!-- /pty-room-view -->
 </div><!-- /tab-party -->
@@ -6262,6 +6282,8 @@ let _cvPanSX=0,_cvPanSY=0,_cvPanOX=0,_cvPanOY=0;
 let _cvTokTimer=null;
 // Offscreen canvas for strokes (so eraser only erases drawings, not map)
 let _cvStrokeCvs=null,_cvStrokeCtx=null;
+// Named pins
+let _cvPins=[],_cvPinPending=null;
 // Image resize state
 let _cvResizingImg=null; // {id,corner,origWW,origWH,origWX,origWY,startSX,startSY}
 // Floor system
@@ -6363,6 +6385,29 @@ function _cvRender(){
 
   // Tokens
   Object.entries(_cvTokens).forEach(([pid,tok])=>_cvDrawToken(ctx,pid,tok));
+
+  // Pins
+  _cvPins.forEach(p=>{
+    const s=_w2s(p.wx,p.wy);
+    const col=p.type==='enemy'?'#e05252':'#52b4e0';
+    ctx.save();
+    ctx.translate(s.x,s.y);
+    ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=4;
+    ctx.beginPath();ctx.arc(0,-2,9,0,Math.PI*2);
+    ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(p.type==='enemy'?'E':'N',0,-2);
+    const tw=ctx.measureText(p.name).width;
+    ctx.fillStyle='rgba(0,0,0,.65)';
+    ctx.beginPath();ctx.roundRect(-tw/2-4,9,tw+8,15,3);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';
+    ctx.textBaseline='top';
+    ctx.fillText(p.name,0,11);
+    ctx.restore();
+  });
 }
 
 function _cvDrawRoom(ctx,r){
@@ -6488,7 +6533,17 @@ function _cvAttachEvents(){
   c.addEventListener('contextmenu',e=>{
     e.preventDefault();
     if(!partyIsDM) return;
-    _cvDmDeleteRoomAt(e.offsetX,e.offsetY);
+    const sx=e.offsetX,sy=e.offsetY;
+    for(let i=_cvPins.length-1;i>=0;i--){
+      const p=_cvPins[i];
+      const ps=_w2s(p.wx,p.wy);
+      if(Math.hypot(sx-ps.x,sy-(ps.y-2))<14){
+        _cvPins.splice(i,1);
+        _broadcast({type:'cv-pin-del',id:p.id});
+        return;
+      }
+    }
+    _cvDmDeleteRoomAt(sx,sy);
   });
 }
 
@@ -6560,6 +6615,23 @@ function _cvPDown(e){
     }
     _cvSelImgId=null;
 
+  }
+
+  // Pin placement (DM only)
+  if(_cvTool==='pin'&&partyIsDM){
+    const w=_s2w(sx,sy);
+    _cvPinPending={wx:w.x,wy:w.y};
+    const form=document.getElementById('vtc-pin-form');
+    if(form){
+      form.style.display='flex';
+      const cont=document.getElementById('vtc-cont');
+      const cr=cont?cont.getBoundingClientRect():{left:0,top:0};
+      form.style.left=Math.min(sx+10,_cvW-180)+'px';
+      form.style.top=Math.min(sy+10,_cvH-120)+'px';
+      const ni=document.getElementById('vtc-pin-name');
+      if(ni){ni.value='';ni.focus();}
+    }
+    return;
   }
 
   // Room draw tool (DM)
@@ -6723,11 +6795,30 @@ function _cvWheel(e){
 // ─── Tool controls ───────────────────────────────────────────────────────────
 function _cvSetTool(t){
   _cvTool=t;
-  ['pan','pen','eraser','room'].forEach(id=>{
+  ['pan','pen','eraser','room','pin'].forEach(id=>{
     const b=document.getElementById('vtc-'+id);
     if(b) b.classList.toggle('active',id===t);
   });
-  if(_cvCvs) _cvCvs.style.cursor=(t==='pen'||t==='room')?'crosshair':t==='eraser'?'cell':'grab';
+  if(_cvCvs) _cvCvs.style.cursor=(t==='pen'||t==='room')?'crosshair':t==='eraser'?'cell':t==='pin'?'copy':'grab';
+}
+
+function _cvConfirmPin(){
+  if(!_cvPinPending) return;
+  const name=(document.getElementById('vtc-pin-name')?.value||'').trim();
+  if(!name){document.getElementById('vtc-pin-name')?.focus();return;}
+  const type=document.getElementById('vtc-pin-type')?.value||'enemy';
+  const pin={id:'pin'+Date.now(),wx:_cvPinPending.wx,wy:_cvPinPending.wy,name,type};
+  _cvPins.push(pin);
+  _broadcast({type:'cv-pin-add',pin});
+  _cvPinPending=null;
+  const form=document.getElementById('vtc-pin-form');
+  if(form) form.style.display='none';
+}
+
+function _cvCancelPin(){
+  _cvPinPending=null;
+  const form=document.getElementById('vtc-pin-form');
+  if(form) form.style.display='none';
 }
 
 function _cvSetBrush(v){ _cvBrush=v; }
@@ -7046,6 +7137,7 @@ function _cvSyncPayload(){
     rooms:_cvRooms,
     images:_cvImages.map(({el,...rest})=>rest),
     tokens:_cvTokens,
+    pins:_cvPins,
     healingCount:_healingCount,
     floorCount:_floorCount,
     floorRoomBudget:_floorRoomBudget,
@@ -7058,6 +7150,7 @@ function _cvSyncPayload(){
 function _cvApplySync(d){
   _cvStrokes=d.strokes||[];
   _cvRooms=d.rooms||[];
+  _cvPins=d.pins||[];
   _healingCount=d.healingCount||0;
   _floorCount=d.floorCount||1;
   _cvTokens=d.tokens||{};
@@ -7132,6 +7225,10 @@ function _cvHandleMsg(d){
         _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
         _sysMsg('Returned to Floor '+_floorCount+'.');
         const fbup=document.getElementById('vtc-floor-num');if(fbup)fbup.textContent=_floorCount; } break;
+    case 'cv-pin-add':
+      if(!_cvPins.find(p=>p.id===d.pin.id)) _cvPins.push(d.pin); break;
+    case 'cv-pin-del':
+      _cvPins=_cvPins.filter(p=>p.id!==d.id); break;
     case 'cv-sync':
       _cvApplySync(d); break;
     case 'char-share':
@@ -7505,6 +7602,8 @@ function leaveRoom(){
   _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvTokens={};_cvPartials={};_cvCur=null;
   _cvDraft=null;_healingCount=0;_floorCount=1;_cvUndoIds=[];_cvSid=0;
   _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;_cvResizingImg=null;
+  _cvPins=[];_cvPinPending=null;
+  const pf=document.getElementById('vtc-pin-form');if(pf)pf.style.display='none';
   _lastFloorHadHealing=true;partyCharSheets={};_partyViewingPeer=null;
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent='1';
   const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display='none';
