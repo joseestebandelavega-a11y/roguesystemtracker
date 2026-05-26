@@ -17,6 +17,7 @@
   --border:#252a3a;--border-hi:#3a4260;
   --note:#b5860a;--note-bg:#1e1505;
   --green:#4a8c3a;--green-bg:#0d1a0d;
+  --red:#c44040;--red-bg:rgba(196,64,64,.15);
   --tag-r:rgba(180,120,20,0.2);--tag-rc:#c8900a;
   --tag-b:rgba(42,114,181,0.2);--tag-bc:#5599d4;
   --tag-p:rgba(80,80,80,0.25);--tag-pc:#888;
@@ -1629,7 +1630,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-unlock-lbl{font-size:10px;color:var(--text-muted);letter-spacing:.05em;white-space:nowrap}
 
 /* Main layout — always shows right col (player list); DM panel toggled inside */
-.pty-layout{display:grid;grid-template-columns:1fr 220px;gap:10px;align-items:start}
+.pty-layout{display:grid;grid-template-columns:1fr 250px;gap:10px;align-items:start}
 .pty-right-col{display:flex;flex-direction:column;gap:10px;min-width:0}
 
 /* VTT Canvas */
@@ -1705,6 +1706,36 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   .pty-header{gap:8px}
   .pty-header-right{width:100%}
 }
+/* Floor badge (all players see floor number) */
+.vtc-floor-badge{background:var(--surface);border:1px solid var(--border-hi);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--text-dim);display:inline-flex;align-items:center;gap:4px;pointer-events:none;flex-shrink:0}
+.vtc-floor-num{color:var(--fighter);font-weight:700}
+/* Per-player draw mute toggle (DM only) */
+.pty-mute-btn{background:none;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--text-dim);cursor:pointer;margin-left:auto;flex-shrink:0;transition:all .15s;line-height:1.4}
+.pty-mute-btn:hover{border-color:rgba(196,64,64,.5);color:var(--red)}
+.pty-mute-btn.muted{background:var(--red-bg);border-color:rgba(196,64,64,.5);color:var(--red)}
+/* Mini character sheet panel in party room */
+.pty-cs-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pty-cs-head{background:var(--surface2);padding:6px 10px;font-size:11px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
+.pty-cs-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pty-cs-switcher{display:flex;gap:3px;flex-wrap:wrap;padding:5px 8px;border-bottom:1px solid var(--border)}
+.pty-cs-tab{background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;font-size:10px;color:var(--text-dim);cursor:pointer;transition:all .15s}
+.pty-cs-tab:hover{border-color:var(--fighter);color:var(--fighter)}
+.pty-cs-tab.active{background:var(--fighter-pale);border-color:var(--fighter);color:var(--fighter)}
+.pty-cs-body{padding:8px 10px;font-size:11px;max-height:280px;overflow-y:auto}
+.pty-cs-id{margin-bottom:7px}
+.pty-cs-name{font-weight:700;color:var(--text);font-size:12px}
+.pty-cs-sub{color:var(--text-dim);font-size:10px}
+.pty-cs-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:7px}
+.pty-cs-stat{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 2px;text-align:center;cursor:pointer;transition:border-color .15s;user-select:none}
+.pty-cs-stat:hover{border-color:var(--fighter)}
+.pty-cs-stat-k{font-size:8px;color:var(--text-dim);text-transform:uppercase;display:block}
+.pty-cs-stat-v{font-size:13px;font-weight:700;color:var(--text);display:block;line-height:1.1}
+.pty-cs-stat-m{font-size:9px;color:var(--fighter);display:block}
+.pty-cs-hp-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.pty-cs-hp-lbl{font-size:10px;color:var(--text-dim);white-space:nowrap;min-width:0}
+.pty-cs-hp-bar{flex:1;height:5px;background:var(--border-hi);border-radius:3px;overflow:hidden}
+.pty-cs-hp-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+.pty-cs-empty{color:var(--text-dim);font-style:italic;font-size:11px;padding:6px 0}
 
 </style>
 </head>
@@ -2092,13 +2123,17 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
           <button class="vtc-btn" onclick="_cvZoomBy(0.25)" title="Zoom in">+</button>
           <button class="vtc-btn" onclick="_cvResetView()" title="Reset view">⊡</button>
         </div>
+        <div class="vtc-tg">
+          <span class="vtc-floor-badge">Floor <span id="vtc-floor-num">1</span></span>
+        </div>
         <div class="vtc-tg" id="vtc-dm-tools" style="display:none">
           <label class="vtc-btn" title="Upload image onto map">
             🖼 Image<input type="file" accept="image/*" style="display:none" onchange="_cvDmUploadImg(this)">
           </label>
           <button class="vtc-btn" onclick="_cvDmDeleteSelImg()" title="Delete selected image">✖ Img</button>
           <button class="vtc-btn vtc-btn-danger" onclick="_cvDmClearDrawings()" title="Erase all player drawings">🗑 Drawings</button>
-          <button class="vtc-btn" onclick="_cvDmNewFloor()" title="Advance to next dungeon floor">⬇ Floor</button>
+          <button class="vtc-btn" id="vtc-go-up" onclick="_cvDmGoUpFloor()" style="display:none" title="Go up to previous floor">⬆ Up</button>
+          <button class="vtc-btn" id="vtc-go-down" onclick="_cvDmNewFloor()" title="Descend to next floor">⬇ Down</button>
         </div>
       </div>
       <div class="vtc-cont" id="vtc-cont">
@@ -2121,11 +2156,20 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
         </div>
       </div>
 
-      <!-- Right column: players + DM panel -->
+      <!-- Right column: players + character sheet + DM panel -->
       <div class="pty-right-col">
         <div class="pty-players-panel">
           <div class="pty-panel-head">Connected Players</div>
           <div class="pty-player-list" id="party-player-list"></div>
+        </div>
+
+        <!-- Mini character sheet (own sheet for players; DM switcher) -->
+        <div class="pty-cs-wrap" id="pty-cs-wrap">
+          <div class="pty-cs-head">
+            <span class="pty-cs-title" id="pty-cs-title">Character Sheet</span>
+          </div>
+          <div class="pty-cs-switcher" id="pty-cs-switcher" style="display:none"></div>
+          <div class="pty-cs-body" id="pty-cs-body"><div class="pty-cs-empty">Connecting…</div></div>
         </div>
         <div class="dm-panel" id="dm-panel">
           <div class="dm-panel-head">
@@ -4143,6 +4187,13 @@ function execRoll(){
     detailEl.style.opacity='1';
     totalEl.style.opacity='1';
     if(isCrit) burstSparks();
+    // Post roll to party chat if in a room
+    if(partyPeer&&partyPeer.open!==false){
+      const rollText=`[${_rl.label}] ${detail+' = '+total}${isCrit?' \u2014 CRITICAL!':isFumble?' \u2014 Fumble!':''}`;
+      const msg={type:'chat',user:partyMyName,text:rollText,ts:Date.now(),isDM:partyIsDM};
+      _broadcast(msg);
+      _appendMsg({user:partyMyName,text:rollText,ts:msg.ts,isDM:partyIsDM,announce:false});
+    }
   },650);
 }
 function burstSparks(){
@@ -6183,11 +6234,13 @@ let partyPlayers = {};     // peerId → {name, isDM, color}
 // ─── VTT constants ──────────────────────────────────────────────────────────
 const PLAYER_COLORS=['#f87171','#60a5fa','#34d399','#fbbf24','#a78bfa','#f472b6','#38bdf8','#fb923c','#a3e635','#e879f9'];
 const VTT_ROOM_TYPES=[
-  {type:'combat',  label:'Combat',   color:'#e05555', weight:66},
-  {type:'treasure',label:'Treasure', color:'#d4891a', weight:20},
-  {type:'shop',    label:'Shop',     color:'#5599d4', weight:10},
-  {type:'healing', label:'Healing',  color:'#4a8c3a', weight:4},
+  {type:'combat',  label:'Combat',   color:'#e05555'},
+  {type:'treasure',label:'Treasure', color:'#d4891a'},
+  {type:'shop',    label:'Shop',     color:'#5599d4'},
+  {type:'healing', label:'Healing',  color:'#4a8c3a'},
+  {type:'descent', label:'Descent',  color:'#7c3aed'},
 ];
+function _vttRtDef(type){return VTT_ROOM_TYPES.find(t=>t.type===type)||null;}
 const TILE=40;  // base tile size in pixels at zoom=1
 
 // ─── VTT canvas state ───────────────────────────────────────────────────────
@@ -6208,6 +6261,15 @@ let _cvTokens={},_cvDragTokId=null;
 let _cvPtrDown=false;
 let _cvPanSX=0,_cvPanSY=0,_cvPanOX=0,_cvPanOY=0;
 let _cvTokTimer=null;
+// Floor system
+let _cvFloorHistory=[];     // saved floor states when descending
+let _floorRoomBudget=0;     // total rooms planned for this floor (15-26)
+let _floorRoomQueue=[];     // remaining room types to assign as rooms are drawn
+let _cvDescentCell=null;    // {gx,gy} of descent room on current floor
+let _lastFloorHadHealing=true; // tracks healing for "every 2 floors" rule
+// Character sheets shared by players
+let partyCharSheets={};     // {peerId: {name,charName,level,className,stats,hp,maxHp}}
+let _partyViewingPeer=null; // which peer sheet the DM is viewing (null = own)
 
 // ─── Coord & color helpers ───────────────────────────────────────────────────
 function _hubId(code){ return 'rsg-h-'+code.toUpperCase(); }
@@ -6305,6 +6367,7 @@ function _cvDrawRoom(ctx,r){
   else if(r.type==='treasure') ctx.fillStyle='rgba(212,137,26,.2)';
   else if(r.type==='shop')     ctx.fillStyle='rgba(85,153,212,.2)';
   else if(r.type==='healing')  ctx.fillStyle='rgba(74,140,58,.2)';
+  else if(r.type==='descent')  ctx.fillStyle='rgba(124,58,237,.25)';
   else if(isHall)              ctx.fillStyle='rgba(60,80,130,.35)';
   else                         ctx.fillStyle='rgba(25,32,60,.7)';
   ctx.fillRect(p.x,p.y,pw,ph);
@@ -6319,16 +6382,8 @@ function _cvDrawRoom(ctx,r){
       ctx.fillStyle=rt?rt.color:'#e8e4d9';
       ctx.font='bold '+Math.min(13,pw/5)+'px sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText((r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':'')+r.label,cx,cy);
-    } else {
-      const bw=Math.min(72,pw-6), bh=Math.min(26,ph-6);
-      ctx.fillStyle='rgba(212,137,26,.2)';
-      ctx.beginPath(); ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,3); ctx.fill();
-      ctx.strokeStyle='#d4891a'; ctx.lineWidth=1; ctx.stroke();
-      ctx.fillStyle='#d4891a';
-      ctx.font='bold '+Math.min(10,bw/7)+'px sans-serif';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('Roll Room',cx,cy);
+      const icon=r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':r.type==='descent'?'🪜 ':'';
+      ctx.fillText(icon+r.label,cx,cy);
     }
   }
   if(isHall&&(pw>36||ph>36)){
@@ -6400,7 +6455,11 @@ function _cvAttachEvents(){
   c.addEventListener('pointerup',_cvPUp,{passive:false});
   c.addEventListener('pointerleave',_cvPUp,{passive:false});
   c.addEventListener('wheel',_cvWheel,{passive:false});
-  c.addEventListener('contextmenu',e=>e.preventDefault());
+  c.addEventListener('contextmenu',e=>{
+    e.preventDefault();
+    if(!partyIsDM) return;
+    _cvDmDeleteRoomAt(e.offsetX,e.offsetY);
+  });
 }
 
 function _cvPDown(e){
@@ -6460,8 +6519,8 @@ function _cvPDown(e){
     _cvDraft={gx1:gx,gy1:gy,gx2:gx+1,gy2:gy+1}; return;
   }
 
-  // Drawing
-  if((_cvTool==='pen'||_cvTool==='eraser')&&myId){
+  // Drawing (blocked if DM muted this player)
+  if((_cvTool==='pen'||_cvTool==='eraser')&&myId&&!partyPlayers[myId]?.drawDisabled){
     const w=_s2w(sx,sy);
     _cvCur={
       id:myId+'-'+(++_cvSid),
@@ -6536,9 +6595,43 @@ function _cvPUp(e){
     const gy=Math.min(_cvDraft.gy1,_cvDraft.gy2);
     const gw=Math.max(1,Math.abs(_cvDraft.gx2-_cvDraft.gx1));
     const gh=Math.max(1,Math.abs(_cvDraft.gy2-_cvDraft.gy1));
-    const room={id:'r'+Date.now(),gx,gy,gw,gh,type:null,label:null,color:null};
-    _cvRooms.push(room);
-    _broadcast({type:'cv-room-add',room});
+    const isHall=gw===1||gh===1;
+    // Check for overlap with existing rooms
+    const overlaps=_cvRooms.filter(r=>!(gx>=r.gx+r.gw||gx+gw<=r.gx||gy>=r.gy+r.gh||gy+gh<=r.gy));
+    if(overlaps.length>0){
+      // Expand first overlapping room to bounding box, remove the rest
+      const tgt=overlaps[0];
+      const nx1=Math.min(gx,tgt.gx),ny1=Math.min(gy,tgt.gy);
+      const nx2=Math.max(gx+gw,tgt.gx+tgt.gw),ny2=Math.max(gy+gh,tgt.gy+tgt.gh);
+      tgt.gx=nx1;tgt.gy=ny1;tgt.gw=nx2-nx1;tgt.gh=ny2-ny1;
+      _broadcast({type:'cv-room-update',room:{...tgt}});
+      for(let i=1;i<overlaps.length;i++){
+        if(overlaps[i].type==='healing') _healingCount=Math.max(0,_healingCount-1);
+        _cvRooms=_cvRooms.filter(r=>r.id!==overlaps[i].id);
+        _broadcast({type:'cv-room-del',id:overlaps[i].id});
+      }
+    } else {
+      // Check budget for non-hallway rooms
+      const nonHallCount=_cvRooms.filter(r=>r.gw>1&&r.gh>1).length;
+      if(!isHall&&_floorRoomBudget>0&&nonHallCount>=_floorRoomBudget){
+        _sysMsg('Floor room budget reached ('+_floorRoomBudget+' rooms).');
+        _cvDraft=null; return;
+      }
+      // Assign type from queue (non-hallways only)
+      let rType=null,rLabel=null,rColor=null;
+      if(!isHall&&_floorRoomQueue.length>0){
+        const typeKey=_floorRoomQueue.shift();
+        const rtDef=_vttRtDef(typeKey);
+        rType=rtDef?.type||null; rLabel=rtDef?.label||null; rColor=rtDef?.color||null;
+        if(rType==='healing') _healingCount++;
+        if(rType==='descent') _cvDescentCell={gx:gx+Math.floor(gw/2),gy:gy+Math.floor(gh/2)};
+      }
+      const room={id:'r'+Date.now(),gx,gy,gw,gh,type:rType,label:rLabel,color:rColor};
+      _cvRooms.push(room);
+      _broadcast({type:'cv-room-add',room});
+      // Keep queue in sync for others
+      _broadcast({type:'cv-queue-update',queue:_floorRoomQueue});
+    }
     _cvDraft=null; return;
   }
 
@@ -6602,23 +6695,88 @@ function _cvUndo(){
 }
 
 // ─── DM map actions ──────────────────────────────────────────────────────────
-function _vttRollType(){
-  const max=Math.ceil(0.75*_floorCount);
-  const pool=VTT_ROOM_TYPES.filter(t=>t.type!=='healing'||_healingCount<max);
-  const total=pool.reduce((s,t)=>s+t.weight,0);
-  let r=Math.random()*total;
-  for(const t of pool){ r-=t.weight; if(r<=0) return t; }
-  return pool[pool.length-1];
+function _buildFloorQueue(N){
+  // 1 descent always; remaining N-1: 66% combat, 23% treasure, 9% shop, 2% healing
+  const R=N-1;
+  const healingForced=!_lastFloorHadHealing;
+  let hCount=0;
+  if(healingForced){ hCount=Math.max(1,Math.round(R*0.02)); }
+  else { hCount=Math.random()<0.5?Math.max(1,Math.round(R*0.02)):0; }
+  let sCount=Math.max(1,Math.round(R*0.09));
+  let tCount=Math.max(1,Math.round(R*0.23));
+  let cCount=R-sCount-tCount-hCount;
+  if(cCount<1) cCount=1;
+  // Trim to exactly R
+  while(cCount+tCount+sCount+hCount>R){
+    if(cCount>1)cCount--;else if(tCount>1)tCount--;else if(sCount>1)sCount--;else if(hCount>0)hCount--;
+  }
+  while(cCount+tCount+sCount+hCount<R) cCount++;
+  const arr=['descent'];
+  for(let i=0;i<cCount;i++) arr.push('combat');
+  for(let i=0;i<tCount;i++) arr.push('treasure');
+  for(let i=0;i<sCount;i++) arr.push('shop');
+  for(let i=0;i<hCount;i++) arr.push('healing');
+  // Fisher-Yates shuffle
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
 }
 
-function _cvDmRollRoom(roomId){
+function _cvDmSetupFloor(){
+  if(_floorRoomBudget>0) return; // already set up
+  _floorRoomBudget=15+Math.floor(Math.random()*12); // 15-26
+  _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
+  const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
+  _sysMsg('Floor 1 — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent='1';
+  _broadcast({type:'cv-floor-init',budget:_floorRoomBudget,queue:_floorRoomQueue});
+}
+
+function _cvDmNewFloor(){
   if(!partyIsDM) return;
-  const rt=_vttRollType();
-  const room=_cvRooms.find(r=>r.id===roomId);
-  if(!room) return;
-  room.type=rt.type; room.label=rt.label; room.color=rt.color;
-  if(rt.type==='healing') _healingCount++;
-  _broadcast({type:'cv-room-rolled',id:roomId,rtype:rt.type,label:rt.label,color:rt.color});
+  // Save current floor to history
+  _lastFloorHadHealing=_healingCount>0;
+  _cvFloorHistory.push({
+    floorNum:_floorCount,
+    strokes:_cvStrokes.map(s=>({...s,pts:[...s.pts]})),
+    rooms:JSON.parse(JSON.stringify(_cvRooms)),
+    images:_cvImages.map(({el,...rest})=>rest),
+    tokens:JSON.parse(JSON.stringify(_cvTokens)),
+    budget:_floorRoomBudget,
+    descentCell:_cvDescentCell?{..._cvDescentCell}:null,
+  });
+  // Advance to next floor
+  _floorCount++; _healingCount=0; _cvDescentCell=null;
+  _cvStrokes=[]; _cvRooms=[]; _cvImages=[]; _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
+  // Roll new floor plan
+  _floorRoomBudget=15+Math.floor(Math.random()*12);
+  _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
+  const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
+  _sysMsg('Floor '+_floorCount+' — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
+  // Update floor badge and show up button
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
+  const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display='';
+  _broadcast({type:'cv-new-floor',floor:_floorCount,budget:_floorRoomBudget,queue:_floorRoomQueue,
+    history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
+}
+
+function _cvDmGoUpFloor(){
+  if(!partyIsDM||_cvFloorHistory.length===0) return;
+  const prev=_cvFloorHistory.pop();
+  _floorCount=prev.floorNum;
+  _cvStrokes=prev.strokes||[];
+  _cvRooms=prev.rooms||[];
+  _cvImages=(prev.images||[]).map(img=>{const el=new Image();el.src=img.src;return{...img,el};});
+  _cvTokens=prev.tokens||{};
+  _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
+  _floorRoomBudget=prev.budget||0;
+  _cvDescentCell=prev.descentCell||null;
+  _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
+  _floorRoomQueue=[]; // can't draw more rooms on previous floors
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
+  const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display=_cvFloorHistory.length>0?'':'none';
+  _sysMsg('Went up to Floor '+_floorCount+'.');
+  _broadcast({type:'cv-go-up-floor',floor:_floorCount,budget:_floorRoomBudget,queue:_floorRoomQueue,
+    strokes:_cvStrokes,rooms:_cvRooms,images:prev.images,tokens:_cvTokens,history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
 }
 
 function _cvDmClearDrawings(){
@@ -6627,11 +6785,31 @@ function _cvDmClearDrawings(){
   _broadcast({type:'cv-clear-all'});
 }
 
-function _cvDmNewFloor(){
+function _cvDmDeleteRoomAt(sx,sy){
   if(!partyIsDM) return;
-  _floorCount++; _healingCount=0;
-  _sysMsg('New floor started — Floor '+_floorCount+'. Healing rooms reset.');
-  _broadcast({type:'cv-new-floor',floor:_floorCount});
+  const w=_s2w(sx,sy);
+  for(let i=_cvRooms.length-1;i>=0;i--){
+    const r=_cvRooms[i];
+    if(w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
+      const isHall=r.gw===1||r.gh===1;
+      if(r.type==='healing') _healingCount=Math.max(0,_healingCount-1);
+      if(!isHall&&r.type&&_floorRoomQueue!==null){
+        _floorRoomQueue.unshift(r.type);
+        _broadcast({type:'cv-queue-update',queue:_floorRoomQueue});
+      }
+      _cvRooms.splice(i,1);
+      _broadcast({type:'cv-room-del',id:r.id});
+      break;
+    }
+  }
+}
+
+function _cvDmToggleDrawing(peerId){
+  if(!partyIsDM||peerId===partyPeer?.id) return;
+  const p=partyPlayers[peerId];if(!p) return;
+  p.drawDisabled=!p.drawDisabled;
+  _broadcast({type:'cv-draw-mute',peerId,disabled:p.drawDisabled});
+  _renderPlayers();
 }
 
 function _cvDmDeleteSelImg(){
@@ -6674,6 +6852,100 @@ function _cvPlaceMyToken(){
   const wx=ctr.x+(Math.random()*6-3), wy=ctr.y+(Math.random()*6-3);
   _cvTokens[id]={wx,wy};
   _broadcast({type:'cv-token-move',peerId:id,wx,wy});
+  // Share character sheet with the party
+  _partyBroadcastCharSheet();
+}
+
+// ─── Character sheet sharing ─────────────────────────────────────────────────
+function _getPartyCharData(){
+  const maxHp=hpLevels.reduce((a,x)=>a+x.total,0);
+  const curEl=document.getElementById('cs-hp-cur');
+  return {
+    name:partyMyName,
+    charName:charName||partyMyName,
+    level:currentLevel,
+    className:currentClass,
+    stats:{...stats},
+    hp:parseInt(curEl?.value)||0,
+    maxHp:maxHp||parseInt(document.getElementById('cs-hp-max')?.textContent)||0,
+  };
+}
+
+function _partyBroadcastCharSheet(){
+  if(!partyPeer) return;
+  const data=_getPartyCharData();
+  partyCharSheets[partyPeer.id]=data;
+  _broadcast({type:'char-share',peerId:partyPeer.id,data});
+  _renderPartyCharSheet();
+}
+
+function _renderPartyCharSheet(){
+  const body=document.getElementById('pty-cs-body');
+  const titleEl=document.getElementById('pty-cs-title');
+  const switcher=document.getElementById('pty-cs-switcher');
+  if(!body) return;
+  const myId=partyPeer?.id;
+
+  // DM switcher tabs (DM sees all player sheets)
+  if(partyIsDM&&switcher){
+    const peers=Object.keys(partyCharSheets);
+    if(peers.length>1){
+      switcher.style.display='flex';
+      let tabs='';
+      peers.forEach(pid=>{
+        const d=partyCharSheets[pid];
+        const active=(_partyViewingPeer||myId)===pid;
+        tabs+=`<button class="pty-cs-tab${active?' active':''}" onclick="_partySetViewPeer('${pid}')">${_escH(d.name||'?')}</button>`;
+      });
+      switcher.innerHTML=tabs;
+    } else { switcher.style.display='none'; }
+  } else if(switcher){ switcher.style.display='none'; }
+
+  // Determine whose data to show
+  const viewId=partyIsDM?(_partyViewingPeer||myId):myId;
+  const data=viewId?partyCharSheets[viewId]:null;
+  const isOwn=viewId===myId;
+
+  if(!data){
+    body.innerHTML='<div class="pty-cs-empty">No character data yet.</div>';
+    if(titleEl) titleEl.textContent='Character Sheet';
+    return;
+  }
+
+  if(titleEl) titleEl.textContent=isOwn?'Your Sheet':_escH(data.name)+'\'s Sheet';
+
+  const pb=Math.ceil((data.level||1)/4)+1;
+  const statList=Object.entries(data.stats||{}).map(([k,v])=>{
+    const m=Math.floor((v-10)/2);
+    const mStr=(m>=0?'+':'')+m;
+    const clickable=isOwn?`onclick="doRoll('${k.toUpperCase()} Check','${k}',false)"`:'' ;
+    return `<div class="pty-cs-stat" ${clickable} title="${isOwn?'Roll '+k.toUpperCase():''}">
+      <span class="pty-cs-stat-k">${k.toUpperCase()}</span>
+      <span class="pty-cs-stat-v">${v}</span>
+      <span class="pty-cs-stat-m">${mStr}</span>
+    </div>`;
+  }).join('');
+
+  const hpPct=data.maxHp>0?Math.max(0,Math.min(100,Math.round(data.hp/data.maxHp*100))):0;
+  const hpColor=hpPct>50?'var(--green)':hpPct>25?'#d4891a':'var(--red)';
+
+  body.innerHTML=`
+    <div class="pty-cs-id">
+      <div class="pty-cs-name">${_escH(data.charName||data.name)}</div>
+      <div class="pty-cs-sub">Level ${data.level} ${_escH(data.className||'')} · Prof +${pb}</div>
+    </div>
+    <div class="pty-cs-hp-row">
+      <span class="pty-cs-hp-lbl">HP ${data.hp}/${data.maxHp}</span>
+      <div class="pty-cs-hp-bar"><div class="pty-cs-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>
+    </div>
+    <div class="pty-cs-stats">${statList}</div>
+    ${isOwn?'<div class="pty-cs-roll-badge">Click a stat to roll a check</div>':''}
+  `;
+}
+
+function _partySetViewPeer(pid){
+  _partyViewingPeer=pid;
+  _renderPartyCharSheet();
 }
 
 function _cvSyncPayload(){
@@ -6683,7 +6955,11 @@ function _cvSyncPayload(){
     images:_cvImages.map(({el,...rest})=>rest),
     tokens:_cvTokens,
     healingCount:_healingCount,
-    floorCount:_floorCount
+    floorCount:_floorCount,
+    floorRoomBudget:_floorRoomBudget,
+    floorRoomQueue:_floorRoomQueue,
+    cvFloorHistory:_cvFloorHistory.map(f=>({...f,images:f.images})),
+    descentCell:_cvDescentCell,
   };
 }
 
@@ -6694,6 +6970,12 @@ function _cvApplySync(d){
   _floorCount=d.floorCount||1;
   _cvTokens=d.tokens||{};
   _cvImages=(d.images||[]).map(img=>{ const el=new Image();el.src=img.src; return {...img,el}; });
+  _floorRoomBudget=d.floorRoomBudget||0;
+  _floorRoomQueue=d.floorRoomQueue||[];
+  _cvDescentCell=d.descentCell||null;
+  if(d.cvFloorHistory) _cvFloorHistory=d.cvFloorHistory;
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
+  const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display=_cvFloorHistory.length>0&&partyIsDM?'':'none';
 }
 
 function _cvHandleMsg(d){
@@ -6710,12 +6992,19 @@ function _cvHandleMsg(d){
       _cvStrokes=[];_cvPartials={};_cvUndoIds=[]; break;
     case 'cv-room-add':
       if(!_cvRooms.find(r=>r.id===d.room.id)) _cvRooms.push(d.room); break;
-    case 'cv-room-rolled':
-      { const rr=_cvRooms.find(r=>r.id===d.id);
-        if(rr){rr.type=d.rtype;rr.label=d.label;rr.color=d.color;}
-        if(d.rtype==='healing') _healingCount++; } break;
+    case 'cv-room-update':
+      { const ru=_cvRooms.find(r=>r.id===d.room.id);
+        if(ru){ru.gx=d.room.gx;ru.gy=d.room.gy;ru.gw=d.room.gw;ru.gh=d.room.gh;} } break;
     case 'cv-room-del':
       _cvRooms=_cvRooms.filter(r=>r.id!==d.id); break;
+    case 'cv-queue-update':
+      _floorRoomQueue=d.queue||[]; break;
+    case 'cv-draw-mute':
+      if(partyPlayers[d.peerId]) partyPlayers[d.peerId].drawDisabled=d.disabled;
+      _renderPlayers();
+      if(d.peerId===partyPeer?.id){
+        _sysMsg(d.disabled?'DM disabled your drawing.':'DM re-enabled your drawing.');
+      } break;
     case 'cv-image-add':
       if(!_cvImages.find(i=>i.id===d.img.id)){
         const el=new Image();el.src=d.img.src;
@@ -6727,11 +7016,33 @@ function _cvHandleMsg(d){
       _cvImages=_cvImages.filter(i=>i.id!==d.id); break;
     case 'cv-token-move':
       _cvTokens[d.peerId]={wx:d.wx,wy:d.wy}; break;
+    case 'cv-floor-init':
+      { _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
+        const fbi=document.getElementById('vtc-floor-num');if(fbi)fbi.textContent='1'; } break;
     case 'cv-new-floor':
-      _floorCount=d.floor; _healingCount=0;
-      _sysMsg('Floor '+_floorCount+' started. Healing rooms reset.'); break;
+      { _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvPartials={};_cvCur=null;
+        _floorCount=d.floor; _healingCount=0; _cvDescentCell=null;
+        _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
+        if(d.history) _cvFloorHistory=d.history;
+        _sysMsg('Descended to Floor '+_floorCount+' ('+_floorRoomBudget+' rooms planned).');
+        const fbn=document.getElementById('vtc-floor-num');if(fbn)fbn.textContent=_floorCount; } break;
+    case 'cv-go-up-floor':
+      { _floorCount=d.floor; _healingCount=0;
+        _cvStrokes=d.strokes||[]; _cvRooms=d.rooms||[];
+        _cvImages=(d.images||[]).map(img=>{const el=new Image();el.src=img.src;return{...img,el};});
+        _cvTokens=d.tokens||{}; _cvPartials={}; _cvCur=null;
+        _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
+        if(d.history) _cvFloorHistory=d.history;
+        _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
+        _sysMsg('Returned to Floor '+_floorCount+'.');
+        const fbup=document.getElementById('vtc-floor-num');if(fbup)fbup.textContent=_floorCount; } break;
     case 'cv-sync':
       _cvApplySync(d); break;
+    case 'char-share':
+      if(d.peerId&&d.data){
+        partyCharSheets[d.peerId]=d.data;
+        _renderPartyCharSheet();
+      } break;
   }
 }
 
@@ -6776,10 +7087,14 @@ function _renderPlayers(){
   Object.entries(partyPlayers).forEach(([id,p])=>{
     const self=id===myId;
     const dotColor=p.color||_colorForPeer(id);
+    const muteBtn=partyIsDM&&!self&&!p.isDM
+      ?`<button class="pty-mute-btn${p.drawDisabled?' muted':''}" onclick="_cvDmToggleDrawing('${id}')" title="${p.drawDisabled?'Re-enable drawing':'Disable drawing'}">${p.drawDisabled?'🚫':'✏'}</button>`
+      :'';
     html+=`<div class="pty-player">
       <div class="pty-pdot" style="background:${dotColor}"></div>
       <div class="pty-pname">${_escH(p.name)}${self?'<span class="pty-self"> (you)</span>':''}</div>
       ${p.isDM?'<div class="pty-badge dm">DM</div>':''}
+      ${muteBtn}
     </div>`;
   });
   list.innerHTML=html||'<div class="pty-empty">No players yet</div>';
@@ -6865,15 +7180,20 @@ function _handleData(d,fromConn){
       break;
     case 'hello':
       if(d.id) partyPlayers[d.id]={name:d.name,isDM:d.isDM,color:_colorForPeer(d.id)};
-      _renderPlayers();break;
+      _renderPlayers();
+      // Re-send my char sheet to anyone who just said hello
+      _partyBroadcastCharSheet(); break;
     case 'peer-join':
       _sysMsg(d.name+' joined the room');
       partyPlayers[d.id]={name:d.name,isDM:false,color:_colorForPeer(d.id)};
-      _renderPlayers();break;
+      _renderPlayers();
+      _partyBroadcastCharSheet(); break;
     case 'peer-leave':
       if(partyPlayers[d.id]){
         _sysMsg(d.name+' left');
+        delete partyCharSheets[d.id];
         delete partyPlayers[d.id];_renderPlayers();
+        _renderPartyCharSheet();
       }break;
     case 'chat':
       _appendMsg({user:d.user,text:d.text,ts:d.ts,isDM:d.isDM,announce:false});break;
@@ -6889,7 +7209,7 @@ function _handleData(d,fromConn){
       _ptyHubId=d.hubId;
       _sysMsg('Room connection restored');break;
     default:
-      if(d.type&&d.type.startsWith('cv-')) _cvHandleMsg(d,fromConn);
+      if(d.type&&(d.type.startsWith('cv-')||d.type==='char-share')) _cvHandleMsg(d,fromConn);
       break;
   }
 }
@@ -7030,6 +7350,10 @@ function leaveRoom(){
   myPlayerColor=null;
   _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvTokens={};_cvPartials={};_cvCur=null;
   _cvDraft=null;_healingCount=0;_floorCount=1;_cvUndoIds=[];_cvSid=0;
+  _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;
+  _lastFloorHadHealing=true;partyCharSheets={};_partyViewingPeer=null;
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent='1';
+  const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display='none';
   const setupV=document.getElementById('pty-setup-view');
   const roomV=document.getElementById('pty-room-view');
   if(setupV) setupV.style.display='';
@@ -7060,6 +7384,8 @@ function _showDMPanel(){
   if(dmTools) dmTools.style.display='flex';
   const roomBtn=document.getElementById('vtc-room');
   if(roomBtn) roomBtn.style.display='';
+  // Init floor 1 if not already done
+  _cvDmSetupFloor();
 }
 
 // ── END PARTY ROOM ───────────────────────────────────────────────────────────
