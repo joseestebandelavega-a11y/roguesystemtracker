@@ -1594,7 +1594,9 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 }
 
 /* ── PARTY ROOM ─────────────────────────────────────────────────────────── */
-#tab-party{display:none;flex-direction:column;gap:12px;padding:16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100%;max-width:1100px;margin:0 auto}
+body.party-mode .content{max-width:1400px}
+body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
+#tab-party{display:none;flex-direction:column;gap:12px;padding:16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100%;max-width:1400px;margin:0 auto}
 #tab-party.active{display:flex}
 
 /* Setup / connect area */
@@ -1605,10 +1607,11 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .pty-inp{background:var(--surface2);border:1px solid var(--border-hi);border-radius:6px;color:var(--text);font-size:13px;padding:7px 12px;outline:none;width:220px}
 .pty-inp:focus{border-color:var(--fighter)}
 .pty-inp.code{text-transform:uppercase;letter-spacing:.15em;text-align:center;width:140px}
-.pty-btn{background:var(--fighter-pale);border:1px solid var(--fighter-dim);border-radius:6px;color:var(--fighter);font-size:12px;font-weight:600;padding:8px 18px;cursor:pointer;transition:all .15s;letter-spacing:.04em;white-space:nowrap}
-.pty-btn:hover{background:var(--fighter-dim);border-color:var(--fighter)}
-.pty-btn.ghost{background:var(--surface2);border-color:var(--border-hi);color:var(--text-dim)}
-.pty-btn.ghost:hover{border-color:var(--border-hi);color:var(--text)}
+.pty-btn{background:linear-gradient(180deg,var(--fighter-pale),#1a1208);border:1px solid var(--fighter-dim);border-radius:7px;color:var(--fighter);font-size:12px;font-weight:700;padding:9px 20px;cursor:pointer;transition:all .18s cubic-bezier(.4,1.2,.5,1);letter-spacing:.08em;text-transform:uppercase;font-family:'Cinzel',Georgia,serif;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,200,100,.08),0 1px 0 rgba(0,0,0,.3)}
+.pty-btn:hover{background:linear-gradient(180deg,var(--fighter-dim),#3a2710);border-color:var(--fighter);transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,200,100,.15),0 4px 14px -4px rgba(212,137,26,.5)}
+.pty-btn:active{transform:translateY(0)}
+.pty-btn.ghost{background:linear-gradient(180deg,var(--surface2),var(--surface));border-color:var(--border-hi);color:var(--text-dim);font-family:'Cinzel',Georgia,serif}
+.pty-btn.ghost:hover{background:linear-gradient(180deg,#1b2030,#13161f);border-color:var(--fighter);color:var(--fighter);transform:translateY(-1px);box-shadow:0 4px 14px -6px rgba(212,137,26,.4)}
 .pty-divider{display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:11px;width:260px}
 .pty-divider::before,.pty-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 .pty-join-row{display:flex;gap:6px;align-items:center}
@@ -1629,20 +1632,55 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-unlock-row{display:flex;gap:6px;align-items:center}
 .dm-unlock-lbl{font-size:10px;color:var(--text-muted);letter-spacing:.05em;white-space:nowrap}
 
-/* Party room two-column layout */
-.pty-main-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
-.pty-side-col{width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 80px);overflow-y:auto;position:sticky;top:10px}
-.pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:100%}
+/* Party room two-column layout: char sheet (left) + tools (right) */
+.pty-row{display:flex;flex-direction:row;gap:14px;align-items:flex-start;flex:1;min-width:0}
+.pty-cs-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.pty-tools-col{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 100px);overflow-y:auto;position:sticky;top:10px;padding-right:4px}
+.pty-tools-col > *{flex-shrink:0}
+.pty-tools-col::-webkit-scrollbar{width:5px}
+.pty-tools-col::-webkit-scrollbar-track{background:transparent}
+.pty-tools-col::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+/* Legacy aliases preserved for any inline refs */
+.pty-main-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.pty-side-col{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 100px);overflow-y:auto;position:sticky;top:10px;padding-right:4px}
+.pty-side-col > *{flex-shrink:0}
+.pty-side-col::-webkit-scrollbar{width:5px}
+.pty-side-col::-webkit-scrollbar-track{background:transparent}
+.pty-side-col::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+
+.pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;width:100%;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 4px 20px -10px rgba(0,0,0,.4)}
+.pty-cs-full-wrap #tab-character{padding:20px 22px !important;font-size:14px}
+.pty-cs-full-wrap .cs-stat-shell{width:72px}
+.pty-cs-full-wrap .cs-stat-mod{font-size:28px}
+.pty-cs-full-wrap .cs-quick-val{font-size:22px}
 .vtc-pin-form{position:absolute;z-index:50;background:var(--surface2);border:1px solid var(--border-hi);border-radius:8px;padding:10px;display:none;flex-direction:column;gap:8px;min-width:170px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+
+/* Dice roller panel */
+.pty-dice-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
+.pty-dice-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:12px}
+.pty-dice-btn{position:relative;background:linear-gradient(180deg,#2a1d0a 0%,#1a1208 100%);border:1px solid var(--fighter-dim);border-radius:8px;color:var(--fighter);font-family:'Cinzel',Georgia,serif;font-size:14px;font-weight:700;padding:10px 4px 8px;cursor:pointer;transition:all .18s cubic-bezier(.4,1.2,.5,1);letter-spacing:.06em;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1;box-shadow:inset 0 1px 0 rgba(255,200,100,.08),0 1px 0 rgba(0,0,0,.4)}
+.pty-dice-btn:hover{border-color:var(--fighter);background:linear-gradient(180deg,#3a2710,#241808);transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,200,100,.15),0 6px 18px -6px rgba(212,137,26,.5)}
+.pty-dice-btn:active{transform:translateY(0);box-shadow:inset 0 2px 4px rgba(0,0,0,.4)}
+.pty-dice-btn .die-glyph{font-size:18px;line-height:1;color:var(--fighter);filter:drop-shadow(0 0 4px rgba(212,137,26,.4));font-family:Georgia,serif}
+.pty-dice-btn .die-lbl{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--fighter);font-family:'Cinzel',Georgia,serif;text-transform:uppercase}
+.pty-dice-opts{display:flex;gap:10px;padding:0 12px 12px;align-items:center}
+.pty-dice-opts label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--fighter);display:flex;align-items:center;gap:7px;flex:1;font-weight:700;font-family:'Cinzel',Georgia,serif}
+.pty-dice-opts input{background:var(--surface2);border:1px solid var(--border-hi);border-radius:5px;color:var(--text);font-size:13px;font-weight:600;padding:5px 7px;width:100%;min-width:0;outline:none;font-family:Georgia,serif;text-align:center;transition:border-color .15s}
+.pty-dice-opts input:focus{border-color:var(--fighter);box-shadow:0 0 0 2px rgba(212,137,26,.15)}
+.pty-dice-result{margin:0 12px 12px;background:linear-gradient(180deg,var(--surface2) 0%,#0f1219 100%);border:1px solid var(--border-hi);border-radius:8px;padding:10px 14px;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:10px;transition:all .25s}
+.pty-dice-result.rolling{border-color:var(--fighter);box-shadow:0 0 0 1px var(--fighter) inset,0 0 18px -4px rgba(212,137,26,.55)}
+.pty-dice-result.empty{color:var(--text-muted);font-style:italic;font-size:12px;justify-content:center;font-family:Georgia,serif}
+.pty-dice-result-total{font-size:28px;font-weight:700;font-family:Georgia,serif;color:var(--fighter);line-height:1;text-shadow:0 0 12px rgba(212,137,26,.4)}
+.pty-dice-result-detail{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;text-align:right;flex:1;min-width:0;word-break:break-word;line-height:1.4;letter-spacing:.02em}
 
 /* VTT Canvas */
 .vtc-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
 .vtc-tb{background:var(--surface2);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .vtc-tg{display:flex;align-items:center;gap:4px}
 .vtc-tg+.vtc-tg{padding-left:8px;border-left:1px solid var(--border)}
-.vtc-btn{background:var(--surface);border:1px solid var(--border-hi);border-radius:4px;color:var(--text-dim);font-size:11px;font-weight:600;padding:4px 8px;cursor:pointer;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;line-height:1.3}
-.vtc-btn:hover{border-color:var(--fighter);color:var(--text)}
-.vtc-btn.active{background:var(--fighter-pale);border-color:var(--fighter);color:var(--fighter)}
+.vtc-btn{background:linear-gradient(180deg,var(--surface),#0e1119);border:1px solid var(--border-hi);border-radius:6px;color:var(--text-dim);font-size:11px;font-weight:600;padding:5px 9px;cursor:pointer;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;line-height:1.3;letter-spacing:.02em}
+.vtc-btn:hover{border-color:var(--fighter);color:var(--fighter);background:linear-gradient(180deg,var(--surface),#1a1208);transform:translateY(-1px);box-shadow:0 2px 8px -4px rgba(212,137,26,.4)}
+.vtc-btn.active{background:linear-gradient(180deg,#2a1d0a,#1a1208);border-color:var(--fighter);color:var(--fighter);box-shadow:inset 0 1px 0 rgba(255,200,100,.1),0 0 0 1px rgba(212,137,26,.2)}
 .vtc-btn-danger{color:#c44040;border-color:rgba(196,64,64,.3)}
 .vtc-btn-danger:hover{background:rgba(196,64,64,.12);border-color:#c44040;color:#c44040}
 .vtc-swatch{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);flex-shrink:0;cursor:default}
@@ -1693,8 +1731,9 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-sec-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#a855f7;margin-bottom:4px}
 .dm-textarea{width:100%;background:var(--surface2);border:1px solid #5b21b6;border-radius:6px;color:var(--text);font-size:12px;padding:8px 10px;resize:vertical;min-height:72px;outline:none;font-family:inherit;line-height:1.45}
 .dm-textarea:focus{border-color:#c084fc}
-.dm-announce-btn{background:rgba(139,92,246,.15);border:1px solid #5b21b6;border-radius:6px;color:#c084fc;font-size:12px;font-weight:600;padding:7px 14px;cursor:pointer;width:100%;letter-spacing:.04em;transition:all .15s;margin-top:5px}
-.dm-announce-btn:hover{background:rgba(139,92,246,.28);border-color:#c084fc}
+.dm-announce-btn{background:linear-gradient(180deg,rgba(139,92,246,.25),rgba(91,33,182,.2));border:1px solid #5b21b6;border-radius:7px;color:#c084fc;font-size:12px;font-weight:700;padding:9px 16px;cursor:pointer;width:100%;letter-spacing:.08em;text-transform:uppercase;font-family:'Cinzel',Georgia,serif;transition:all .18s cubic-bezier(.4,1.2,.5,1);margin-top:6px;box-shadow:inset 0 1px 0 rgba(196,132,252,.15),0 1px 0 rgba(0,0,0,.3)}
+.dm-announce-btn:hover{background:linear-gradient(180deg,rgba(139,92,246,.4),rgba(91,33,182,.3));border-color:#c084fc;transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(196,132,252,.2),0 4px 14px -4px rgba(139,92,246,.5)}
+.dm-announce-btn:active{transform:translateY(0)}
 .dm-map-placeholder{background:var(--surface2);border:1px dashed #5b21b6;border-radius:6px;padding:24px;text-align:center;color:#7c3aed;font-size:11px;opacity:.65}
 
 @media(max-width:860px){
@@ -2090,40 +2129,45 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   </div>
 
   <!-- Active room view -->
-  <div id="pty-room-view" style="display:none;flex-direction:column;gap:12px;flex:1">
+  <div id="pty-room-view" style="display:none;flex-direction:column;gap:14px;flex:1">
 
-    <!-- Top row: canvas + side panel -->
-    <div style="display:flex;flex-direction:row;gap:12px;align-items:flex-start">
-
-    <!-- Main column: header + canvas + chat -->
-    <div class="pty-main-col">
-
-      <!-- Room header -->
-      <div class="pty-header">
-        <div>
-          <div class="pty-code-lbl">Room Code</div>
-          <div class="pty-code-badge" id="prv-code">——</div>
-        </div>
-        <div class="pty-status">
-          <div class="prv-dot connecting" id="prv-dot"></div>
-          <div class="pty-status-txt" id="prv-txt">Connecting…</div>
-        </div>
-        <div class="pty-header-right">
-          <div class="dm-unlock-row" id="dm-unlock-row">
-            <span class="dm-unlock-lbl">DM:</span>
-            <input type="password" class="pty-inp" id="dm-pw-inp" placeholder="DM password" style="width:120px;padding:5px 10px">
-            <button class="pty-btn ghost" onclick="tryDMUnlock()" style="padding:5px 10px">Unlock</button>
-          </div>
-          <button class="pty-btn ghost" onclick="leaveRoom()" style="padding:5px 10px">Leave</button>
-        </div>
+    <!-- Room header (full width across the top) -->
+    <div class="pty-header">
+      <div>
+        <div class="pty-code-lbl">Room Code</div>
+        <div class="pty-code-badge" id="prv-code">——</div>
       </div>
+      <div class="pty-status">
+        <div class="prv-dot connecting" id="prv-dot"></div>
+        <div class="pty-status-txt" id="prv-txt">Connecting…</div>
+      </div>
+      <div class="pty-header-right">
+        <div class="dm-unlock-row" id="dm-unlock-row">
+          <span class="dm-unlock-lbl">DM:</span>
+          <input type="password" class="pty-inp" id="dm-pw-inp" placeholder="DM password" style="width:130px;padding:6px 11px">
+          <button class="pty-btn ghost" onclick="tryDMUnlock()">Unlock</button>
+        </div>
+        <button class="pty-btn ghost" onclick="leaveRoom()">Leave Room</button>
+      </div>
+    </div>
+
+    <!-- Two-column row: char sheet (left) + tools (right) -->
+    <div class="pty-row">
+
+      <!-- LEFT: full-width character sheet -->
+      <div class="pty-cs-col">
+        <div id="pty-cs-full" class="pty-cs-full-wrap"></div>
+      </div>
+
+      <!-- RIGHT: tools — canvas, chat, dice, players, DM -->
+      <div class="pty-tools-col">
 
       <!-- VTT Canvas -->
       <div class="vtc-wrap">
         <div class="vtc-tb" id="vtc-tb">
           <div class="vtc-tg">
-            <button class="vtc-btn active" id="vtc-cursor" onclick="_cvSetTool('cursor')" title="Cursor — browse without triggering actions">⬆ Cursor</button>
-            <button class="vtc-btn" id="vtc-pan" onclick="_cvSetTool('pan')" title="Pan — move tokens, roll rooms, drag images">✋ Pan</button>
+            <button class="vtc-btn active" id="vtc-cursor" onclick="_cvSetTool('cursor')" title="Cursor — click rooms, drag tokens, pan map">⬆ Cursor</button>
+            <button class="vtc-btn" id="vtc-pan" onclick="_cvSetTool('pan')" title="Pan — drag the map">✋ Pan</button>
             <button class="vtc-btn" id="vtc-pen" onclick="_cvSetTool('pen')">✏ Draw</button>
             <button class="vtc-btn" id="vtc-eraser" onclick="_cvSetTool('eraser')">⬜ Erase</button>
             <button class="vtc-btn" id="vtc-room" onclick="_cvSetTool('room')" style="display:none" title="Draw room or hallway">▭ Room</button>
@@ -2182,14 +2226,29 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
         <div class="pty-input-row">
           <input class="pty-msg-inp" id="pty-msg-inp" placeholder="Message the party…" maxlength="500"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPartyMsg()}">
-          <button class="pty-btn" onclick="sendPartyMsg()" style="padding:7px 14px">Send</button>
+          <button class="pty-btn" onclick="sendPartyMsg()" style="padding:7px 16px">Send</button>
         </div>
       </div>
 
-    </div><!-- /pty-main-col -->
-
-    <!-- Side column: players + DM panel -->
-    <div class="pty-side-col">
+      <!-- Dice Roller -->
+      <div class="pty-dice-panel">
+        <div class="pty-panel-head">🎲 Dice Roller</div>
+        <div class="pty-dice-grid">
+          <button class="pty-dice-btn" onclick="partyRollDie(4)" title="Roll d4"><span class="die-glyph">▲</span><span class="die-lbl">d4</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(6)" title="Roll d6"><span class="die-glyph">◼</span><span class="die-lbl">d6</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(8)" title="Roll d8"><span class="die-glyph">◆</span><span class="die-lbl">d8</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(10)" title="Roll d10"><span class="die-glyph">⬢</span><span class="die-lbl">d10</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(12)" title="Roll d12"><span class="die-glyph">⬟</span><span class="die-lbl">d12</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(20)" title="Roll d20"><span class="die-glyph">✦</span><span class="die-lbl">d20</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(100)" title="Roll d100"><span class="die-glyph">%</span><span class="die-lbl">d100</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(2)" title="Coin flip"><span class="die-glyph">◐</span><span class="die-lbl">d2</span></button>
+        </div>
+        <div class="pty-dice-opts">
+          <label>Qty<input id="pty-dice-count" type="number" min="1" max="20" value="1"></label>
+          <label>Mod<input id="pty-dice-mod" type="number" value="0"></label>
+        </div>
+        <div class="pty-dice-result empty" id="pty-dice-result">Click a die to roll</div>
+      </div>
 
       <div class="pty-players-panel">
         <div class="pty-panel-head">Connected Players</div>
@@ -2214,12 +2273,8 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
         </div>
       </div>
 
-    </div><!-- /pty-side-col -->
-
-    </div><!-- /top row -->
-
-    <!-- Full-width character sheet row -->
-    <div id="pty-cs-full" class="pty-cs-full-wrap"></div>
+      </div><!-- /pty-tools-col -->
+    </div><!-- /pty-row -->
 
   </div><!-- /pty-room-view -->
 </div><!-- /tab-party -->
@@ -5688,6 +5743,7 @@ function switchTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   el.classList.add('active');
+  document.body.classList.toggle('party-mode', id==='party');
   if(id==='decks') render();
   if(id==='character') renderCharSheet();
   if(id==='equipment') renderEquipPage();
@@ -6522,16 +6578,17 @@ function _cvPDown(e){
   _cvPtrDown=true;
   const sx=e.offsetX, sy=e.offsetY;
 
-  // Middle-mouse, cursor tool, or pan tool → pan (cursor never triggers anything else)
-  if(e.button===1||(_cvTool==='cursor'&&e.button===0)||(_cvTool==='pan'&&e.button===0)){
+  // Middle-mouse always pans
+  if(e.button===1){
     _cvPanSX=sx;_cvPanSY=sy;_cvPanOX=_cvOX;_cvPanOY=_cvOY;
     _cvCvs.style.cursor='grabbing'; return;
   }
 
   const myId=partyPeer?.id;
 
-  // Pan-tool-only: token drag, room roll, image interactions
-  if(_cvTool==='pan'){
+  // Cursor & Pan tools: try interactive targets (tokens, rooms, images) first,
+  // fall through to panning if nothing is hit.
+  if((_cvTool==='cursor'||_cvTool==='pan')&&e.button===0){
     // Token hit check — my token first, then DM any
     if(myId&&_cvTokens[myId]){
       const tp=_w2s(_cvTokens[myId].wx,_cvTokens[myId].wy);
@@ -6586,6 +6643,10 @@ function _cvPDown(e){
       }
       _cvSelImgId=null;
     }
+
+    // Nothing interactive hit → start panning
+    _cvPanSX=sx;_cvPanSY=sy;_cvPanOX=_cvOX;_cvPanOY=_cvOY;
+    _cvCvs.style.cursor='grabbing'; return;
   }
 
   // Pin placement (DM only)
@@ -6686,7 +6747,7 @@ function _cvPUp(e){
     (_cvTool==='pen'||_cvTool==='room')?'crosshair':
     _cvTool==='eraser'?'cell':
     _cvTool==='pin'?'copy':
-    _cvTool==='pan'?'grab':
+    (_cvTool==='pan'||_cvTool==='cursor')?'grab':
     'default';
 
   if(_cvDragTokId){
@@ -7486,6 +7547,56 @@ function sendPartyMsg(){
   _broadcast(msg);
   _appendMsg({user:partyMyName,text,ts:msg.ts,isDM:partyIsDM,announce:false});
   inp.value='';
+}
+
+// Free-form dice roller (party room sidebar). Posts to chat if connected.
+function partyRollDie(sides){
+  const countEl=document.getElementById('pty-dice-count');
+  const modEl=document.getElementById('pty-dice-mod');
+  const resEl=document.getElementById('pty-dice-result');
+  if(!resEl) return;
+  const count=Math.max(1,Math.min(20,parseInt(countEl&&countEl.value)||1));
+  const mod=parseInt(modEl&&modEl.value)||0;
+  const rolls=[];
+  for(let i=0;i<count;i++) rolls.push(1+Math.floor(Math.random()*sides));
+  const sum=rolls.reduce((a,b)=>a+b,0);
+  const total=sum+mod;
+  const modStr=mod?(mod>0?'+'+mod:String(mod)):'';
+  const rollsStr=count>1?'['+rolls.join(', ')+']':'('+rolls[0]+')';
+  const expr=count+'d'+sides+modStr;
+  const detail=expr+' '+rollsStr+(count>1?' = '+sum+modStr:'')+' → '+total;
+
+  // Special-cases (single d20) — crit/fumble flavor
+  let flavor='';
+  if(sides===20&&count===1){
+    if(rolls[0]===20) flavor=' ✦ CRIT';
+    else if(rolls[0]===1) flavor=' ✗ Fumble';
+  }
+
+  // Animate roll
+  resEl.classList.remove('empty');
+  resEl.classList.add('rolling');
+  let cycles=0;
+  clearInterval(window._pdiceCycle);
+  window._pdiceCycle=setInterval(()=>{
+    cycles++;
+    const fake=1+Math.floor(Math.random()*sides);
+    resEl.innerHTML='<div class="pty-dice-result-total">'+(count>1?'…':fake)+'</div>'
+      +'<div class="pty-dice-result-detail">rolling '+expr+'…</div>';
+    if(cycles>=8){
+      clearInterval(window._pdiceCycle);
+      resEl.classList.remove('rolling');
+      resEl.innerHTML='<div class="pty-dice-result-total">'+total+'</div>'
+        +'<div class="pty-dice-result-detail">'+detail.replace('→ '+total,'')+'</div>';
+      // Post to chat if in a room
+      if(partyPeer&&partyPeer.open!==false){
+        const rollText='🎲 '+detail+flavor;
+        const msg={type:'chat',user:partyMyName,text:rollText,ts:Date.now(),isDM:partyIsDM};
+        _broadcast(msg);
+        _appendMsg({user:partyMyName,text:rollText,ts:msg.ts,isDM:partyIsDM,announce:false});
+      }
+    }
+  },55);
 }
 
 function dmAnnounce(){
