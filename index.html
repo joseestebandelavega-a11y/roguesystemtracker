@@ -6449,6 +6449,19 @@ document.addEventListener('input', function(e){
 
 // ── PARTY ROOM (PeerJS mesh + hub failover + VTT canvas) ────────────────────
 
+// Extra STUN servers improve NAT traversal discovery (no data passes through STUN servers)
+const PEER_CONFIG = {
+  debug: 0,
+  config: {
+    iceServers: [
+      {urls: 'stun:stun.l.google.com:19302'},
+      {urls: 'stun:stun1.l.google.com:19302'},
+      {urls: 'stun:stun2.l.google.com:19302'},
+      {urls: 'stun:stun3.l.google.com:19302'},
+    ]
+  }
+};
+
 // ─── Connection state ───────────────────────────────────────────────────────
 let partyPeer    = null;
 let partyHubPeer = null;
@@ -7724,7 +7737,16 @@ function _broadcast(data,excludeId){
 }
 
 function _setupConn(conn){
+  // Timeout: if ICE negotiation fails (symmetric NAT, firewall) conn.on('open') never fires
+  const _connTimeout=setTimeout(()=>{
+    if(!partyConns[conn.peer]){
+      _sysMsg('⚠ Connection timed out. Opera GX users: go to Settings → Privacy → WebRTC and disable WebRTC leak protection, then try again.');
+      conn.close();
+    }
+  }, 18000);
+
   conn.on('open',()=>{
+    clearTimeout(_connTimeout);
     partyConns[conn.peer]=conn;
     if(partyIsHub){
       // Welcome the new joiner with the full peer list + DM hash
@@ -7820,7 +7842,7 @@ function _tryBecomeHub(){
   setTimeout(()=>{
     if(partyIsHub) return;
     const hid=_hubId(partyRoomCode);
-    const hp=new Peer(hid,{debug:0});
+    const hp=new Peer(hid,PEER_CONFIG);
     hp.on('open',()=>{
       partyIsHub=true; partyHubPeer=hp; _ptyHubId=hid;
       _broadcast({type:'hub-elected',hubId:hid});
@@ -7839,7 +7861,7 @@ async function hostRoom(){
   partyRoomCode=code; partyIsHub=true;
   partyDMHash=pw?(await _hashPW(pw)):null;
 
-  partyPeer=new Peer(_hubId(code),{debug:0});
+  partyPeer=new Peer(_hubId(code),PEER_CONFIG);
 
   partyPeer.on('open',(id)=>{
     _ptyHubId=id;
@@ -7879,7 +7901,7 @@ function joinRoom(){
 
 function _joinInternal(code,name){
   partyMyName=name; partyRoomCode=code; partyIsHub=false;
-  partyPeer=new Peer({debug:0});
+  partyPeer=new Peer(PEER_CONFIG);
   partyPeer.on('open',(id)=>{
     myPlayerColor=_colorForPeer(id);
     partyPlayers[id]={name,isDM:false,color:myPlayerColor};
