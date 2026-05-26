@@ -1649,6 +1649,31 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 .pty-side-col::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
 
 .pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow-x:auto;overflow-y:visible;width:100%;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 4px 20px -10px rgba(0,0,0,.4)}
+.pty-sheet-tab{padding:4px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;font-size:11px;color:var(--text-dim);cursor:pointer;transition:all .15s;white-space:nowrap}
+.pty-sheet-tab:hover{border-color:var(--fighter);color:var(--text)}
+.pty-sheet-tab.active{background:var(--fighter-pale);border-color:var(--fighter);color:var(--fighter);font-weight:700}
+/* Read-only peer sheet */
+#pty-peer-sheet{padding:18px 22px;box-sizing:border-box;min-width:700px}
+.pty-peer-hd{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.pty-peer-name{font-size:20px;font-weight:700;font-family:Georgia,serif;color:var(--text)}
+.pty-peer-sub{font-size:12px;color:var(--text-dim)}
+.pty-peer-ro-badge{font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 7px;color:var(--text-muted);margin-left:auto;text-transform:uppercase;letter-spacing:.08em}
+.pty-peer-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pty-peer-stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;min-width:56px}
+.pty-peer-stat-k{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;display:block}
+.pty-peer-stat-v{font-size:15px;font-weight:700;color:var(--text);display:block;line-height:1.2;font-family:Georgia,serif}
+.pty-peer-stat-m{font-size:11px;color:var(--fighter);display:block}
+.pty-peer-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.pty-peer-box{flex:1;min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.pty-peer-box-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);font-weight:700;margin-bottom:4px}
+.pty-peer-box-val{font-size:22px;font-weight:700;color:var(--text);font-family:Georgia,serif}
+.pty-peer-hp-bar{height:5px;background:var(--border-hi);border-radius:3px;overflow:hidden;margin-top:4px}
+.pty-peer-hp-fill{height:100%;border-radius:3px;transition:width .3s}
+.pty-peer-section-hd{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);font-weight:700;margin-bottom:6px}
+.pty-peer-inv-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid var(--border);font-size:11px}
+.pty-peer-inv-row:last-child{border-bottom:none}
+.pty-peer-inv-name{flex:1;color:var(--text);font-weight:600}
+.pty-peer-inv-equipped{font-size:9px;color:var(--cc);text-transform:uppercase;letter-spacing:.06em}
 .pty-cs-full-wrap #tab-character{padding:20px 22px !important;font-size:14px}
 .pty-cs-full-wrap .cs-stat-shell{width:72px}
 .pty-cs-full-wrap .cs-stat-mod{font-size:28px}
@@ -2169,7 +2194,15 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 
       <!-- LEFT: full-width character sheet -->
       <div class="pty-cs-col">
+        <!-- Player sheet switcher (visible when others are in the room) -->
+        <div id="pty-sheet-switcher" style="display:none;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
+          <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-right:2px">Viewing:</span>
+          <div id="pty-sheet-tabs" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+        </div>
+        <!-- Own sheet (live) -->
         <div id="pty-cs-full" class="pty-cs-full-wrap"></div>
+        <!-- Other player's sheet (read-only) — hidden until a peer is selected -->
+        <div id="pty-peer-sheet" class="pty-cs-full-wrap" style="display:none"></div>
       </div>
 
       <!-- RIGHT: tools — canvas, chat, dice, players, DM -->
@@ -6248,6 +6281,12 @@ function scheduleSave(){
   _saveTimer = setTimeout(saveState, 800);
 }
 
+let _csSyncTimer=null;
+function scheduleCSSync(){
+  clearTimeout(_csSyncTimer);
+  _csSyncTimer=setTimeout(()=>{ if(partyPeer) _partyBroadcastCharSheet(); },400);
+}
+
 // Patch all state-mutating functions to schedule a save
 const _origRollStat = rollStat;
 rollStat = function(s){ _origRollStat(s); scheduleSave(); };
@@ -6298,6 +6337,35 @@ restoreSlot = function(idx){ _origRestoreSlot(idx); scheduleSave(); };
 
 const _origSelectSubclass = selectSubclass;
 selectSubclass = function(sc,el){ _origSelectSubclass(sc,el); scheduleSave(); };
+
+// ── Real-time CS sync hooks ───────────────────────────────────────────────────
+// Wrap every state-mutating function to also broadcast the sheet to peers
+(function(){
+  const _wrap=(fn,orig)=>function(...a){ orig.apply(this,a); scheduleCSSync(); };
+  rollStat        = _wrap(rollStat,       rollStat);
+  rollAllStats    = _wrap(rollAllStats,   rollAllStats);
+  rollNextHP      = _wrap(rollNextHP,     rollNextHP);
+  resetHP         = _wrap(resetHP,        resetHP);
+  addToInventory  = _wrap(addToInventory, addToInventory);
+  removeFromInventory = _wrap(removeFromInventory, removeFromInventory);
+  toggleEquipped  = _wrap(toggleEquipped, toggleEquipped);
+  useSlot         = _wrap(useSlot,        useSlot);
+  restoreSlot     = _wrap(restoreSlot,    restoreSlot);
+  if(typeof useResource==='function')     useResource     = _wrap(useResource,    useResource);
+  if(typeof restoreResource==='function') restoreResource = _wrap(restoreResource, restoreResource);
+  if(typeof onClassChange==='function')   onClassChange   = _wrap(onClassChange,   onClassChange);
+  onLevelChange   = _wrap(onLevelChange,  onLevelChange);
+  onRaceChange    = _wrap(onRaceChange,   onRaceChange);
+  if(typeof toggleInsp==='function')      toggleInsp      = _wrap(toggleInsp,     toggleInsp);
+  if(typeof toggleDeath==='function')     toggleDeath     = _wrap(toggleDeath,    toggleDeath);
+})();
+
+// Sync on HP input (typed directly into hp field)
+document.addEventListener('input',function(e){
+  if(['cs-hp-cur','cs-hp-temp','cs-ac','cs-speed'].includes(e.target.id)){
+    scheduleCSSync();
+  }
+});
 
 // Save on input changes in the sheet
 document.addEventListener('input', function(e){
@@ -6736,7 +6804,7 @@ function _cvPMove(e){
   e.preventDefault();
   const sx=e.offsetX, sy=e.offsetY;
 
-  if(_cvPtrDown&&(e.buttons===4||((_cvTool==='pan'||_cvTool==='cursor')&&e.buttons===1))){
+  if(_cvPtrDown&&!_cvDragTokId&&!_cvResizingImg&&!_cvDragImgData&&(e.buttons===4||((_cvTool==='pan'||_cvTool==='cursor')&&e.buttons===1))){
     _cvOX=_cvPanOX-(sx-_cvPanSX); _cvOY=_cvPanOY-(sy-_cvPanSY); return;
   }
 
@@ -7132,14 +7200,38 @@ function _cvPlaceMyToken(){
 function _getPartyCharData(){
   const maxHp=hpLevels.reduce((a,x)=>a+x.total,0);
   const curEl=document.getElementById('cs-hp-cur');
+  const tempEl=document.getElementById('cs-hp-temp');
+  const acEl=document.getElementById('cs-ac');
+  const initEl=document.getElementById('cs-init');
+  const speedEl=document.getElementById('cs-speed');
+  // death saves
+  const dsSucc=document.querySelectorAll('.cs-death-suc.active')?.length||0;
+  const dsFail=document.querySelectorAll('.cs-death-fail.active')?.length||0;
+  // slot usage
+  const slotSnap=[...usedSlots];
+  // skills/saves proficiencies
+  const skillArr=[...skillProfs];
+  const saveArr=[...saveProfs];
   return {
     name:partyMyName,
     charName:charName||partyMyName,
     level:currentLevel,
     className:currentClass,
+    subclass:currentSubclass||'',
+    race:currentRace||'none',
     stats:{...stats},
     hp:parseInt(curEl?.value)||0,
-    maxHp:maxHp||parseInt(document.getElementById('cs-hp-max')?.textContent)||0,
+    hpTemp:parseInt(tempEl?.value)||0,
+    maxHp:maxHp||0,
+    ac:parseInt(acEl?.value)||10,
+    init:initEl?.textContent||'+0',
+    speed:parseInt(speedEl?.value)||30,
+    inspired:!!document.querySelector('.cs-inspire.active'),
+    inventory:[...inventory].map(i=>({id:i.id,name:i.name,qty:i.qty,equipped:i.equipped,cat:i.cat,stat:i.stat,wt:i.wt})),
+    usedSlots:slotSnap,
+    skillProfs:skillArr,
+    saveProfs:saveArr,
+    deathSaves:{s:dsSucc,f:dsFail},
   };
 }
 
@@ -7152,71 +7244,152 @@ function _partyBroadcastCharSheet(){
 }
 
 function _renderPartyCharSheet(){
+  // ── Mini sidebar sheet panel (pty-cs-body) ──────────────────────────────
   const body=document.getElementById('pty-cs-body');
   const titleEl=document.getElementById('pty-cs-title');
   const switcher=document.getElementById('pty-cs-switcher');
-  if(!body) return;
   const myId=partyPeer?.id;
 
-  // DM switcher tabs (DM sees all player sheets)
-  if(partyIsDM&&switcher){
+  if(body){
     const peers=Object.keys(partyCharSheets);
-    if(peers.length>1){
-      switcher.style.display='flex';
-      let tabs='';
-      peers.forEach(pid=>{
-        const d=partyCharSheets[pid];
-        const active=(_partyViewingPeer||myId)===pid;
-        tabs+=`<button class="pty-cs-tab${active?' active':''}" onclick="_partySetViewPeer('${pid}')">${_escH(d.name||'?')}</button>`;
-      });
-      switcher.innerHTML=tabs;
-    } else { switcher.style.display='none'; }
-  } else if(switcher){ switcher.style.display='none'; }
+    if(switcher){
+      if(peers.length>1){
+        switcher.style.display='flex';
+        let tabs='';
+        peers.forEach(pid=>{
+          const d=partyCharSheets[pid];
+          const active=(_partyViewingPeer||myId)===pid;
+          tabs+=`<button class="pty-cs-tab${active?' active':''}" onclick="_partySetViewPeer('${pid}')">${_escH(d.name||'?')}</button>`;
+        });
+        switcher.innerHTML=tabs;
+      } else { switcher.style.display='none'; }
+    }
 
-  // Determine whose data to show
-  const viewId=partyIsDM?(_partyViewingPeer||myId):myId;
-  const data=viewId?partyCharSheets[viewId]:null;
-  const isOwn=viewId===myId;
+    const viewId=_partyViewingPeer||myId;
+    const data=viewId?partyCharSheets[viewId]:null;
+    const isOwn=viewId===myId;
+    if(!data){
+      body.innerHTML='<div class="pty-cs-empty">No character data yet.</div>';
+      if(titleEl) titleEl.textContent='Character Sheet';
+    } else {
+      if(titleEl) titleEl.textContent=isOwn?'Your Sheet':_escH(data.name)+'\'s Sheet';
+      const pb=Math.ceil((data.level||1)/4)+1;
+      const statList=Object.entries(data.stats||{}).map(([k,v])=>{
+        const m=Math.floor((v-10)/2);
+        const mStr=(m>=0?'+':'')+m;
+        const clickable=isOwn?`onclick="doRoll('${k.toUpperCase()} Check','${k}',false)"`:'' ;
+        return `<div class="pty-cs-stat" ${clickable}><span class="pty-cs-stat-k">${k.toUpperCase()}</span><span class="pty-cs-stat-v">${v}</span><span class="pty-cs-stat-m">${mStr}</span></div>`;
+      }).join('');
+      const hpPct=data.maxHp>0?Math.max(0,Math.min(100,Math.round(data.hp/data.maxHp*100))):0;
+      const hpColor=hpPct>50?'var(--green)':hpPct>25?'#d4891a':'var(--red)';
+      body.innerHTML=`<div class="pty-cs-id"><div class="pty-cs-name">${_escH(data.charName||data.name)}</div><div class="pty-cs-sub">Level ${data.level} ${_escH(data.className||'')} · Prof +${pb}</div></div><div class="pty-cs-hp-row"><span class="pty-cs-hp-lbl">HP ${data.hp}/${data.maxHp}${data.hpTemp?' (+'+data.hpTemp+'t)':''}</span><div class="pty-cs-hp-bar"><div class="pty-cs-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div></div><div class="pty-cs-stats">${statList}</div>${isOwn?'<div class="pty-cs-roll-badge">Click a stat to roll a check</div>':''}`;
+    }
+  }
 
-  if(!data){
-    body.innerHTML='<div class="pty-cs-empty">No character data yet.</div>';
-    if(titleEl) titleEl.textContent='Character Sheet';
+  // ── Full sheet switcher (above pty-cs-full) ──────────────────────────────
+  _renderFullSheetSwitcher();
+}
+
+function _renderFullSheetSwitcher(){
+  const myId=partyPeer?.id;
+  const switcherRow=document.getElementById('pty-sheet-switcher');
+  const tabsEl=document.getElementById('pty-sheet-tabs');
+  const ownPanel=document.getElementById('pty-cs-full');
+  const peerPanel=document.getElementById('pty-peer-sheet');
+  if(!switcherRow||!tabsEl||!ownPanel||!peerPanel) return;
+
+  const peers=Object.keys(partyCharSheets);
+  if(peers.length<=1){
+    switcherRow.style.display='none';
+    ownPanel.style.display='';
+    peerPanel.style.display='none';
     return;
   }
 
-  if(titleEl) titleEl.textContent=isOwn?'Your Sheet':_escH(data.name)+'\'s Sheet';
+  switcherRow.style.display='flex';
+  const viewId=_partyViewingPeer||myId;
 
+  // Build tabs: "My Sheet" + one per peer
+  let tabsHtml=`<button class="pty-sheet-tab${(!_partyViewingPeer||_partyViewingPeer===myId)?' active':''}" onclick="_partySetViewPeer('${myId}')">My Sheet</button>`;
+  peers.forEach(pid=>{
+    if(pid===myId) return;
+    const d=partyCharSheets[pid];
+    const col=partyPlayers[pid]?.color||'var(--text-dim)';
+    const active=_partyViewingPeer===pid;
+    tabsHtml+=`<button class="pty-sheet-tab${active?' active':''}" onclick="_partySetViewPeer('${pid}')" style="${active?'':''}border-color:${active?col:'var(--border)'};color:${active?col:'var(--text-dim)'}">${_escH(d.name||'?')}</button>`;
+  });
+  tabsEl.innerHTML=tabsHtml;
+
+  const isViewingOwn=!_partyViewingPeer||_partyViewingPeer===myId;
+  ownPanel.style.display=isViewingOwn?'':'none';
+  peerPanel.style.display=isViewingOwn?'none':'';
+  if(!isViewingOwn) _renderPeerSheet(partyCharSheets[_partyViewingPeer],_partyViewingPeer);
+}
+
+function _renderPeerSheet(data,peerId){
+  const el=document.getElementById('pty-peer-sheet');
+  if(!el||!data) return;
   const pb=Math.ceil((data.level||1)/4)+1;
-  const statList=Object.entries(data.stats||{}).map(([k,v])=>{
-    const m=Math.floor((v-10)/2);
-    const mStr=(m>=0?'+':'')+m;
-    const clickable=isOwn?`onclick="doRoll('${k.toUpperCase()} Check','${k}',false)"`:'' ;
-    return `<div class="pty-cs-stat" ${clickable} title="${isOwn?'Roll '+k.toUpperCase():''}">
-      <span class="pty-cs-stat-k">${k.toUpperCase()}</span>
-      <span class="pty-cs-stat-v">${v}</span>
-      <span class="pty-cs-stat-m">${mStr}</span>
-    </div>`;
-  }).join('');
-
+  const col=partyPlayers[peerId]?.color||'var(--fighter)';
   const hpPct=data.maxHp>0?Math.max(0,Math.min(100,Math.round(data.hp/data.maxHp*100))):0;
   const hpColor=hpPct>50?'var(--green)':hpPct>25?'#d4891a':'var(--red)';
 
-  body.innerHTML=`
-    <div class="pty-cs-id">
-      <div class="pty-cs-name">${_escH(data.charName||data.name)}</div>
-      <div class="pty-cs-sub">Level ${data.level} ${_escH(data.className||'')} · Prof +${pb}</div>
+  const statOrder=['str','dex','con','int','wis','cha'];
+  const statHtml=statOrder.map(k=>{
+    const v=(data.stats||{})[k]||10;
+    const m=Math.floor((v-10)/2);
+    return `<div class="pty-peer-stat">
+      <span class="pty-peer-stat-k">${k.toUpperCase()}</span>
+      <span class="pty-peer-stat-v">${v}</span>
+      <span class="pty-peer-stat-m">${m>=0?'+':''}${m}</span>
+    </div>`;
+  }).join('');
+
+  const equipped=(data.inventory||[]).filter(i=>i.equipped);
+  const unequipped=(data.inventory||[]).filter(i=>!i.equipped);
+
+  const invHtml=[...equipped,...unequipped].map(i=>`
+    <div class="pty-peer-inv-row">
+      <span class="pty-peer-inv-name">${_escH(i.name)}${(i.qty||1)>1?' ×'+(i.qty||1):''}</span>
+      ${i.equipped?'<span class="pty-peer-inv-equipped">Equipped</span>':''}
+      <span style="font-size:10px;color:var(--text-dim)">${i.stat||''}</span>
+    </div>`).join('');
+
+  el.innerHTML=`
+    <div class="pty-peer-hd">
+      <div>
+        <div class="pty-peer-name" style="color:${col}">${_escH(data.charName||data.name)}</div>
+        <div class="pty-peer-sub">Level ${data.level||1} ${_escH(data.className||'')}${data.subclass?' — '+_escH(data.subclass):''} · Prof +${pb}</div>
+      </div>
+      <span class="pty-peer-ro-badge">Read-Only</span>
     </div>
-    <div class="pty-cs-hp-row">
-      <span class="pty-cs-hp-lbl">HP ${data.hp}/${data.maxHp}</span>
-      <div class="pty-cs-hp-bar"><div class="pty-cs-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>
+    <div class="pty-peer-stats">${statHtml}</div>
+    <div class="pty-peer-row">
+      <div class="pty-peer-box">
+        <div class="pty-peer-box-lbl">Hit Points</div>
+        <div class="pty-peer-box-val" style="color:${hpColor}">${data.hp}<span style="font-size:14px;color:var(--text-dim)">/${data.maxHp}</span>${data.hpTemp?'<span style="font-size:13px;color:var(--blue)"> +'+data.hpTemp+'t</span>':''}</div>
+        <div class="pty-peer-hp-bar"><div class="pty-peer-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>
+      </div>
+      <div class="pty-peer-box">
+        <div class="pty-peer-box-lbl">Armor Class</div>
+        <div class="pty-peer-box-val">${data.ac||10}</div>
+      </div>
+      <div class="pty-peer-box">
+        <div class="pty-peer-box-lbl">Initiative</div>
+        <div class="pty-peer-box-val">${data.init||'+0'}</div>
+      </div>
+      <div class="pty-peer-box">
+        <div class="pty-peer-box-lbl">Speed</div>
+        <div class="pty-peer-box-val">${data.speed||30}<span style="font-size:12px;color:var(--text-dim)"> ft</span></div>
+      </div>
     </div>
-    <div class="pty-cs-stats">${statList}</div>
-    ${isOwn?'<div class="pty-cs-roll-badge">Click a stat to roll a check</div>':''}
+    ${data.inventory?.length?`<div class="pty-peer-section-hd">Inventory (${data.inventory.length} items)</div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;max-height:220px;overflow-y:auto">${invHtml}</div>`:''}
   `;
 }
 
 function _partySetViewPeer(pid){
-  _partyViewingPeer=pid;
+  const myId=partyPeer?.id;
+  _partyViewingPeer=(pid===myId)?null:pid;
   _renderPartyCharSheet();
 }
 
@@ -7482,6 +7655,7 @@ function _handleData(d,fromConn){
       if(partyPlayers[d.id]){
         _sysMsg(d.name+' left');
         delete partyCharSheets[d.id];
+        if(_partyViewingPeer===d.id) _partyViewingPeer=null;
         delete partyPlayers[d.id];_renderPlayers();
         _renderPartyCharSheet();
       }break;
