@@ -1594,10 +1594,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 }
 
 /* ── PARTY ROOM ─────────────────────────────────────────────────────────── */
-body.party-mode{align-items:stretch}
-body.party-mode .content{max-width:none;padding:0;margin:0;width:100%}
-body.party-mode .header,body.party-mode .tabs-inner{max-width:none;width:100%;box-sizing:border-box}
-#tab-party{display:none;flex-direction:column;gap:12px;padding:16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100%}
+#tab-party{display:none;flex-direction:column;gap:12px;padding:12px 16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100vw}
 #tab-party.active{display:flex}
 
 /* Setup / connect area */
@@ -1636,7 +1633,7 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:none;width:100%;bo
 /* Party room two-column layout: char sheet (left) + tools (right) */
 .pty-row{display:flex;flex-direction:row;gap:14px;align-items:stretch;flex:1;min-width:0}
 .pty-cs-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
-.pty-tools-col{width:clamp(380px,32%,560px);flex-shrink:0;display:flex;flex-direction:column;gap:0;height:calc(100vh - 100px);position:sticky;top:10px}
+.pty-tools-col{width:38%;min-width:420px;flex-shrink:0;display:flex;flex-direction:column;gap:0;height:calc(100vh - 100px);position:sticky;top:10px}
 .pty-tools-scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px;padding-bottom:8px}
 .pty-tools-scroll > *{flex-shrink:0}
 .pty-tools-scroll::-webkit-scrollbar{width:5px}
@@ -3565,11 +3562,13 @@ let chosenCard = null;
 function getCD(){return CLASS_DATA_MAP[currentClass]||CLASS_DATA_MAP.fighter;}
 let activeTier=0; // 0=all, 1/2/3=specific tier
 function tierFromRoll(roll){return roll<=7?1:roll<=14?2:3;}
+function getClassFeatureIds(){return new Set((CLASS_STARTING_FEATURES[currentClass]||[]).map(f=>f.id));}
 function getMainPool(tier){
   const cd=getCD();
+  const cfIds=getClassFeatureIds();
   let cards=[...cd.generalCards];
   if(currentSubclass!=='none'&&cd.subclassCards[currentSubclass]) cards=cards.concat(cd.subclassCards[currentSubclass]);
-  let pool=cards.filter(c=>c.level<=currentLevel&&!acquiredMain.has(c.id));
+  let pool=cards.filter(c=>c.level<=currentLevel&&!acquiredMain.has(c.id)&&!cfIds.has(c.id));
   const t=tier||activeTier;
   if(t>0) pool=pool.filter(c=>{
     if(c.tier) return c.tier===t;
@@ -3599,7 +3598,8 @@ function renderSubclassBtns(){
 function render(){
   renderSubclassBtns();
   const cd=getCD();
-  const allMain=[...cd.generalCards,...(currentSubclass!=='none'?cd.subclassCards[currentSubclass]||[]:[])];
+  const cfIds=getClassFeatureIds();
+  const allMain=[...cd.generalCards,...(currentSubclass!=='none'?cd.subclassCards[currentSubclass]||[]:[])].filter(c=>!cfIds.has(c.id));
   allMain.sort((a,b)=>(a.level||0)-(b.level||0)||(a.spell||0)-(b.spell||0));
   const mainPool=getMainPool();
   const tierLabel=activeTier?['','Weak','Middle','Best'][activeTier]:'All';
@@ -3659,8 +3659,10 @@ function render(){
   }
 
   const _cd=getCD();const allCards=[..._cd.generalCards,...Object.values(_cd.subclassCards).flat()];
+  const _cfIds=getClassFeatureIds();
   const acqMainEl=document.getElementById('acquired-main');
-  acqMainEl.innerHTML=acquiredMain.size===0?'<span class="no-acquired">None yet</span>':[...acquiredMain].map(id=>{const c=allCards.find(x=>x.id===id);return c?`<div class="chip">${c.name}<span class="chip-x" onclick="removeAcquired('main','${id}')">×</span></div>`:''}).join('');
+  const acqMainFiltered=[...acquiredMain].filter(id=>!_cfIds.has(id));
+  acqMainEl.innerHTML=acqMainFiltered.length===0?'<span class="no-acquired">None yet</span>':acqMainFiltered.map(id=>{const c=allCards.find(x=>x.id===id);return c?`<div class="chip">${c.name}<span class="chip-x" onclick="removeAcquired('main','${id}')">×</span></div>`:''}).join('');
   const allSub=hasSubDeck?SUB_DECKS[currentSubclass].cards:[];
   const acqSubEl=document.getElementById('acquired-sub-chips');
   acqSubEl.innerHTML=acquiredSub.size===0?'<span class="no-acquired">None yet</span>':[...acquiredSub].map(id=>{const c=allSub.find(x=>x.id===id);return c?`<div class="chip">${c.name}<span class="chip-x" onclick="removeAcquired('sub','${id}')">×</span></div>`:''}).join('');
