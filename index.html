@@ -6549,27 +6549,8 @@ function _cvPDown(e){
         }
       }
     }
-    // Image resize or drag (selected image corners = resize, body = drag)
+    // Image body drag
     const w2=_s2w(sx,sy);
-    if(_cvSelImgId){
-      const selImg=_cvImages.find(i=>i.id===_cvSelImgId);
-      if(selImg){
-        const t2=TILE*_cvZoom;
-        const imgSX=_w2s(selImg.wx,selImg.wy).x;
-        const imgSY=_w2s(selImg.wx,selImg.wy).y;
-        const imgEX=imgSX+selImg.ww*t2, imgEY=imgSY+selImg.wh*t2;
-        const hs=10;
-        const corners=[[imgSX,imgSY,'nw'],[imgEX,imgSY,'ne'],[imgEX,imgEY,'se'],[imgSX,imgEY,'sw']];
-        for(const [cx2,cy2,cname] of corners){
-          if(Math.abs(sx-cx2)<hs&&Math.abs(sy-cy2)<hs){
-            _cvResizingImg={id:selImg.id,corner:cname,
-              origWW:selImg.ww,origWH:selImg.wh,origWX:selImg.wx,origWY:selImg.wy,
-              startSX:sx,startSY:sy};
-            return;
-          }
-        }
-      }
-    }
     for(let i=_cvImages.length-1;i>=0;i--){
       const img=_cvImages[i];
       if(w2.x>=img.wx&&w2.x<=img.wx+img.ww&&w2.y>=img.wy&&w2.y<=img.wy+img.wh){
@@ -6578,6 +6559,7 @@ function _cvPDown(e){
       }
     }
     _cvSelImgId=null;
+
   }
 
   // Room draw tool (DM)
