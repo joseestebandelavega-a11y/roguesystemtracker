@@ -1628,11 +1628,25 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-unlock-row{display:flex;gap:6px;align-items:center}
 .dm-unlock-lbl{font-size:10px;color:var(--text-muted);letter-spacing:.05em;white-space:nowrap}
 
-/* Main layout */
-.pty-layout{display:grid;grid-template-columns:1fr 240px;gap:12px;flex:1;min-height:0}
-.pty-layout.no-dm .pty-right-col{display:none}
-.pty-layout.no-dm{grid-template-columns:1fr 200px}
-.pty-right-col{display:flex;flex-direction:column;gap:12px;min-width:0}
+/* Main layout — always shows right col (player list); DM panel toggled inside */
+.pty-layout{display:grid;grid-template-columns:1fr 220px;gap:10px;align-items:start}
+.pty-right-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+
+/* VTT Canvas */
+.vtc-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+.vtc-tb{background:var(--surface2);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.vtc-tg{display:flex;align-items:center;gap:4px}
+.vtc-tg+.vtc-tg{padding-left:8px;border-left:1px solid var(--border)}
+.vtc-btn{background:var(--surface);border:1px solid var(--border-hi);border-radius:4px;color:var(--text-dim);font-size:11px;font-weight:600;padding:4px 8px;cursor:pointer;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;line-height:1.3}
+.vtc-btn:hover{border-color:var(--fighter);color:var(--text)}
+.vtc-btn.active{background:var(--fighter-pale);border-color:var(--fighter);color:var(--fighter)}
+.vtc-btn-danger{color:#c44040;border-color:rgba(196,64,64,.3)}
+.vtc-btn-danger:hover{background:rgba(196,64,64,.12);border-color:#c44040;color:#c44040}
+.vtc-swatch{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);flex-shrink:0;cursor:default}
+.vtc-slider{width:60px;accent-color:var(--fighter);cursor:pointer;vertical-align:middle}
+.vtc-zoom-lbl{font-size:10px;color:var(--text-dim);min-width:32px;text-align:center}
+.vtc-cont{position:relative;height:clamp(280px,48vh,520px);background:#0f1219;overflow:hidden}
+#pty-canvas{display:block;width:100%;height:100%;touch-action:none}
 
 /* Players panel */
 .pty-players-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
@@ -2034,7 +2048,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   </div>
 
   <!-- Active room view -->
-  <div id="pty-room-view" style="display:none;flex-direction:column;gap:12px;flex:1">
+  <div id="pty-room-view" style="display:none;flex-direction:column;gap:10px;flex:1">
 
     <!-- Room header -->
     <div class="pty-header">
@@ -2048,42 +2062,75 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       </div>
       <div class="pty-header-right">
         <div class="dm-unlock-row" id="dm-unlock-row">
-          <span class="dm-unlock-lbl">DM unlock:</span>
-          <input type="password" class="pty-inp" id="dm-pw-inp" placeholder="DM password" style="width:130px;padding:5px 10px">
-          <button class="pty-btn ghost" onclick="tryDMUnlock()" style="padding:5px 12px">Unlock</button>
+          <span class="dm-unlock-lbl">DM:</span>
+          <input type="password" class="pty-inp" id="dm-pw-inp" placeholder="DM password" style="width:120px;padding:5px 10px">
+          <button class="pty-btn ghost" onclick="tryDMUnlock()" style="padding:5px 10px">Unlock</button>
         </div>
-        <button class="pty-btn ghost" onclick="leaveRoom()" style="padding:5px 12px">Leave</button>
+        <button class="pty-btn ghost" onclick="leaveRoom()" style="padding:5px 10px">Leave</button>
       </div>
     </div>
 
-    <!-- Two-column layout: chat left, sidebar right -->
-    <div class="pty-layout no-dm" id="pty-layout" style="flex:1">
+    <!-- VTT Canvas -->
+    <div class="vtc-wrap">
+      <div class="vtc-tb" id="vtc-tb">
+        <div class="vtc-tg">
+          <button class="vtc-btn active" id="vtc-pan" onclick="_cvSetTool('pan')">✋ Pan</button>
+          <button class="vtc-btn" id="vtc-pen" onclick="_cvSetTool('pen')">✏ Draw</button>
+          <button class="vtc-btn" id="vtc-eraser" onclick="_cvSetTool('eraser')">⬜ Erase</button>
+          <button class="vtc-btn" id="vtc-room" onclick="_cvSetTool('room')" style="display:none" title="Draw room or hallway">▭ Room</button>
+        </div>
+        <div class="vtc-tg">
+          <div class="vtc-swatch" id="vtc-swatch" title="Your color"></div>
+          <input type="range" class="vtc-slider" id="vtc-brush" min="2" max="16" value="4" oninput="_cvSetBrush(+this.value)" title="Brush size">
+        </div>
+        <div class="vtc-tg">
+          <button class="vtc-btn" onclick="_cvUndo()" title="Undo my last stroke">↩ Undo</button>
+        </div>
+        <div class="vtc-tg">
+          <button class="vtc-btn" onclick="_cvZoomBy(-0.25)" title="Zoom out">−</button>
+          <span class="vtc-zoom-lbl" id="vtc-zoom-lbl">100%</span>
+          <button class="vtc-btn" onclick="_cvZoomBy(0.25)" title="Zoom in">+</button>
+          <button class="vtc-btn" onclick="_cvResetView()" title="Reset view">⊡</button>
+        </div>
+        <div class="vtc-tg" id="vtc-dm-tools" style="display:none">
+          <label class="vtc-btn" title="Upload image onto map">
+            🖼 Image<input type="file" accept="image/*" style="display:none" onchange="_cvDmUploadImg(this)">
+          </label>
+          <button class="vtc-btn" onclick="_cvDmDeleteSelImg()" title="Delete selected image">✖ Img</button>
+          <button class="vtc-btn vtc-btn-danger" onclick="_cvDmClearDrawings()" title="Erase all player drawings">🗑 Drawings</button>
+          <button class="vtc-btn" onclick="_cvDmNewFloor()" title="Advance to next dungeon floor">⬇ Floor</button>
+        </div>
+      </div>
+      <div class="vtc-cont" id="vtc-cont">
+        <canvas id="pty-canvas"></canvas>
+        <div style="position:absolute;bottom:6px;right:8px;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none;letter-spacing:.04em">Pan: drag · Draw: ✏ · Zoom: scroll · DM: ▭ draws rooms</div>
+      </div>
+    </div>
 
-      <!-- Chat panel -->
+    <!-- Chat + Sidebar -->
+    <div class="pty-layout" id="pty-layout">
+
+      <!-- Chat -->
       <div class="pty-chat-panel">
         <div class="pty-panel-head">Chat</div>
         <div class="pty-log" id="pty-log"></div>
         <div class="pty-input-row">
           <input class="pty-msg-inp" id="pty-msg-inp" placeholder="Message the party…" maxlength="500"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPartyMsg()}">
-          <button class="pty-btn" onclick="sendPartyMsg()" style="padding:7px 16px">Send</button>
+          <button class="pty-btn" onclick="sendPartyMsg()" style="padding:7px 14px">Send</button>
         </div>
       </div>
 
       <!-- Right column: players + DM panel -->
       <div class="pty-right-col">
-
-        <!-- Connected players -->
         <div class="pty-players-panel">
           <div class="pty-panel-head">Connected Players</div>
           <div class="pty-player-list" id="party-player-list"></div>
         </div>
-
-        <!-- DM Panel (hidden until DM unlocked) -->
         <div class="dm-panel" id="dm-panel">
           <div class="dm-panel-head">
             <div class="dm-panel-icon">👑</div>
-            <div class="dm-panel-title">Dungeon Master Controls</div>
+            <div class="dm-panel-title">Dungeon Master</div>
           </div>
           <div class="dm-body">
             <div>
@@ -2092,17 +2139,13 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
             </div>
             <div>
               <div class="dm-sec-lbl">Party Announcement</div>
-              <textarea class="dm-textarea" id="dm-announce-area" placeholder="Send a dramatic announcement to the party…" rows="3"></textarea>
-              <button class="dm-announce-btn" onclick="dmAnnounce()">📣 Announce to Party</button>
-            </div>
-            <div>
-              <div class="dm-sec-lbl">Map</div>
-              <div class="dm-map-placeholder">Map sharing — coming soon</div>
+              <textarea class="dm-textarea" id="dm-announce-area" placeholder="Announce to the party…" rows="3"></textarea>
+              <button class="dm-announce-btn" onclick="dmAnnounce()">📣 Announce</button>
             </div>
           </div>
         </div>
+      </div>
 
-      </div><!-- /pty-right-col -->
     </div><!-- /pty-layout -->
 
   </div><!-- /pty-room-view -->
@@ -5611,6 +5654,7 @@ function switchTab(id,el){
   if(id==='character') renderCharSheet();
   if(id==='equipment') renderEquipPage();
   if(id==='party' && partyPeer) _partyStatus();
+  if(id==='party') _cvInit();
 }
 
 function openInfo(tab){
@@ -6122,20 +6166,574 @@ document.addEventListener('input', function(e){
   if(saveable.includes(e.target.id)) scheduleSave();
 });
 
-// ── PARTY ROOM (PeerJS mesh + hub failover) ───────────────────────────────
+// ── PARTY ROOM (PeerJS mesh + hub failover + VTT canvas) ────────────────────
 
-let partyPeer    = null;   // Our main PeerJS peer
-let partyHubPeer = null;   // Secondary hub peer (only during hub takeover)
-let partyConns   = {};     // peerId → DataConnection
+// ─── Connection state ───────────────────────────────────────────────────────
+let partyPeer    = null;
+let partyHubPeer = null;
+let partyConns   = {};
 let partyRoomCode= null;
 let partyMyName  = '';
 let partyIsDM    = false;
-let partyDMHash  = null;   // SHA-256 hash of DM password
+let partyDMHash  = null;
 let partyIsHub   = false;
-let _ptyHubId    = null;   // Peer ID of the current hub
-let partyPlayers = {};     // peerId → {name, isDM}
+let _ptyHubId    = null;
+let partyPlayers = {};     // peerId → {name, isDM, color}
 
+// ─── VTT constants ──────────────────────────────────────────────────────────
+const PLAYER_COLORS=['#f87171','#60a5fa','#34d399','#fbbf24','#a78bfa','#f472b6','#38bdf8','#fb923c','#a3e635','#e879f9'];
+const VTT_ROOM_TYPES=[
+  {type:'combat',  label:'Combat',   color:'#e05555', weight:66},
+  {type:'treasure',label:'Treasure', color:'#d4891a', weight:20},
+  {type:'shop',    label:'Shop',     color:'#5599d4', weight:10},
+  {type:'healing', label:'Healing',  color:'#4a8c3a', weight:4},
+];
+const TILE=40;  // base tile size in pixels at zoom=1
+
+// ─── VTT canvas state ───────────────────────────────────────────────────────
+let myPlayerColor=null;
+let _cvCvs=null,_cvCtx=null,_cvInited=false,_cvRafId=null;
+let _cvW=800,_cvH=500;
+let _cvZoom=1,_cvOX=0,_cvOY=0;
+// Drawings
+let _cvStrokes=[],_cvPartials={},_cvCur=null;
+let _cvTool='pan',_cvBrush=4,_cvSid=0,_cvUndoIds=[];
+// Map structures
+let _cvRooms=[],_cvDraft=null,_healingCount=0,_floorCount=1;
+// Images
+let _cvImages=[],_cvSelImgId=null,_cvDragImgData=null;
+// Tokens
+let _cvTokens={},_cvDragTokId=null;
+// Pointer
+let _cvPtrDown=false;
+let _cvPanSX=0,_cvPanSY=0,_cvPanOX=0,_cvPanOY=0;
+let _cvTokTimer=null;
+
+// ─── Coord & color helpers ───────────────────────────────────────────────────
 function _hubId(code){ return 'rsg-h-'+code.toUpperCase(); }
+
+function _colorForPeer(id){
+  let h=5381;
+  for(let i=0;i<id.length;i++) h=((h<<5)+h)^id.charCodeAt(i);
+  return PLAYER_COLORS[Math.abs(h)%PLAYER_COLORS.length];
+}
+
+function _w2s(wx,wy){ const t=TILE*_cvZoom; return {x:wx*t-_cvOX,y:wy*t-_cvOY}; }
+function _s2w(sx,sy){ const t=TILE*_cvZoom; return {x:(sx+_cvOX)/t,y:(sy+_cvOY)/t}; }
+
+// ─── Canvas init & loop ──────────────────────────────────────────────────────
+function _cvInit(){
+  const cvs=document.getElementById('pty-canvas');
+  if(!cvs) return;
+  _cvCvs=cvs; _cvCtx=cvs.getContext('2d');
+  _cvResize();
+  if(!_cvInited){
+    _cvInited=true;
+    _cvOX=5*TILE-_cvW/2; _cvOY=5*TILE-_cvH/2;
+    _cvAttachEvents();
+    if(window.ResizeObserver){
+      new ResizeObserver(_cvResize).observe(document.getElementById('vtc-cont'));
+    }
+  }
+  if(!_cvRafId) _cvRafId=requestAnimationFrame(_cvLoop);
+}
+
+function _cvResize(){
+  const cont=document.getElementById('vtc-cont');
+  if(!cont||!_cvCvs) return;
+  _cvW=cont.clientWidth||800; _cvH=cont.clientHeight||400;
+  _cvCvs.width=_cvW; _cvCvs.height=_cvH;
+}
+
+function _cvLoop(){ _cvRafId=requestAnimationFrame(_cvLoop); _cvRender(); }
+
+// ─── Rendering ───────────────────────────────────────────────────────────────
+function _cvRender(){
+  if(!_cvCtx) return;
+  const ctx=_cvCtx, W=_cvW, H=_cvH;
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle='#0f1219'; ctx.fillRect(0,0,W,H);
+
+  // Grid
+  const t=TILE*_cvZoom;
+  ctx.save(); ctx.strokeStyle='#1c2235'; ctx.lineWidth=0.5;
+  const gox=(((-_cvOX)%t)+t)%t, goy=(((-_cvOY)%t)+t)%t;
+  for(let x=gox;x<=W;x+=t){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+  for(let y=goy;y<=H;y+=t){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+  ctx.restore();
+
+  // Rooms
+  _cvRooms.forEach(r=>_cvDrawRoom(ctx,r));
+
+  // Draft room (DM dragging)
+  if(_cvDraft){
+    const gx=Math.min(_cvDraft.gx1,_cvDraft.gx2);
+    const gy=Math.min(_cvDraft.gy1,_cvDraft.gy2);
+    const gw=Math.max(1,Math.abs(_cvDraft.gx2-_cvDraft.gx1));
+    const gh=Math.max(1,Math.abs(_cvDraft.gy2-_cvDraft.gy1));
+    const p=_w2s(gx,gy); const isHall=gw===1||gh===1;
+    ctx.save();
+    ctx.strokeStyle=isHall?'#5599d4':'#d4891a'; ctx.lineWidth=2; ctx.setLineDash([5,4]);
+    ctx.fillStyle=isHall?'rgba(85,153,212,.1)':'rgba(212,137,26,.1)';
+    ctx.fillRect(p.x,p.y,gw*t,gh*t); ctx.strokeRect(p.x,p.y,gw*t,gh*t);
+    ctx.restore();
+  }
+
+  // Images
+  _cvImages.forEach(img=>_cvDrawImg(ctx,img));
+
+  // Strokes
+  ctx.save();
+  _cvStrokes.forEach(s=>_cvDrawStroke(ctx,s));
+  Object.values(_cvPartials).forEach(s=>_cvDrawStroke(ctx,s));
+  if(_cvCur) _cvDrawStroke(ctx,_cvCur);
+  ctx.restore();
+
+  // Tokens
+  Object.entries(_cvTokens).forEach(([pid,tok])=>_cvDrawToken(ctx,pid,tok));
+}
+
+function _cvDrawRoom(ctx,r){
+  const t=TILE*_cvZoom;
+  const p=_w2s(r.gx,r.gy); const pw=r.gw*t, ph=r.gh*t;
+  const isHall=r.gw===1||r.gh===1;
+  ctx.save();
+  // Fill
+  if(r.type==='combat')        ctx.fillStyle='rgba(224,85,85,.2)';
+  else if(r.type==='treasure') ctx.fillStyle='rgba(212,137,26,.2)';
+  else if(r.type==='shop')     ctx.fillStyle='rgba(85,153,212,.2)';
+  else if(r.type==='healing')  ctx.fillStyle='rgba(74,140,58,.2)';
+  else if(isHall)              ctx.fillStyle='rgba(60,80,130,.35)';
+  else                         ctx.fillStyle='rgba(25,32,60,.7)';
+  ctx.fillRect(p.x,p.y,pw,ph);
+  // Border
+  ctx.strokeStyle=r.type?(VTT_ROOM_TYPES.find(x=>x.type===r.type)||{color:'#3a4260'}).color:isHall?'#3a4a80':'#3a4260';
+  ctx.lineWidth=1.5; ctx.strokeRect(p.x,p.y,pw,ph);
+  // Label / roll button (rooms only)
+  if(!isHall&&pw>24&&ph>24){
+    const cx=p.x+pw/2, cy=p.y+ph/2;
+    if(r.type){
+      const rt=VTT_ROOM_TYPES.find(x=>x.type===r.type);
+      ctx.fillStyle=rt?rt.color:'#e8e4d9';
+      ctx.font='bold '+Math.min(13,pw/5)+'px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText((r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':'')+r.label,cx,cy);
+    } else {
+      const bw=Math.min(72,pw-6), bh=Math.min(26,ph-6);
+      ctx.fillStyle='rgba(212,137,26,.2)';
+      ctx.beginPath(); ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,3); ctx.fill();
+      ctx.strokeStyle='#d4891a'; ctx.lineWidth=1; ctx.stroke();
+      ctx.fillStyle='#d4891a';
+      ctx.font='bold '+Math.min(10,bw/7)+'px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('Roll Room',cx,cy);
+    }
+  }
+  if(isHall&&(pw>36||ph>36)){
+    ctx.fillStyle='rgba(255,255,255,.22)'; ctx.font='9px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('hall',p.x+pw/2,p.y+ph/2);
+  }
+  ctx.restore();
+}
+
+function _cvDrawImg(ctx,img){
+  if(!img.el||!img.el.complete||img.el.naturalWidth===0) return;
+  const t=TILE*_cvZoom;
+  const p=_w2s(img.wx,img.wy); const sw=img.ww*t, sh=img.wh*t;
+  ctx.save();
+  ctx.translate(p.x+sw/2,p.y+sh/2);
+  ctx.rotate((img.rot||0)*Math.PI/180);
+  ctx.drawImage(img.el,-sw/2,-sh/2,sw,sh);
+  if(_cvSelImgId===img.id){
+    ctx.strokeStyle='#d4891a'; ctx.lineWidth=2; ctx.setLineDash([4,4]);
+    ctx.strokeRect(-sw/2,-sh/2,sw,sh);
+  }
+  ctx.restore();
+}
+
+function _cvDrawStroke(ctx,s){
+  if(!s.pts||s.pts.length<2) return;
+  ctx.save();
+  if(s.tool==='eraser'){
+    ctx.globalCompositeOperation='destination-out';
+    ctx.strokeStyle='rgba(0,0,0,1)';
+  } else {
+    ctx.strokeStyle=s.color||'#fff';
+  }
+  ctx.lineWidth=Math.max(1,s.w*_cvZoom);
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath();
+  const p0=_w2s(s.pts[0].x,s.pts[0].y); ctx.moveTo(p0.x,p0.y);
+  for(let i=1;i<s.pts.length;i++){
+    const pi=_w2s(s.pts[i].x,s.pts[i].y); ctx.lineTo(pi.x,pi.y);
+  }
+  ctx.stroke(); ctx.restore();
+}
+
+function _cvDrawToken(ctx,pid,tok){
+  const p=_w2s(tok.wx,tok.wy);
+  const pl=partyPlayers[pid];
+  const color=pl?.color||'#d4891a';
+  const name=pl?.name||'?';
+  const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=7;
+  ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
+  ctx.fillStyle=color; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#fff';
+  ctx.font='bold '+Math.floor(r*0.85)+'px sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(name.slice(0,2).toUpperCase(),p.x,p.y);
+  ctx.restore();
+}
+
+// ─── Input events ────────────────────────────────────────────────────────────
+function _cvAttachEvents(){
+  const c=_cvCvs;
+  c.addEventListener('pointerdown',_cvPDown,{passive:false});
+  c.addEventListener('pointermove',_cvPMove,{passive:false});
+  c.addEventListener('pointerup',_cvPUp,{passive:false});
+  c.addEventListener('pointerleave',_cvPUp,{passive:false});
+  c.addEventListener('wheel',_cvWheel,{passive:false});
+  c.addEventListener('contextmenu',e=>e.preventDefault());
+}
+
+function _cvPDown(e){
+  e.preventDefault();
+  _cvCvs.setPointerCapture(e.pointerId);
+  _cvPtrDown=true;
+  const sx=e.offsetX, sy=e.offsetY;
+
+  // Middle-mouse or pan tool → pan
+  if(e.button===1||(_cvTool==='pan'&&e.button===0)){
+    _cvPanSX=sx;_cvPanSY=sy;_cvPanOX=_cvOX;_cvPanOY=_cvOY;
+    _cvCvs.style.cursor='grabbing'; return;
+  }
+
+  const myId=partyPeer?.id;
+
+  // Token hit check — my token first, then DM any
+  if(myId&&_cvTokens[myId]){
+    const tp=_w2s(_cvTokens[myId].wx,_cvTokens[myId].wy);
+    const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
+    if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=myId; return; }
+  }
+  if(partyIsDM){
+    for(const [pid,tok] of Object.entries(_cvTokens)){
+      if(pid===myId) continue;
+      const tp=_w2s(tok.wx,tok.wy);
+      const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
+      if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
+    }
+  }
+
+  // Room roll-button click (DM only, untyped rooms)
+  if(partyIsDM){
+    const w=_s2w(sx,sy);
+    for(const r of _cvRooms){
+      const isHall=r.gw===1||r.gh===1;
+      if(!isHall&&!r.type&&w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
+        _cvDmRollRoom(r.id); return;
+      }
+    }
+    // Image drag
+    const w2=_s2w(sx,sy);
+    for(let i=_cvImages.length-1;i>=0;i--){
+      const img=_cvImages[i];
+      if(w2.x>=img.wx&&w2.x<=img.wx+img.ww&&w2.y>=img.wy&&w2.y<=img.wy+img.wh){
+        _cvSelImgId=img.id;
+        _cvDragImgData={id:img.id,startSX:sx,startSY:sy,origWX:img.wx,origWY:img.wy}; return;
+      }
+    }
+    _cvSelImgId=null;
+  }
+
+  // Room draw tool (DM)
+  if(_cvTool==='room'&&partyIsDM){
+    const w=_s2w(sx,sy);
+    const gx=Math.round(w.x), gy=Math.round(w.y);
+    _cvDraft={gx1:gx,gy1:gy,gx2:gx+1,gy2:gy+1}; return;
+  }
+
+  // Drawing
+  if((_cvTool==='pen'||_cvTool==='eraser')&&myId){
+    const w=_s2w(sx,sy);
+    _cvCur={
+      id:myId+'-'+(++_cvSid),
+      peerId:myId,
+      color:myPlayerColor||'#f87171',
+      tool:_cvTool,
+      w:_cvBrush,
+      pts:[{x:w.x,y:w.y}]
+    };
+  }
+}
+
+function _cvPMove(e){
+  e.preventDefault();
+  const sx=e.offsetX, sy=e.offsetY;
+
+  if(_cvPtrDown&&(e.buttons===4||(_cvTool==='pan'&&e.buttons===1))){
+    _cvOX=_cvPanOX-(sx-_cvPanSX); _cvOY=_cvPanOY-(sy-_cvPanSY); return;
+  }
+
+  if(_cvPtrDown&&_cvDragTokId){
+    const w=_s2w(sx,sy);
+    _cvTokens[_cvDragTokId]={wx:w.x,wy:w.y};
+    clearTimeout(_cvTokTimer);
+    _cvTokTimer=setTimeout(()=>{
+      if(_cvDragTokId) _broadcast({type:'cv-token-move',peerId:_cvDragTokId,wx:_cvTokens[_cvDragTokId].wx,wy:_cvTokens[_cvDragTokId].wy});
+    },50);
+    return;
+  }
+
+  if(_cvPtrDown&&_cvDragImgData&&partyIsDM){
+    const t=TILE*_cvZoom;
+    const dx=(sx-_cvDragImgData.startSX)/t, dy=(sy-_cvDragImgData.startSY)/t;
+    const img=_cvImages.find(i=>i.id===_cvDragImgData.id);
+    if(img){ img.wx=_cvDragImgData.origWX+dx; img.wy=_cvDragImgData.origWY+dy; }
+    return;
+  }
+
+  if(_cvPtrDown&&_cvDraft&&_cvTool==='room'&&partyIsDM){
+    const w=_s2w(sx,sy);
+    _cvDraft.gx2=Math.round(w.x); _cvDraft.gy2=Math.round(w.y); return;
+  }
+
+  if(_cvPtrDown&&_cvCur){
+    const w=_s2w(sx,sy);
+    _cvCur.pts.push({x:w.x,y:w.y});
+    if(_cvCur.pts.length%8===0){
+      _broadcast({type:'cv-partial',stroke:{..._cvCur,pts:[..._cvCur.pts]}});
+    }
+  }
+}
+
+function _cvPUp(e){
+  _cvPtrDown=false;
+  if(_cvCvs) _cvCvs.style.cursor=_cvTool==='pen'||_cvTool==='room'?'crosshair':_cvTool==='eraser'?'cell':'grab';
+
+  if(_cvDragTokId){
+    const tok=_cvTokens[_cvDragTokId];
+    if(tok){ tok.wx=Math.round(tok.wx*2)/2; tok.wy=Math.round(tok.wy*2)/2;
+      _broadcast({type:'cv-token-move',peerId:_cvDragTokId,wx:tok.wx,wy:tok.wy}); }
+    _cvDragTokId=null; return;
+  }
+
+  if(_cvDragImgData&&partyIsDM){
+    const img=_cvImages.find(i=>i.id===_cvDragImgData.id);
+    if(img) _broadcast({type:'cv-image-move',id:img.id,wx:img.wx,wy:img.wy,ww:img.ww,wh:img.wh,rot:img.rot||0});
+    _cvDragImgData=null; return;
+  }
+
+  if(_cvDraft&&partyIsDM){
+    const gx=Math.min(_cvDraft.gx1,_cvDraft.gx2);
+    const gy=Math.min(_cvDraft.gy1,_cvDraft.gy2);
+    const gw=Math.max(1,Math.abs(_cvDraft.gx2-_cvDraft.gx1));
+    const gh=Math.max(1,Math.abs(_cvDraft.gy2-_cvDraft.gy1));
+    const room={id:'r'+Date.now(),gx,gy,gw,gh,type:null,label:null,color:null};
+    _cvRooms.push(room);
+    _broadcast({type:'cv-room-add',room});
+    _cvDraft=null; return;
+  }
+
+  if(_cvCur){
+    if(_cvCur.pts.length>=2){
+      const s={..._cvCur,pts:[..._cvCur.pts]};
+      _cvStrokes.push(s);
+      _cvUndoIds.push(_cvCur.id);
+      if(_cvUndoIds.length>60) _cvUndoIds.shift();
+      _broadcast({type:'cv-stroke',stroke:s});
+    }
+    _cvCur=null;
+  }
+}
+
+function _cvWheel(e){
+  e.preventDefault();
+  const factor=e.deltaY>0?-0.1:0.1;
+  const newZ=Math.max(0.2,Math.min(4,_cvZoom+factor));
+  const w=_s2w(e.offsetX,e.offsetY);
+  _cvZoom=newZ;
+  _cvOX=w.x*TILE*_cvZoom-e.offsetX;
+  _cvOY=w.y*TILE*_cvZoom-e.offsetY;
+  const zlbl=document.getElementById('vtc-zoom-lbl');
+  if(zlbl) zlbl.textContent=Math.round(_cvZoom*100)+'%';
+}
+
+// ─── Tool controls ───────────────────────────────────────────────────────────
+function _cvSetTool(t){
+  _cvTool=t;
+  ['pan','pen','eraser','room'].forEach(id=>{
+    const b=document.getElementById('vtc-'+id);
+    if(b) b.classList.toggle('active',id===t);
+  });
+  if(_cvCvs) _cvCvs.style.cursor=(t==='pen'||t==='room')?'crosshair':t==='eraser'?'cell':'grab';
+}
+
+function _cvSetBrush(v){ _cvBrush=v; }
+
+function _cvZoomBy(delta){
+  const newZ=Math.max(0.2,Math.min(4,_cvZoom+delta));
+  const cx=_cvW/2, cy=_cvH/2;
+  const w=_s2w(cx,cy);
+  _cvZoom=newZ;
+  _cvOX=w.x*TILE*_cvZoom-cx; _cvOY=w.y*TILE*_cvZoom-cy;
+  const zlbl=document.getElementById('vtc-zoom-lbl');
+  if(zlbl) zlbl.textContent=Math.round(_cvZoom*100)+'%';
+}
+
+function _cvResetView(){
+  _cvZoom=1; _cvOX=5*TILE-_cvW/2; _cvOY=5*TILE-_cvH/2;
+  const zlbl=document.getElementById('vtc-zoom-lbl');
+  if(zlbl) zlbl.textContent='100%';
+}
+
+function _cvUndo(){
+  if(!_cvUndoIds.length||!partyPeer) return;
+  const id=_cvUndoIds.pop();
+  _cvStrokes=_cvStrokes.filter(s=>s.id!==id);
+  _broadcast({type:'cv-stroke-undo',id,peerId:partyPeer.id});
+}
+
+// ─── DM map actions ──────────────────────────────────────────────────────────
+function _vttRollType(){
+  const max=Math.ceil(0.75*_floorCount);
+  const pool=VTT_ROOM_TYPES.filter(t=>t.type!=='healing'||_healingCount<max);
+  const total=pool.reduce((s,t)=>s+t.weight,0);
+  let r=Math.random()*total;
+  for(const t of pool){ r-=t.weight; if(r<=0) return t; }
+  return pool[pool.length-1];
+}
+
+function _cvDmRollRoom(roomId){
+  if(!partyIsDM) return;
+  const rt=_vttRollType();
+  const room=_cvRooms.find(r=>r.id===roomId);
+  if(!room) return;
+  room.type=rt.type; room.label=rt.label; room.color=rt.color;
+  if(rt.type==='healing') _healingCount++;
+  _broadcast({type:'cv-room-rolled',id:roomId,rtype:rt.type,label:rt.label,color:rt.color});
+}
+
+function _cvDmClearDrawings(){
+  if(!partyIsDM) return;
+  _cvStrokes=[]; _cvPartials={}; _cvUndoIds=[];
+  _broadcast({type:'cv-clear-all'});
+}
+
+function _cvDmNewFloor(){
+  if(!partyIsDM) return;
+  _floorCount++; _healingCount=0;
+  _sysMsg('New floor started — Floor '+_floorCount+'. Healing rooms reset.');
+  _broadcast({type:'cv-new-floor',floor:_floorCount});
+}
+
+function _cvDmDeleteSelImg(){
+  if(!partyIsDM||!_cvSelImgId) return;
+  _cvImages=_cvImages.filter(i=>i.id!==_cvSelImgId);
+  _broadcast({type:'cv-image-del',id:_cvSelImgId});
+  _cvSelImgId=null;
+}
+
+function _cvDmUploadImg(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const tmp=new Image();
+    tmp.onload=()=>{
+      const MAX=1200; let sw=tmp.width,sh=tmp.height;
+      if(sw>MAX||sh>MAX){const ratio=Math.min(MAX/sw,MAX/sh);sw=Math.round(sw*ratio);sh=Math.round(sh*ratio);}
+      const off=document.createElement('canvas');
+      off.width=sw; off.height=sh;
+      off.getContext('2d').drawImage(tmp,0,0,sw,sh);
+      const src=off.toDataURL('image/jpeg',0.82);
+      const ww=sw/TILE, wh=sh/TILE;
+      const ctr=_s2w(_cvW/2,_cvH/2);
+      const data={id:'img'+Date.now(),src,wx:ctr.x-ww/2,wy:ctr.y-wh/2,ww,wh,rot:0};
+      const el=new Image(); el.src=src;
+      _cvImages.push({...data,el});
+      _broadcast({type:'cv-image-add',img:data});
+    };
+    tmp.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+function _cvPlaceMyToken(){
+  if(!partyPeer) return;
+  const id=partyPeer.id;
+  if(_cvTokens[id]) return;
+  const ctr=_s2w(_cvW/2,_cvH/2);
+  const wx=ctr.x+(Math.random()*6-3), wy=ctr.y+(Math.random()*6-3);
+  _cvTokens[id]={wx,wy};
+  _broadcast({type:'cv-token-move',peerId:id,wx,wy});
+}
+
+function _cvSyncPayload(){
+  return {
+    strokes:_cvStrokes,
+    rooms:_cvRooms,
+    images:_cvImages.map(({el,...rest})=>rest),
+    tokens:_cvTokens,
+    healingCount:_healingCount,
+    floorCount:_floorCount
+  };
+}
+
+function _cvApplySync(d){
+  _cvStrokes=d.strokes||[];
+  _cvRooms=d.rooms||[];
+  _healingCount=d.healingCount||0;
+  _floorCount=d.floorCount||1;
+  _cvTokens=d.tokens||{};
+  _cvImages=(d.images||[]).map(img=>{ const el=new Image();el.src=img.src; return {...img,el}; });
+}
+
+function _cvHandleMsg(d){
+  switch(d.type){
+    case 'cv-stroke':
+      if(!_cvStrokes.find(s=>s.id===d.stroke.id)) _cvStrokes.push(d.stroke);
+      delete _cvPartials[d.stroke.peerId]; break;
+    case 'cv-partial':
+      _cvPartials[d.stroke.peerId]=d.stroke; break;
+    case 'cv-stroke-undo':
+      _cvStrokes=_cvStrokes.filter(s=>s.id!==d.id);
+      delete _cvPartials[d.peerId]; break;
+    case 'cv-clear-all':
+      _cvStrokes=[];_cvPartials={};_cvUndoIds=[]; break;
+    case 'cv-room-add':
+      if(!_cvRooms.find(r=>r.id===d.room.id)) _cvRooms.push(d.room); break;
+    case 'cv-room-rolled':
+      { const rr=_cvRooms.find(r=>r.id===d.id);
+        if(rr){rr.type=d.rtype;rr.label=d.label;rr.color=d.color;}
+        if(d.rtype==='healing') _healingCount++; } break;
+    case 'cv-room-del':
+      _cvRooms=_cvRooms.filter(r=>r.id!==d.id); break;
+    case 'cv-image-add':
+      if(!_cvImages.find(i=>i.id===d.img.id)){
+        const el=new Image();el.src=d.img.src;
+        _cvImages.push({...d.img,el}); } break;
+    case 'cv-image-move':
+      { const mi=_cvImages.find(i=>i.id===d.id);
+        if(mi){mi.wx=d.wx;mi.wy=d.wy;mi.ww=d.ww;mi.wh=d.wh;mi.rot=d.rot;} } break;
+    case 'cv-image-del':
+      _cvImages=_cvImages.filter(i=>i.id!==d.id); break;
+    case 'cv-token-move':
+      _cvTokens[d.peerId]={wx:d.wx,wy:d.wy}; break;
+    case 'cv-new-floor':
+      _floorCount=d.floor; _healingCount=0;
+      _sysMsg('Floor '+_floorCount+' started. Healing rooms reset.'); break;
+    case 'cv-sync':
+      _cvApplySync(d); break;
+  }
+}
 
 function _genCode(){
   const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -6177,8 +6775,9 @@ function _renderPlayers(){
   let html='';
   Object.entries(partyPlayers).forEach(([id,p])=>{
     const self=id===myId;
+    const dotColor=p.color||_colorForPeer(id);
     html+=`<div class="pty-player">
-      <div class="pty-pdot"></div>
+      <div class="pty-pdot" style="background:${dotColor}"></div>
       <div class="pty-pname">${_escH(p.name)}${self?'<span class="pty-self"> (you)</span>':''}</div>
       ${p.isDM?'<div class="pty-badge dm">DM</div>':''}
     </div>`;
@@ -6217,7 +6816,7 @@ function _setupConn(conn){
       // Welcome the new joiner with the full peer list + DM hash
       const peers=Object.entries(partyPlayers).map(([id,p])=>({id,name:p.name,isDM:p.isDM}));
       try{conn.send({type:'welcome',peers,dmHash:partyDMHash,roomCode:partyRoomCode,
-        hostId:partyPeer.id,hostName:partyMyName});}catch(e){}
+        hostId:partyPeer.id,hostName:partyMyName,cvSync:_cvSyncPayload()});}catch(e){}
       // Tell everyone else a new peer joined
       const joinName=conn.metadata?.name||'Player';
       _broadcast({type:'peer-join',id:conn.peer,name:joinName},conn.peer);
@@ -6249,24 +6848,27 @@ function _handleData(d,fromConn){
       partyDMHash=d.dmHash;
       _sysMsg('Joined room '+d.roomCode);
       // Add the hub as a player
-      if(d.hostId) partyPlayers[d.hostId]={name:d.hostName||'Host',isDM:false};
+      if(d.hostId) partyPlayers[d.hostId]={name:d.hostName||'Host',isDM:false,color:_colorForPeer(d.hostId)};
       // Mesh: connect to every other peer already in the room
       (d.peers||[]).forEach(p=>{
         if(p.id!==partyPeer.id&&!partyConns[p.id]){
-          partyPlayers[p.id]={name:p.name,isDM:p.isDM};
+          partyPlayers[p.id]={name:p.name,isDM:p.isDM,color:_colorForPeer(p.id)};
           _setupConn(partyPeer.connect(p.id,{metadata:{name:partyMyName}}));
         }
       });
+      // Restore canvas state from host snapshot
+      if(d.cvSync) _cvApplySync(d.cvSync);
+      _cvPlaceMyToken();
       _renderPlayers();
       // Show DM unlock only if a DM password is set in this room
       if(!d.dmHash) document.getElementById('dm-unlock-row').style.display='none';
       break;
     case 'hello':
-      if(d.id) partyPlayers[d.id]={name:d.name,isDM:d.isDM};
+      if(d.id) partyPlayers[d.id]={name:d.name,isDM:d.isDM,color:_colorForPeer(d.id)};
       _renderPlayers();break;
     case 'peer-join':
       _sysMsg(d.name+' joined the room');
-      partyPlayers[d.id]={name:d.name,isDM:false};
+      partyPlayers[d.id]={name:d.name,isDM:false,color:_colorForPeer(d.id)};
       _renderPlayers();break;
     case 'peer-leave':
       if(partyPlayers[d.id]){
@@ -6286,6 +6888,9 @@ function _handleData(d,fromConn){
     case 'hub-elected':
       _ptyHubId=d.hubId;
       _sysMsg('Room connection restored');break;
+    default:
+      if(d.type&&d.type.startsWith('cv-')) _cvHandleMsg(d,fromConn);
+      break;
   }
 }
 
@@ -6318,7 +6923,9 @@ async function hostRoom(){
 
   partyPeer.on('open',(id)=>{
     _ptyHubId=id;
-    partyPlayers[id]={name,isDM:false};
+    myPlayerColor=_colorForPeer(id);
+    partyPlayers[id]={name,isDM:false,color:myPlayerColor};
+    const sw=document.getElementById('vtc-swatch');if(sw)sw.style.background=myPlayerColor;
     _showRoom(code);
     _sysMsg('Room created — share code: '+code);
     if(pw){
@@ -6327,6 +6934,7 @@ async function hostRoom(){
     }
     // Hide DM unlock if no password set
     if(!pw) document.getElementById('dm-unlock-row').style.display='none';
+    _cvPlaceMyToken();
     _renderPlayers();_partyStatus();
   });
   partyPeer.on('connection',conn=>_setupConn(conn));
@@ -6352,7 +6960,9 @@ function _joinInternal(code,name){
   partyMyName=name; partyRoomCode=code; partyIsHub=false;
   partyPeer=new Peer({debug:0});
   partyPeer.on('open',(id)=>{
-    partyPlayers[id]={name,isDM:false};
+    myPlayerColor=_colorForPeer(id);
+    partyPlayers[id]={name,isDM:false,color:myPlayerColor};
+    const sw=document.getElementById('vtc-swatch');if(sw)sw.style.background=myPlayerColor;
     const conn=partyPeer.connect(_hubId(code),{metadata:{name}});
     _ptyHubId=_hubId(code);
     _setupConn(conn);
@@ -6417,6 +7027,9 @@ function leaveRoom(){
   if(partyHubPeer){try{partyHubPeer.destroy();}catch(e){}}
   partyPeer=null;partyHubPeer=null;partyConns={};partyPlayers={};
   partyRoomCode=null;partyIsHub=false;partyIsDM=false;partyDMHash=null;_ptyHubId=null;
+  myPlayerColor=null;
+  _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvTokens={};_cvPartials={};_cvCur=null;
+  _cvDraft=null;_healingCount=0;_floorCount=1;_cvUndoIds=[];_cvSid=0;
   const setupV=document.getElementById('pty-setup-view');
   const roomV=document.getElementById('pty-room-view');
   if(setupV) setupV.style.display='';
@@ -6442,6 +7055,11 @@ function _showDMPanel(){
   if(ul) ul.style.display='none';
   const layout=document.getElementById('pty-layout');
   if(layout) layout.classList.remove('no-dm');
+  // Reveal DM-only VTT controls
+  const dmTools=document.getElementById('vtc-dm-tools');
+  if(dmTools) dmTools.style.display='flex';
+  const roomBtn=document.getElementById('vtc-room');
+  if(roomBtn) roomBtn.style.display='';
 }
 
 // ── END PARTY ROOM ───────────────────────────────────────────────────────────
