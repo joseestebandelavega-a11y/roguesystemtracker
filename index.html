@@ -1594,9 +1594,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 }
 
 /* ── PARTY ROOM ─────────────────────────────────────────────────────────── */
-body.party-mode .content{max-width:1400px}
-body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
-#tab-party{display:none;flex-direction:column;gap:12px;padding:16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100%;max-width:1400px;margin:0 auto}
+#tab-party{display:none;flex-direction:column;gap:12px;padding:12px 16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100vw}
 #tab-party.active{display:flex}
 
 /* Setup / connect area */
@@ -1633,13 +1631,14 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 .dm-unlock-lbl{font-size:10px;color:var(--text-muted);letter-spacing:.05em;white-space:nowrap}
 
 /* Party room two-column layout: char sheet (left) + tools (right) */
-.pty-row{display:flex;flex-direction:row;gap:14px;align-items:flex-start;flex:1;min-width:0}
+.pty-row{display:flex;flex-direction:row;gap:14px;align-items:stretch;flex:1;min-width:0}
 .pty-cs-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
-.pty-tools-col{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 100px);overflow-y:auto;position:sticky;top:10px;padding-right:4px}
-.pty-tools-col > *{flex-shrink:0}
-.pty-tools-col::-webkit-scrollbar{width:5px}
-.pty-tools-col::-webkit-scrollbar-track{background:transparent}
-.pty-tools-col::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+.pty-tools-col{width:38%;min-width:420px;flex-shrink:0;display:flex;flex-direction:column;gap:0;height:calc(100vh - 100px);position:sticky;top:10px}
+.pty-tools-scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px;padding-bottom:8px}
+.pty-tools-scroll > *{flex-shrink:0}
+.pty-tools-scroll::-webkit-scrollbar{width:5px}
+.pty-tools-scroll::-webkit-scrollbar-track{background:transparent}
+.pty-tools-scroll::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
 /* Legacy aliases preserved for any inline refs */
 .pty-main-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
 .pty-side-col{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 100px);overflow-y:auto;position:sticky;top:10px;padding-right:4px}
@@ -1649,10 +1648,38 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 .pty-side-col::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
 
 .pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;width:100%;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 4px 20px -10px rgba(0,0,0,.4)}
+.pty-sheet-tab{padding:4px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;font-size:11px;color:var(--text-dim);cursor:pointer;transition:all .15s;white-space:nowrap}
+.pty-sheet-tab:hover{border-color:var(--fighter);color:var(--text)}
+.pty-sheet-tab.active{background:var(--fighter-pale);border-color:var(--fighter);color:var(--fighter);font-weight:700}
+/* Read-only peer sheet */
+#pty-peer-sheet{padding:18px 22px;box-sizing:border-box}
+.pty-peer-hd{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.pty-peer-name{font-size:20px;font-weight:700;font-family:Georgia,serif;color:var(--text)}
+.pty-peer-sub{font-size:12px;color:var(--text-dim)}
+.pty-peer-ro-badge{font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 7px;color:var(--text-muted);margin-left:auto;text-transform:uppercase;letter-spacing:.08em}
+.pty-peer-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pty-peer-stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;min-width:56px}
+.pty-peer-stat-k{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;display:block}
+.pty-peer-stat-v{font-size:15px;font-weight:700;color:var(--text);display:block;line-height:1.2;font-family:Georgia,serif}
+.pty-peer-stat-m{font-size:11px;color:var(--fighter);display:block}
+.pty-peer-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.pty-peer-box{flex:1;min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.pty-peer-box-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);font-weight:700;margin-bottom:4px}
+.pty-peer-box-val{font-size:22px;font-weight:700;color:var(--text);font-family:Georgia,serif}
+.pty-peer-hp-bar{height:5px;background:var(--border-hi);border-radius:3px;overflow:hidden;margin-top:4px}
+.pty-peer-hp-fill{height:100%;border-radius:3px;transition:width .3s}
+.pty-peer-section-hd{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);font-weight:700;margin-bottom:6px}
+.pty-peer-inv-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:.5px solid var(--border);font-size:11px}
+.pty-peer-inv-row:last-child{border-bottom:none}
+.pty-peer-inv-name{flex:1;color:var(--text);font-weight:600}
+.pty-peer-inv-equipped{font-size:9px;color:var(--cc);text-transform:uppercase;letter-spacing:.06em}
 .pty-cs-full-wrap #tab-character{padding:20px 22px !important;font-size:14px}
+.pty-cs-full-wrap .cs-body{grid-template-columns:1fr 1.3fr 1.8fr !important}
 .pty-cs-full-wrap .cs-stat-shell{width:72px}
 .pty-cs-full-wrap .cs-stat-mod{font-size:28px}
 .pty-cs-full-wrap .cs-quick-val{font-size:22px}
+/* Peer sheet stats row wraps instead of overflowing */
+.pty-peer-stats{flex-wrap:wrap}
 .vtc-pin-form{position:absolute;z-index:50;background:var(--surface2);border:1px solid var(--border-hi);border-radius:8px;padding:10px;display:none;flex-direction:column;gap:8px;min-width:170px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
 
 /* Dice roller panel */
@@ -1686,7 +1713,7 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 .vtc-swatch{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);flex-shrink:0;cursor:default}
 .vtc-slider{width:60px;accent-color:var(--fighter);cursor:pointer;vertical-align:middle}
 .vtc-zoom-lbl{font-size:10px;color:var(--text-dim);min-width:32px;text-align:center}
-.vtc-cont{position:relative;height:clamp(280px,48vh,520px);background:#0f1219;overflow:hidden}
+.vtc-cont{position:relative;height:clamp(320px,52vh,640px);background:#0f1219;overflow:hidden}
 #pty-canvas{display:block;width:100%;height:100%;touch-action:none}
 
 /* Players panel */
@@ -1702,7 +1729,7 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 .pty-empty{font-size:11px;color:var(--text-muted);padding:6px 8px;font-style:italic}
 
 /* Chat panel */
-.pty-chat-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0}
+.pty-chat-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;min-height:220px;margin-top:12px}
 .pty-log{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:5px;min-height:280px}
 .pty-log::-webkit-scrollbar{width:4px}
 .pty-log::-webkit-scrollbar-track{background:transparent}
@@ -1892,6 +1919,19 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
     <select class="cs-id-sel" id="cs-align"><option value="">—</option><option>Lawful Good</option><option>Neutral Good</option><option>Chaotic Good</option><option>Lawful Neutral</option><option>True Neutral</option><option>Chaotic Neutral</option><option>Lawful Evil</option><option>Neutral Evil</option><option>Chaotic Evil</option></select>
   </div>
   <div class="cs-id-f" style="max-width:72px"><div class="cs-id-lbl">Proficiency</div><div class="cs-id-val" id="cs-prof">+2</div></div>
+</div>
+
+<!-- XP Tracker -->
+<div id="cs-xp-row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;background:var(--surface2);border:.5px solid var(--border);border-radius:6px;padding:5px 12px;flex-wrap:wrap">
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);white-space:nowrap">XP</div>
+  <input id="cs-xp" type="number" min="0" value="0" placeholder="0"
+    style="width:90px;background:transparent;border:none;border-bottom:1px solid var(--border-hi);color:var(--text);font-size:13px;font-weight:700;text-align:center;outline:none;padding:1px 4px"
+    oninput="updateXP(this.value)">
+  <div style="font-size:11px;color:var(--text-dim)">/</div>
+  <div id="cs-xp-next" style="font-size:11px;font-weight:600;color:var(--fighter)">900 (next level)</div>
+  <div id="cs-xp-bar-wrap" style="flex:1;min-width:100px;height:4px;background:var(--border-hi);border-radius:2px;overflow:hidden">
+    <div id="cs-xp-bar" style="height:100%;background:var(--fighter);border-radius:2px;width:0%;transition:width .3s"></div>
+  </div>
 </div>
 
 <!-- Stat badges + quick stats + HP -->
@@ -2156,11 +2196,20 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 
       <!-- LEFT: full-width character sheet -->
       <div class="pty-cs-col">
+        <!-- Player sheet switcher (visible when others are in the room) -->
+        <div id="pty-sheet-switcher" style="display:none;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
+          <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-right:2px">Viewing:</span>
+          <div id="pty-sheet-tabs" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+        </div>
+        <!-- Own sheet (live) -->
         <div id="pty-cs-full" class="pty-cs-full-wrap"></div>
+        <!-- Other player's sheet (read-only) — hidden until a peer is selected -->
+        <div id="pty-peer-sheet" class="pty-cs-full-wrap" style="display:none"></div>
       </div>
 
-      <!-- RIGHT: tools — canvas, chat, dice, players, DM -->
+      <!-- RIGHT: tools — canvas, dice, players, DM (scrollable) + chat pinned at bottom -->
       <div class="pty-tools-col">
+      <div class="pty-tools-scroll">
 
       <!-- VTT Canvas -->
       <div class="vtc-wrap">
@@ -2219,17 +2268,6 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
         </div>
       </div>
 
-      <!-- Chat -->
-      <div class="pty-chat-panel">
-        <div class="pty-panel-head">Chat</div>
-        <div class="pty-log" id="pty-log"></div>
-        <div class="pty-input-row">
-          <input class="pty-msg-inp" id="pty-msg-inp" placeholder="Message the party…" maxlength="500"
-            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPartyMsg()}">
-          <button class="pty-btn" onclick="sendPartyMsg()" style="padding:7px 16px">Send</button>
-        </div>
-      </div>
-
       <!-- Dice Roller -->
       <div class="pty-dice-panel">
         <div class="pty-panel-head">🎲 Dice Roller</div>
@@ -2255,21 +2293,17 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
         <div class="pty-player-list" id="party-player-list"></div>
       </div>
 
-      <div class="dm-panel" id="dm-panel">
-        <div class="dm-panel-head">
-          <div class="dm-panel-icon">👑</div>
-          <div class="dm-panel-title">Dungeon Master</div>
-        </div>
-        <div class="dm-body">
-          <div>
-            <div class="dm-sec-lbl">Private Notes</div>
-            <textarea class="dm-textarea" id="dm-notes-area" placeholder="DM notes — only visible to you…" rows="4"></textarea>
-          </div>
-          <div>
-            <div class="dm-sec-lbl">Party Announcement</div>
-            <textarea class="dm-textarea" id="dm-announce-area" placeholder="Announce to the party…" rows="3"></textarea>
-            <button class="dm-announce-btn" onclick="dmAnnounce()">📣 Announce</button>
-          </div>
+
+      </div><!-- /pty-tools-scroll -->
+
+      <!-- Chat — always visible at bottom of tools column -->
+      <div class="pty-chat-panel">
+        <div class="pty-panel-head">Chat</div>
+        <div class="pty-log" id="pty-log"></div>
+        <div class="pty-input-row">
+          <input class="pty-msg-inp" id="pty-msg-inp" placeholder="Message the party…" maxlength="500"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPartyMsg()}">
+          <button class="pty-btn" onclick="sendPartyMsg()" style="padding:7px 16px">Send</button>
         </div>
       </div>
 
@@ -3511,11 +3545,13 @@ let chosenCard = null;
 function getCD(){return CLASS_DATA_MAP[currentClass]||CLASS_DATA_MAP.fighter;}
 let activeTier=0; // 0=all, 1/2/3=specific tier
 function tierFromRoll(roll){return roll<=7?1:roll<=14?2:3;}
+function getClassFeatureIds(){return new Set((CLASS_STARTING_FEATURES[currentClass]||[]).map(f=>f.id));}
 function getMainPool(tier){
   const cd=getCD();
+  const cfIds=getClassFeatureIds();
   let cards=[...cd.generalCards];
   if(currentSubclass!=='none'&&cd.subclassCards[currentSubclass]) cards=cards.concat(cd.subclassCards[currentSubclass]);
-  let pool=cards.filter(c=>c.level<=currentLevel&&!acquiredMain.has(c.id));
+  let pool=cards.filter(c=>c.level<=currentLevel&&!acquiredMain.has(c.id)&&!cfIds.has(c.id));
   const t=tier||activeTier;
   if(t>0) pool=pool.filter(c=>{
     if(c.tier) return c.tier===t;
@@ -3545,7 +3581,8 @@ function renderSubclassBtns(){
 function render(){
   renderSubclassBtns();
   const cd=getCD();
-  const allMain=[...cd.generalCards,...(currentSubclass!=='none'?cd.subclassCards[currentSubclass]||[]:[])];
+  const cfIds=getClassFeatureIds();
+  const allMain=[...cd.generalCards,...(currentSubclass!=='none'?cd.subclassCards[currentSubclass]||[]:[])].filter(c=>!cfIds.has(c.id));
   allMain.sort((a,b)=>(a.level||0)-(b.level||0)||(a.spell||0)-(b.spell||0));
   const mainPool=getMainPool();
   const tierLabel=activeTier?['','Weak','Middle','Best'][activeTier]:'All';
@@ -3605,8 +3642,10 @@ function render(){
   }
 
   const _cd=getCD();const allCards=[..._cd.generalCards,...Object.values(_cd.subclassCards).flat()];
+  const _cfIds=getClassFeatureIds();
   const acqMainEl=document.getElementById('acquired-main');
-  acqMainEl.innerHTML=acquiredMain.size===0?'<span class="no-acquired">None yet</span>':[...acquiredMain].map(id=>{const c=allCards.find(x=>x.id===id);return c?`<div class="chip">${c.name}<span class="chip-x" onclick="removeAcquired('main','${id}')">×</span></div>`:''}).join('');
+  const acqMainFiltered=[...acquiredMain].filter(id=>!_cfIds.has(id));
+  acqMainEl.innerHTML=acqMainFiltered.length===0?'<span class="no-acquired">None yet</span>':acqMainFiltered.map(id=>{const c=allCards.find(x=>x.id===id);return c?`<div class="chip">${c.name}<span class="chip-x" onclick="removeAcquired('main','${id}')">×</span></div>`:''}).join('');
   const allSub=hasSubDeck?SUB_DECKS[currentSubclass].cards:[];
   const acqSubEl=document.getElementById('acquired-sub-chips');
   acqSubEl.innerHTML=acquiredSub.size===0?'<span class="no-acquired">None yet</span>':[...acquiredSub].map(id=>{const c=allSub.find(x=>x.id===id);return c?`<div class="chip">${c.name}<span class="chip-x" onclick="removeAcquired('sub','${id}')">×</span></div>`:''}).join('');
@@ -4008,11 +4047,20 @@ function renderCharSheet(){
   const _cd=getCD(),allCards=[..._cd.generalCards,...Object.values(_cd.subclassCards).flat()];
   const abEl=document.getElementById('cs-abilities');
   if(abEl){
-    if(acquiredMain.size===0){abEl.innerHTML='<div class="cs-no-feats">No abilities yet — draw from the Ability Deck tab</div>';}
-    else{abEl.innerHTML='<div class="cs-abilities-box">'+[...acquiredMain].map(id=>{
-      const c=allCards.find(x=>x.id===id);
-      return c?`<div class="cs-ability-row">${typeTag(c.type)}<div><div class="cs-ability-name">${c.name}</div><div class="cs-ability-desc">${c.desc}</div></div></div>`:'';
-    }).join('')+'</div>';}
+    const classFeats=(CLASS_STARTING_FEATURES[currentClass]||[]).filter(f=>f.level<=currentLevel);
+    const classSection=classFeats.length?
+      '<div class="cs-panel-hd" style="margin:0 0 6px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Class Features</div>'+
+      '<div class="cs-abilities-box" style="margin-bottom:12px">'+
+      classFeats.map(f=>`<div class="cs-ability-row">${typeTag(f.type)}<div><div class="cs-ability-name">${f.name}</div><div class="cs-ability-desc">${f.desc}</div></div></div>`).join('')+
+      '</div>':'';
+    const deckSection=acquiredMain.size===0?
+      '<div class="cs-no-feats">No abilities yet — draw from the Ability Deck tab</div>':
+      '<div class="cs-panel-hd" style="margin:0 0 6px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Acquired Abilities</div>'+
+      '<div class="cs-abilities-box">'+[...acquiredMain].map(id=>{
+        const c=allCards.find(x=>x.id===id);
+        return c?`<div class="cs-ability-row">${typeTag(c.type)}<div><div class="cs-ability-name">${c.name}</div><div class="cs-ability-desc">${c.desc}</div></div></div>`:'';
+      }).join('')+'</div>';
+    abEl.innerHTML=classSection+deckSection;
   }
   // maneuvers
   const manTab=document.getElementById('cs-maneuvers-tab');
@@ -4232,6 +4280,11 @@ function execRoll(){
     const isE=skillExp.has(_rl.skillId),isP=skillProfs.has(_rl.skillId);
     const pbPart=isE?` + Expertise(${pb*2})`:isP?` + Prof(${pb})`:'';
     detail=`d20(${roll}) + ${STAT_LABELS[_rl.stat]}(${fmtMod(base)})${pbPart}`;
+  } else if(_rl.label==='Initiative'){
+    // Initiative: DEX only, no save proficiency. Harengon adds PB via Hare-Trigger racial.
+    const hareBon=(currentRace==='harengon')?pb:0;
+    bonus=base+hareBon;
+    detail=`d20(${roll}) + DEX(${fmtMod(base)})${hareBon?' + Hare-Trigger('+fmtMod(hareBon)+')':''}`;
   } else {
     const isP=saveProfs.has(_rl.stat);
     bonus=isP?base+pb:base;
@@ -5197,13 +5250,18 @@ function changeQty(itemId,delta){
 }
 function toggleEquipped(itemId){
   const item=inventory.find(i=>i.id===itemId);
-  if(item){item.equipped=!item.equipped; renderEquipPage();}
+  if(item){
+    item.equipped=!item.equipped;
+    renderEquipPage();
+    if(typeof renderCharSheet==='function') renderCharSheet();
+  }
 }
-  if(typeof renderActions==='function') renderActions();
+if(typeof renderActions==='function') renderActions();
 
 function clearInventory(){if(confirm("Clear all inventory?")) inventory=[];renderEquipPage();}
 function setEquipFilter(cat){equipFilter=cat; renderEquipPage();}
-function setEquipSearch(val){equipSearch=val.toLowerCase(); renderEquipPage();}
+function equip_search(val){equipSearch=val.toLowerCase(); renderEquipPage();}
+function setEquipSearch(val){equip_search(val);}
 
 function getRarityClass(r){
   if(!r) return '';
@@ -5504,6 +5562,77 @@ const CLASS_RESOURCES = {
 };
 
 // Superiority dice for Battle Master
+// ── Core class features (auto-shown at appropriate levels, no deck draw required) ──
+const CLASS_STARTING_FEATURES = {
+  fighter:[
+    {id:'cf_ftr_sw',  level:1,  name:'Second Wind',      type:'c', desc:'Bonus action: regain 1d10 + fighter level HP. Once per short or long rest.'},
+    {id:'cf_ftr_as',  level:2,  name:'Action Surge',     type:'c', desc:'Take one additional action on your turn (two uses at LV 17). Recharges on short or long rest.'},
+    {id:'cf_ftr_ea',  level:5,  name:'Extra Attack',     type:'p', desc:'When you take the Attack action, you can attack twice instead of once.'},
+    {id:'cf_ftr_id',  level:9,  name:'Indomitable',      type:'c', desc:'Reroll a failed saving throw; you must use the new result. Once per long rest (two at LV 13, three at LV 17).'},
+    {id:'cf_ftr_ea2', level:11, name:'Extra Attack (3)',  type:'p', desc:'When you take the Attack action, you can attack three times (LV 20: four times).'},
+  ],
+  barbarian:[
+    {id:'cf_bar_rage',level:1,  name:'Rage',              type:'c', desc:'Bonus action: enter rage for 1 minute. +2 melee damage, resistance to B/P/S damage, advantage on STR checks and saves. Uses scale with level: 2 at LV1, up to unlimited at LV 20.'},
+    {id:'cf_bar_ud',  level:1,  name:'Unarmored Defense', type:'p', desc:'While not wearing armor, your AC = 10 + DEX modifier + CON modifier.'},
+    {id:'cf_bar_ra',  level:2,  name:'Reckless Attack',   type:'c', desc:'When you make your first attack on your turn, choose to attack recklessly. Advantage on all STR attacks this turn; attackers have advantage against you until next turn.'},
+    {id:'cf_bar_ds',  level:2,  name:'Danger Sense',      type:'p', desc:'Advantage on DEX saving throws against effects you can see (not blind/deaf/incapacitated).'},
+    {id:'cf_bar_ea',  level:5,  name:'Extra Attack',      type:'p', desc:'Attack twice when you take the Attack action.'},
+    {id:'cf_bar_fi',  level:7,  name:'Feral Instinct',    type:'p', desc:'Advantage on initiative rolls. If surprised and not incapacitated, you can act normally if you enter rage before doing anything else.'},
+  ],
+  wizard:[
+    {id:'cf_wiz_sc',  level:1,  name:'Spellcasting',      type:'p', desc:'You are a full spellcaster. Your spellcasting ability is Intelligence. You have a spellbook; prepare INT modifier + wizard level spells from it after each long rest.'},
+    {id:'cf_wiz_rc',  level:1,  name:'Ritual Casting',    type:'p', desc:'Cast wizard spells tagged as rituals without expending a spell slot (takes 10 minutes extra).'},
+    {id:'cf_wiz_ar',  level:1,  name:'Arcane Recovery',   type:'c', desc:'Once per day during a short rest, recover spell slots totaling half your wizard level (rounded up). Slots must be 5th level or lower.'},
+    {id:'cf_wiz_sm',  level:18, name:'Spell Mastery',     type:'p', desc:'Choose one 1st and one 2nd-level spell from your spellbook. Cast each at their lowest level without expending a spell slot when prepared.'},
+  ],
+  paladin:[
+    {id:'cf_pal_ds',  level:1,  name:'Divine Sense',      type:'c', desc:'Detect the presence of strong evil or good: celestials, fiends, undead within 60 ft. Uses: 1 + CHA modifier per long rest.'},
+    {id:'cf_pal_loh', level:1,  name:'Lay on Hands',      type:'c', desc:'HP healing pool equal to paladin level × 5. Touch a creature to restore HP, or spend 5 HP to cure a disease or poison. Recharges on long rest.'},
+    {id:'cf_pal_fs',  level:2,  name:'Fighting Style',    type:'p', desc:'Choose a fighting style: Defense (+1 AC in armor), Dueling (+2 damage with one-handed weapon), Great Weapon Fighting, or Protection.'},
+    {id:'cf_pal_spc', level:2,  name:'Spellcasting',      type:'p', desc:'Spellcasting ability is Charisma. Prepare CHA modifier + half paladin level (round down) spells per long rest.'},
+    {id:'cf_pal_dsm', level:2,  name:'Divine Smite',      type:'c', desc:'When you hit with a melee attack, expend a spell slot to deal +2d8 radiant damage (+1d8 per slot level above 1st, +1d8 vs undead/fiends).'},
+    {id:'cf_pal_ap',  level:6,  name:'Aura of Protection',type:'p', desc:'Friendly creatures within 10 ft (30 ft at LV 18) add your CHA modifier (min +1) to saving throws while you are conscious.'},
+    {id:'cf_pal_ea',  level:5,  name:'Extra Attack',      type:'p', desc:'Attack twice when you take the Attack action.'},
+  ],
+  warlock:[
+    {id:'cf_wlk_pm',  level:1,  name:'Pact Magic',        type:'p', desc:'Spell slots recharge on short or long rest. All slots are the same level (max 5th). Number and level of slots scale with level.'},
+    {id:'cf_wlk_ei',  level:2,  name:'Eldritch Invocations',type:'p',desc:'Learn 2 eldritch invocations (additional at higher levels). These modify Eldritch Blast and add passive or active abilities.'},
+    {id:'cf_wlk_pb',  level:3,  name:'Pact Boon',         type:'p', desc:'Choose Pact of the Chain (familiar), Pact of the Blade (weapon), or Pact of the Tome (three cantrips + rituals).'},
+    {id:'cf_wlk_ma',  level:11, name:'Mystic Arcanum',    type:'c', desc:'Your patron bestows a powerful spell (6th–9th level) learned at levels 11, 13, 15, 17. Each can be cast once per long rest.'},
+  ],
+  rogue:[
+    {id:'cf_rog_exp', level:1,  name:'Expertise',         type:'p', desc:'Choose 2 proficiencies (skills or thieves\' tools): double your proficiency bonus for those checks. Two more at LV 6.'},
+    {id:'rg01',       level:1,  name:'Sneak Attack',      type:'c', desc:'Once per turn, deal extra damage when you hit with a finesse or ranged weapon and have advantage, or an ally is adjacent to target. 1d6 at LV 1, scaling to 10d6 at LV 19.'},
+    {id:'cf_rog_tc',  level:1,  name:"Thieves' Cant",     type:'p', desc:'You know a secret mix of dialect, jargon, and code for passing messages to other rogues. Takes 4× longer to convey messages.'},
+    {id:'cf_rog_ca',  level:2,  name:'Cunning Action',    type:'b', desc:'Bonus action on each turn: Dash, Disengage, or Hide.'},
+    {id:'cf_rog_ud',  level:5,  name:'Uncanny Dodge',     type:'r', desc:'When an attacker you can see hits you, use your reaction to halve the attack\'s damage.'},
+    {id:'cf_rog_ev',  level:7,  name:'Evasion',           type:'p', desc:'When you make a DEX save for half damage, you take no damage on success and half on failure.'},
+    {id:'cf_rog_ra',  level:11, name:'Reliable Talent',   type:'p', desc:'Whenever you make an ability check that lets you add your proficiency bonus, treat any d20 roll of 9 or lower as a 10.'},
+  ],
+  druid:[
+    {id:'cf_drd_dr',  level:1,  name:'Druidic',           type:'p', desc:'You know Druidic, a secret language spoken only by druids. You can leave hidden messages only druids can spot.'},
+    {id:'cf_drd_sc',  level:1,  name:'Spellcasting',      type:'p', desc:'Spellcasting ability is Wisdom. Prepare WIS modifier + druid level spells from the druid list after each long rest. You can use a druidic focus.'},
+    {id:'cf_drd_ws',  level:2,  name:'Wild Shape',        type:'c', desc:'Use your action to transform into a beast you have seen. CR limit scales by level. 2 uses per short rest.'},
+    {id:'cf_drd_tg',  level:10, name:'Timeless Body',     type:'p', desc:'You age 10 times more slowly than normal. You are immune to magical aging.'},
+    {id:'cf_drd_bs',  level:18, name:'Beast Spells',      type:'p', desc:'Cast druid spells in any shape from Wild Shape (somatic/verbal components work; material still requires normal form).'},
+  ],
+  cleric:[
+    {id:'cf_clr_sc',  level:1,  name:'Spellcasting',      type:'p', desc:'Spellcasting ability is Wisdom. Prepare WIS modifier + cleric level spells per long rest. You can use a holy symbol as spellcasting focus.'},
+    {id:'cl01',       level:2,  name:'Channel Divinity',  type:'c', desc:'Channel divine energy: Turn Undead + one domain-specific option. Once per short rest (twice at LV 6, three times at LV 18).'},
+    {id:'cl02',       level:2,  name:'Turn Undead',       type:'c', desc:'As an action, present your holy symbol. Each undead within 30 ft must make a WIS save or be turned for 1 minute or until it takes damage.'},
+    {id:'cl03',       level:5,  name:'Destroy Undead',    type:'p', desc:'When an undead fails its Turn Undead save, it is instantly destroyed if its CR is at or below your threshold (scales with level).'},
+    {id:'cf_clr_di',  level:10, name:'Divine Intervention',type:'c',desc:'Call on your deity for intercession. Roll d100 ≤ your cleric level to succeed. Guaranteed success at LV 20.'},
+  ],
+  oathbreaker:[
+    {id:'cf_ob_ds',   level:1,  name:'Divine Sense',      type:'c', desc:'As an action, detect the presence of celestials, fiends, and undead within 60 ft. Uses: 1 + CHA modifier per long rest.'},
+    {id:'cf_ob_loh',  level:1,  name:'Lay on Hands',      type:'c', desc:'HP pool = paladin level × 5. Touch to heal. Spend 5 HP to cure a disease or neutralize a poison. Recharges on long rest.'},
+    {id:'cf_ob_dd',   level:3,  name:"Dark Devotion",     type:'p', desc:"Your alignment shift is complete. You can't be frightened or charmed."},
+    {id:'cf_ob_spc',  level:2,  name:'Spellcasting',      type:'p', desc:'Charisma-based spellcasting. Prepare CHA modifier + half paladin level spells per long rest.'},
+    {id:'cf_ob_dsm',  level:2,  name:'Divine Smite',      type:'c', desc:'Expend a spell slot when you hit: +2d8 necrotic damage (+1d8 per slot above 1st, +1d8 vs undead/fiends).'},
+    {id:'cf_ob_ea',   level:5,  name:'Extra Attack',      type:'p', desc:'Attack twice when you take the Attack action.'},
+  ],
+};
+
 let superiorityDice = {total:4, used:0, size:'d8'};
 
 // Maneuvers known (for Battle Master sub-deck draw extension)
@@ -5736,6 +5865,23 @@ function onLevelChange(v){
 
   if(typeof initResources==='function'){initResources();renderResources();}
   if(typeof renderActions==='function') renderActions();
+}
+
+// XP thresholds per level (index = level, value = total XP to reach that level)
+const XP_THRESHOLDS=[0,0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
+function updateXP(val){
+  const xp=Math.max(0,parseInt(val)||0);
+  // find current level from XP
+  let lvFromXP=1;
+  for(let i=1;i<=20;i++){if(xp>=XP_THRESHOLDS[i])lvFromXP=i;}
+  const nextLvl=Math.min(20,lvFromXP+1);
+  const curThresh=XP_THRESHOLDS[lvFromXP]||0;
+  const nextThresh=XP_THRESHOLDS[nextLvl]||XP_THRESHOLDS[20];
+  const pct=nextLvl>lvFromXP?Math.min(100,Math.round((xp-curThresh)/(nextThresh-curThresh)*100)):100;
+  const nextEl=document.getElementById('cs-xp-next');
+  const barEl=document.getElementById('cs-xp-bar');
+  if(nextEl) nextEl.textContent=nextLvl<=20?nextThresh+' (Lv '+nextLvl+')':`Max (Lv 20)`;
+  if(barEl) barEl.style.width=pct+'%';
 }
 
 function switchTab(id,el){
@@ -6008,12 +6154,15 @@ function renderCSInventory(){
   el.innerHTML=inventory.map(item=>{
     totalW+=(item.wt||0)*(item.qty||1);
     const propsStr=(item.props||[]).join(', ');
-    return`<div style="padding:6px 10px;border-bottom:.5px solid rgba(212,137,26,.1);display:flex;gap:8px;align-items:start">
-      <div style="flex:1">
-        <div style="font-size:12px;font-weight:600;color:var(--text)">${item.name}${(item.qty||1)>1?' ×'+(item.qty||1):''}</div>
+    const equipLabel=item.equipped?'Unequip':'Equip';
+    const equipColor=item.equipped?'var(--cc)':'var(--text-dim)';
+    return`<div style="padding:5px 10px;border-bottom:.5px solid rgba(212,137,26,.1);display:flex;gap:8px;align-items:center">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${item.name}${(item.qty||1)>1?' ×'+(item.qty||1):''}${item.equipped?'<span style="color:var(--cc);font-size:9px;margin-left:5px;text-transform:uppercase;letter-spacing:.08em">Equipped</span>':''}</div>
         <div style="font-size:10px;color:var(--text-dim)">${item.stat||''}${propsStr?' · '+propsStr:''}</div>
       </div>
-      <div style="color:var(--text-muted);cursor:pointer;font-size:14px" onclick="removeFromInventory('${item.id}')" title="Remove">×</div>
+      <button onclick="toggleEquipped('${item.id}')" style="background:none;border:1px solid var(--border);border-radius:3px;padding:2px 7px;font-size:9px;color:${equipColor};cursor:pointer;flex-shrink:0;white-space:nowrap">${equipLabel}</button>
+      <div style="color:var(--text-muted);cursor:pointer;font-size:14px;flex-shrink:0" onclick="removeFromInventory('${item.id}')" title="Remove">×</div>
     </div>`;
   }).join('');
   const wEl=document.getElementById('cs-inv-weight');
@@ -6167,6 +6316,8 @@ function loadState(){
       if(raceSel) raceSel.value=currentRace;
       const obOpt=document.getElementById('oathbreaker-opt');
       if(obOpt&&currentClass==='oathbreaker') obOpt.disabled=false;
+      // Refresh XP bar after load
+      if(typeof updateXP==='function') updateXP(s.csXP||'0');
     }, 0);
 
     return true;
@@ -6201,6 +6352,12 @@ let _saveTimer = null;
 function scheduleSave(){
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(saveState, 800);
+}
+
+let _csSyncTimer=null;
+function scheduleCSSync(){
+  clearTimeout(_csSyncTimer);
+  _csSyncTimer=setTimeout(()=>{ if(partyPeer) _partyBroadcastCharSheet(); },400);
 }
 
 // Patch all state-mutating functions to schedule a save
@@ -6253,6 +6410,35 @@ restoreSlot = function(idx){ _origRestoreSlot(idx); scheduleSave(); };
 
 const _origSelectSubclass = selectSubclass;
 selectSubclass = function(sc,el){ _origSelectSubclass(sc,el); scheduleSave(); };
+
+// ── Real-time CS sync hooks ───────────────────────────────────────────────────
+// Wrap every state-mutating function to also broadcast the sheet to peers
+(function(){
+  const _wrap=(fn,orig)=>function(...a){ orig.apply(this,a); scheduleCSSync(); };
+  rollStat        = _wrap(rollStat,       rollStat);
+  rollAllStats    = _wrap(rollAllStats,   rollAllStats);
+  rollNextHP      = _wrap(rollNextHP,     rollNextHP);
+  resetHP         = _wrap(resetHP,        resetHP);
+  addToInventory  = _wrap(addToInventory, addToInventory);
+  removeFromInventory = _wrap(removeFromInventory, removeFromInventory);
+  toggleEquipped  = _wrap(toggleEquipped, toggleEquipped);
+  useSlot         = _wrap(useSlot,        useSlot);
+  restoreSlot     = _wrap(restoreSlot,    restoreSlot);
+  if(typeof useResource==='function')     useResource     = _wrap(useResource,    useResource);
+  if(typeof restoreResource==='function') restoreResource = _wrap(restoreResource, restoreResource);
+  if(typeof onClassChange==='function')   onClassChange   = _wrap(onClassChange,   onClassChange);
+  onLevelChange   = _wrap(onLevelChange,  onLevelChange);
+  onRaceChange    = _wrap(onRaceChange,   onRaceChange);
+  if(typeof toggleInsp==='function')      toggleInsp      = _wrap(toggleInsp,     toggleInsp);
+  if(typeof toggleDeath==='function')     toggleDeath     = _wrap(toggleDeath,    toggleDeath);
+})();
+
+// Sync on HP input (typed directly into hp field)
+document.addEventListener('input',function(e){
+  if(['cs-hp-cur','cs-hp-temp','cs-ac','cs-speed'].includes(e.target.id)){
+    scheduleCSSync();
+  }
+});
 
 // Save on input changes in the sheet
 document.addEventListener('input', function(e){
@@ -6316,6 +6502,7 @@ let _cvFloorHistory=[];     // saved floor states when descending
 let _floorRoomBudget=0;     // total rooms planned for this floor (15-26)
 let _floorRoomQueue=[];     // remaining room types to assign as rooms are drawn
 let _cvDescentCell=null;    // {gx,gy} of descent room on current floor
+let _cvStairsUp=null;       // {gx,gy} where party entered current floor from above
 let _lastFloorHadHealing=true; // tracks healing for "every 2 floors" rule
 // Character sheets shared by players
 let partyCharSheets={};     // {peerId: {name,charName,level,className,stats,hp,maxHp}}
@@ -6433,56 +6620,103 @@ function _cvRender(){
     ctx.fillText(p.name,0,11);
     ctx.restore();
   });
+
+  // Staircase up indicator (entry point from floor above)
+  if(_cvStairsUp){
+    const t=TILE*_cvZoom;
+    const sp=_w2s(_cvStairsUp.gx,_cvStairsUp.gy);
+    ctx.save();
+    ctx.translate(sp.x+t/2,sp.y+t/2);
+    ctx.fillStyle='rgba(124,58,237,.35)';
+    ctx.strokeStyle='#a855f7';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(-t/2,-t/2,t,t,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#d8b4fe';ctx.font='bold '+Math.min(15,t*0.45)+'px sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('⬆',0,-t*0.12);
+    ctx.font=Math.min(9,t*0.22)+'px sans-serif';
+    ctx.fillText('STAIRS UP',0,t*0.28);
+    ctx.restore();
+  }
 }
 
 function _cvDrawRoom(ctx,r){
   const t=TILE*_cvZoom;
-  const p=_w2s(r.gx,r.gy); const pw=r.gw*t, ph=r.gh*t;
+  const rects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
   const isHall=r.gw===1||r.gh===1;
+  let fillStyle,strokeStyle;
+  if(r.type==='combat')        fillStyle='rgba(224,85,85,.2)';
+  else if(r.type==='treasure') fillStyle='rgba(212,137,26,.2)';
+  else if(r.type==='shop')     fillStyle='rgba(85,153,212,.2)';
+  else if(r.type==='healing')  fillStyle='rgba(74,140,58,.2)';
+  else if(r.type==='descent')  fillStyle='rgba(124,58,237,.25)';
+  else if(isHall)              fillStyle='rgba(60,80,130,.35)';
+  else                         fillStyle='rgba(25,32,60,.7)';
+  strokeStyle=r.type?(VTT_ROOM_TYPES.find(x=>x.type===r.type)||{color:'#3a4260'}).color:isHall?'#3a4a80':'#3a4260';
+
   ctx.save();
-  // Fill
-  if(r.type==='combat')        ctx.fillStyle='rgba(224,85,85,.2)';
-  else if(r.type==='treasure') ctx.fillStyle='rgba(212,137,26,.2)';
-  else if(r.type==='shop')     ctx.fillStyle='rgba(85,153,212,.2)';
-  else if(r.type==='healing')  ctx.fillStyle='rgba(74,140,58,.2)';
-  else if(r.type==='descent')  ctx.fillStyle='rgba(124,58,237,.25)';
-  else if(isHall)              ctx.fillStyle='rgba(60,80,130,.35)';
-  else                         ctx.fillStyle='rgba(25,32,60,.7)';
-  ctx.fillRect(p.x,p.y,pw,ph);
-  // Border
-  ctx.strokeStyle=r.type?(VTT_ROOM_TYPES.find(x=>x.type===r.type)||{color:'#3a4260'}).color:isHall?'#3a4a80':'#3a4260';
-  ctx.lineWidth=1.5; ctx.strokeRect(p.x,p.y,pw,ph);
-  // Label / roll button (rooms only)
-  if(!isHall&&pw>24&&ph>24){
-    const cx=p.x+pw/2, cy=p.y+ph/2;
+
+  if(rects.length===1){
+    // Fast path: single rect
+    const p=_w2s(r.gx,r.gy); const pw=r.gw*t, ph=r.gh*t;
+    ctx.fillStyle=fillStyle; ctx.fillRect(p.x,p.y,pw,ph);
+    ctx.strokeStyle=strokeStyle; ctx.lineWidth=1.5; ctx.strokeRect(p.x,p.y,pw,ph);
+    if(isHall&&(pw>36||ph>36)){
+      ctx.fillStyle='rgba(255,255,255,.22)';ctx.font='9px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('hall',p.x+pw/2,p.y+ph/2);
+    }
+  } else {
+    // Multi-rect: build grid-cell coverage for correct union fill and outer-edge-only stroke
+    const covered=new Set();
+    rects.forEach(rc=>{
+      for(let x=rc.gx;x<rc.gx+rc.gw;x++) for(let y=rc.gy;y<rc.gy+rc.gh;y++) covered.add(x+','+y);
+    });
+    // Fill — single path so semi-transparent colors don't compound in overlap area
+    ctx.beginPath();
+    covered.forEach(key=>{
+      const [gx,gy]=key.split(',').map(Number);
+      const p=_w2s(gx,gy); ctx.rect(p.x,p.y,t,t);
+    });
+    ctx.fillStyle=fillStyle; ctx.fill();
+    // Stroke only outer edges (edges adjacent to empty cells)
+    ctx.strokeStyle=strokeStyle; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    covered.forEach(key=>{
+      const [gx,gy]=key.split(',').map(Number);
+      const p=_w2s(gx,gy);
+      if(!covered.has((gx-1)+','+gy)){ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y+t);}
+      if(!covered.has((gx+1)+','+gy)){ctx.moveTo(p.x+t,p.y);ctx.lineTo(p.x+t,p.y+t);}
+      if(!covered.has(gx+','+(gy-1))){ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+t,p.y);}
+      if(!covered.has(gx+','+(gy+1))){ctx.moveTo(p.x,p.y+t);ctx.lineTo(p.x+t,p.y+t);}
+    });
+    ctx.stroke();
+  }
+
+  // Label / roll button at centroid of bounding box (non-hall rooms only)
+  const bp=_w2s(r.gx,r.gy); const bw=r.gw*t, bh=r.gh*t;
+  if(!isHall&&bw>24&&bh>24){
+    const cx=bp.x+bw/2, cy=bp.y+bh/2;
     if(r.type){
       const rt=VTT_ROOM_TYPES.find(x=>x.type===r.type);
       ctx.fillStyle=rt?rt.color:'#e8e4d9';
-      ctx.font='bold '+Math.min(13,pw/5)+'px sans-serif';
+      ctx.font='bold '+Math.min(13,bw/5)+'px sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
       const icon=r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':r.type==='descent'?'🪜 ':'';
       ctx.fillText(icon+r.label,cx,cy);
     } else if(partyIsDM&&_floorRoomQueue.length>0){
-      const bw=Math.min(80,pw-6),bh=Math.min(24,ph-6);
+      const rbw=Math.min(80,bw-6),rbh=Math.min(24,bh-6);
       ctx.fillStyle='rgba(212,137,26,.15)';
-      ctx.beginPath();ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,3);ctx.fill();
+      ctx.beginPath();ctx.roundRect(cx-rbw/2,cy-rbh/2,rbw,rbh,3);ctx.fill();
       ctx.strokeStyle='#d4891a';ctx.lineWidth=1;ctx.stroke();
       ctx.fillStyle='#d4891a';
-      ctx.font='bold '+Math.min(10,bw/6)+'px sans-serif';
+      ctx.font='bold '+Math.min(10,rbw/6)+'px sans-serif';
       ctx.textAlign='center';ctx.textBaseline='middle';
-      const nxt=_floorRoomQueue[0];
-      ctx.fillText('Roll ('+nxt+')',cx,cy);
+      ctx.fillText('Roll ('+_floorRoomQueue[0]+')',cx,cy);
     } else if(!r.type){
       ctx.fillStyle='rgba(255,255,255,.25)';
-      ctx.font='bold '+Math.min(12,pw/5)+'px sans-serif';
+      ctx.font='bold '+Math.min(12,bw/5)+'px sans-serif';
       ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText('?',cx,cy);
     }
-  }
-  if(isHall&&(pw>36||ph>36)){
-    ctx.fillStyle='rgba(255,255,255,.22)'; ctx.font='9px sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('hall',p.x+pw/2,p.y+ph/2);
   }
   ctx.restore();
 }
@@ -6606,11 +6840,14 @@ function _cvPDown(e){
 
     if(partyIsDM){
       const w=_s2w(sx,sy);
-      // Room roll-button click (untyped rooms)
+      // Room roll-button click (untyped rooms) — check all rects
       for(const r of _cvRooms){
         const isHall=r.gw===1||r.gh===1;
-        if(!isHall&&!r.type&&w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
-          _cvDmRollRoom(r.id); return;
+        if(!isHall&&!r.type){
+          const rects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
+          if(rects.some(rc=>w.x>=rc.gx&&w.x<=rc.gx+rc.gw&&w.y>=rc.gy&&w.y<=rc.gy+rc.gh)){
+            _cvDmRollRoom(r.id); return;
+          }
         }
       }
       // Image resize handle hit-test (selected image only)
@@ -6691,7 +6928,7 @@ function _cvPMove(e){
   e.preventDefault();
   const sx=e.offsetX, sy=e.offsetY;
 
-  if(_cvPtrDown&&(e.buttons===4||((_cvTool==='pan'||_cvTool==='cursor')&&e.buttons===1))){
+  if(_cvPtrDown&&!_cvDragTokId&&!_cvResizingImg&&!_cvDragImgData&&(e.buttons===4||((_cvTool==='pan'||_cvTool==='cursor')&&e.buttons===1))){
     _cvOX=_cvPanOX-(sx-_cvPanSX); _cvOY=_cvPanOY-(sy-_cvPanSY); return;
   }
 
@@ -6778,11 +7015,15 @@ function _cvPUp(e){
     // Check for overlap with existing rooms
     const overlaps=_cvRooms.filter(r=>!(gx>=r.gx+r.gw||gx+gw<=r.gx||gy>=r.gy+r.gh||gy+gh<=r.gy));
     if(overlaps.length>0){
-      // Expand first overlapping room to bounding box, remove the rest
+      // Add new rect to first overlapping room, preserving irregular shape
       const tgt=overlaps[0];
-      const nx1=Math.min(gx,tgt.gx),ny1=Math.min(gy,tgt.gy);
-      const nx2=Math.max(gx+gw,tgt.gx+tgt.gw),ny2=Math.max(gy+gh,tgt.gy+tgt.gh);
-      tgt.gx=nx1;tgt.gy=ny1;tgt.gw=nx2-nx1;tgt.gh=ny2-ny1;
+      if(!tgt.rects) tgt.rects=[{gx:tgt.gx,gy:tgt.gy,gw:tgt.gw,gh:tgt.gh}];
+      tgt.rects.push({gx,gy,gw,gh});
+      // Update bounding box from all rects
+      const allX=tgt.rects.map(rc=>rc.gx), allY=tgt.rects.map(rc=>rc.gy);
+      const allX2=tgt.rects.map(rc=>rc.gx+rc.gw), allY2=tgt.rects.map(rc=>rc.gy+rc.gh);
+      tgt.gx=Math.min(...allX);tgt.gy=Math.min(...allY);
+      tgt.gw=Math.max(...allX2)-tgt.gx;tgt.gh=Math.max(...allY2)-tgt.gy;
       _broadcast({type:'cv-room-update',room:{...tgt}});
       for(let i=1;i<overlaps.length;i++){
         if(overlaps[i].type==='healing') _healingCount=Math.max(0,_healingCount-1);
@@ -6938,9 +7179,12 @@ function _cvDmNewFloor(){
     tokens:JSON.parse(JSON.stringify(_cvTokens)),
     budget:_floorRoomBudget,
     descentCell:_cvDescentCell?{..._cvDescentCell}:null,
+    stairsUp:_cvStairsUp?{..._cvStairsUp}:null,
   });
   // Advance to next floor
-  _floorCount++; _healingCount=0; _cvDescentCell=null;
+  // Set staircase-up marker for new floor from previous descent position
+  const prevDescentCell=_cvDescentCell?{..._cvDescentCell}:null;
+  _floorCount++; _healingCount=0; _cvDescentCell=null; _cvStairsUp=prevDescentCell;
   _cvStrokes=[]; _cvRooms=[]; _cvImages=[]; _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
   // Roll new floor plan
   _floorRoomBudget=15+Math.floor(Math.random()*12);
@@ -6952,7 +7196,7 @@ function _cvDmNewFloor(){
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
   const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display='';
   _broadcast({type:'cv-new-floor',floor:_floorCount,budget:_floorRoomBudget,queue:_floorRoomQueue,
-    history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
+    stairsUp:_cvStairsUp,history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
 }
 
 function _cvDmGoUpFloor(){
@@ -6966,13 +7210,14 @@ function _cvDmGoUpFloor(){
   _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
   _floorRoomBudget=prev.budget||0;
   _cvDescentCell=prev.descentCell||null;
+  _cvStairsUp=prev.stairsUp||null;
   _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
   _floorRoomQueue=[]; // can't draw more rooms on previous floors
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
   const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display=_cvFloorHistory.length>0?'':'none';
   _sysMsg('Went up to Floor '+_floorCount+'.');
   _broadcast({type:'cv-go-up-floor',floor:_floorCount,budget:_floorRoomBudget,queue:_floorRoomQueue,
-    strokes:_cvStrokes,rooms:_cvRooms,images:prev.images,tokens:_cvTokens,history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
+    stairsUp:_cvStairsUp,strokes:_cvStrokes,rooms:_cvRooms,images:prev.images,tokens:_cvTokens,history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
 }
 
 function _cvDmClearDrawings(){
@@ -6994,6 +7239,7 @@ function _cvDmRollRoom(roomId){
   _broadcast({type:'cv-room-rolled',id:roomId,rtype:room.type,label:room.label,color:room.color});
   _broadcast({type:'cv-queue-update',queue:_floorRoomQueue});
   _renderFloorCounter();
+  _sysMsg('Room revealed: '+room.label);
 }
 
 function _renderFloorCounter(){
@@ -7015,7 +7261,8 @@ function _cvDmDeleteRoomAt(sx,sy){
   const w=_s2w(sx,sy);
   for(let i=_cvRooms.length-1;i>=0;i--){
     const r=_cvRooms[i];
-    if(w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
+    const _drRects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
+    if(_drRects.some(rc=>w.x>=rc.gx&&w.x<=rc.gx+rc.gw&&w.y>=rc.gy&&w.y<=rc.gy+rc.gh)){
       const isHall=r.gw===1||r.gh===1;
       if(r.type==='healing') _healingCount=Math.max(0,_healingCount-1);
       if(!isHall&&r.type&&_floorRoomQueue!==null){
@@ -7086,14 +7333,38 @@ function _cvPlaceMyToken(){
 function _getPartyCharData(){
   const maxHp=hpLevels.reduce((a,x)=>a+x.total,0);
   const curEl=document.getElementById('cs-hp-cur');
+  const tempEl=document.getElementById('cs-hp-temp');
+  const acEl=document.getElementById('cs-ac');
+  const initEl=document.getElementById('cs-init');
+  const speedEl=document.getElementById('cs-speed');
+  // death saves
+  const dsSucc=document.querySelectorAll('.cs-death-suc.active')?.length||0;
+  const dsFail=document.querySelectorAll('.cs-death-fail.active')?.length||0;
+  // slot usage
+  const slotSnap=[...usedSlots];
+  // skills/saves proficiencies
+  const skillArr=[...skillProfs];
+  const saveArr=[...saveProfs];
   return {
     name:partyMyName,
     charName:charName||partyMyName,
     level:currentLevel,
     className:currentClass,
+    subclass:currentSubclass||'',
+    race:currentRace||'none',
     stats:{...stats},
     hp:parseInt(curEl?.value)||0,
-    maxHp:maxHp||parseInt(document.getElementById('cs-hp-max')?.textContent)||0,
+    hpTemp:parseInt(tempEl?.value)||0,
+    maxHp:maxHp||0,
+    ac:parseInt(acEl?.value)||10,
+    init:initEl?.textContent||'+0',
+    speed:parseInt(speedEl?.value)||30,
+    inspired:!!document.querySelector('.cs-inspire.active'),
+    inventory:[...inventory].map(i=>({id:i.id,name:i.name,qty:i.qty,equipped:i.equipped,cat:i.cat,stat:i.stat,wt:i.wt})),
+    usedSlots:slotSnap,
+    skillProfs:skillArr,
+    saveProfs:saveArr,
+    deathSaves:{s:dsSucc,f:dsFail},
   };
 }
 
@@ -7106,71 +7377,152 @@ function _partyBroadcastCharSheet(){
 }
 
 function _renderPartyCharSheet(){
+  // ── Mini sidebar sheet panel (pty-cs-body) ──────────────────────────────
   const body=document.getElementById('pty-cs-body');
   const titleEl=document.getElementById('pty-cs-title');
   const switcher=document.getElementById('pty-cs-switcher');
-  if(!body) return;
   const myId=partyPeer?.id;
 
-  // DM switcher tabs (DM sees all player sheets)
-  if(partyIsDM&&switcher){
+  if(body){
     const peers=Object.keys(partyCharSheets);
-    if(peers.length>1){
-      switcher.style.display='flex';
-      let tabs='';
-      peers.forEach(pid=>{
-        const d=partyCharSheets[pid];
-        const active=(_partyViewingPeer||myId)===pid;
-        tabs+=`<button class="pty-cs-tab${active?' active':''}" onclick="_partySetViewPeer('${pid}')">${_escH(d.name||'?')}</button>`;
-      });
-      switcher.innerHTML=tabs;
-    } else { switcher.style.display='none'; }
-  } else if(switcher){ switcher.style.display='none'; }
+    if(switcher){
+      if(peers.length>1){
+        switcher.style.display='flex';
+        let tabs='';
+        peers.forEach(pid=>{
+          const d=partyCharSheets[pid];
+          const active=(_partyViewingPeer||myId)===pid;
+          tabs+=`<button class="pty-cs-tab${active?' active':''}" onclick="_partySetViewPeer('${pid}')">${_escH(d.name||'?')}</button>`;
+        });
+        switcher.innerHTML=tabs;
+      } else { switcher.style.display='none'; }
+    }
 
-  // Determine whose data to show
-  const viewId=partyIsDM?(_partyViewingPeer||myId):myId;
-  const data=viewId?partyCharSheets[viewId]:null;
-  const isOwn=viewId===myId;
+    const viewId=_partyViewingPeer||myId;
+    const data=viewId?partyCharSheets[viewId]:null;
+    const isOwn=viewId===myId;
+    if(!data){
+      body.innerHTML='<div class="pty-cs-empty">No character data yet.</div>';
+      if(titleEl) titleEl.textContent='Character Sheet';
+    } else {
+      if(titleEl) titleEl.textContent=isOwn?'Your Sheet':_escH(data.name)+'\'s Sheet';
+      const pb=Math.ceil((data.level||1)/4)+1;
+      const statList=Object.entries(data.stats||{}).map(([k,v])=>{
+        const m=Math.floor((v-10)/2);
+        const mStr=(m>=0?'+':'')+m;
+        const clickable=isOwn?`onclick="doRoll('${k.toUpperCase()} Check','${k}',false)"`:'' ;
+        return `<div class="pty-cs-stat" ${clickable}><span class="pty-cs-stat-k">${k.toUpperCase()}</span><span class="pty-cs-stat-v">${v}</span><span class="pty-cs-stat-m">${mStr}</span></div>`;
+      }).join('');
+      const hpPct=data.maxHp>0?Math.max(0,Math.min(100,Math.round(data.hp/data.maxHp*100))):0;
+      const hpColor=hpPct>50?'var(--green)':hpPct>25?'#d4891a':'var(--red)';
+      body.innerHTML=`<div class="pty-cs-id"><div class="pty-cs-name">${_escH(data.charName||data.name)}</div><div class="pty-cs-sub">Level ${data.level} ${_escH(data.className||'')} · Prof +${pb}</div></div><div class="pty-cs-hp-row"><span class="pty-cs-hp-lbl">HP ${data.hp}/${data.maxHp}${data.hpTemp?' (+'+data.hpTemp+'t)':''}</span><div class="pty-cs-hp-bar"><div class="pty-cs-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div></div><div class="pty-cs-stats">${statList}</div>${isOwn?'<div class="pty-cs-roll-badge">Click a stat to roll a check</div>':''}`;
+    }
+  }
 
-  if(!data){
-    body.innerHTML='<div class="pty-cs-empty">No character data yet.</div>';
-    if(titleEl) titleEl.textContent='Character Sheet';
+  // ── Full sheet switcher (above pty-cs-full) ──────────────────────────────
+  _renderFullSheetSwitcher();
+}
+
+function _renderFullSheetSwitcher(){
+  const myId=partyPeer?.id;
+  const switcherRow=document.getElementById('pty-sheet-switcher');
+  const tabsEl=document.getElementById('pty-sheet-tabs');
+  const ownPanel=document.getElementById('pty-cs-full');
+  const peerPanel=document.getElementById('pty-peer-sheet');
+  if(!switcherRow||!tabsEl||!ownPanel||!peerPanel) return;
+
+  const peers=Object.keys(partyCharSheets);
+  if(peers.length<=1){
+    switcherRow.style.display='none';
+    ownPanel.style.display='';
+    peerPanel.style.display='none';
     return;
   }
 
-  if(titleEl) titleEl.textContent=isOwn?'Your Sheet':_escH(data.name)+'\'s Sheet';
+  switcherRow.style.display='flex';
+  const viewId=_partyViewingPeer||myId;
 
+  // Build tabs: "My Sheet" + one per peer
+  let tabsHtml=`<button class="pty-sheet-tab${(!_partyViewingPeer||_partyViewingPeer===myId)?' active':''}" onclick="_partySetViewPeer('${myId}')">My Sheet</button>`;
+  peers.forEach(pid=>{
+    if(pid===myId) return;
+    const d=partyCharSheets[pid];
+    const col=partyPlayers[pid]?.color||'var(--text-dim)';
+    const active=_partyViewingPeer===pid;
+    tabsHtml+=`<button class="pty-sheet-tab${active?' active':''}" onclick="_partySetViewPeer('${pid}')" style="${active?'':''}border-color:${active?col:'var(--border)'};color:${active?col:'var(--text-dim)'}">${_escH(d.name||'?')}</button>`;
+  });
+  tabsEl.innerHTML=tabsHtml;
+
+  const isViewingOwn=!_partyViewingPeer||_partyViewingPeer===myId;
+  ownPanel.style.display=isViewingOwn?'':'none';
+  peerPanel.style.display=isViewingOwn?'none':'';
+  if(!isViewingOwn) _renderPeerSheet(partyCharSheets[_partyViewingPeer],_partyViewingPeer);
+}
+
+function _renderPeerSheet(data,peerId){
+  const el=document.getElementById('pty-peer-sheet');
+  if(!el||!data) return;
   const pb=Math.ceil((data.level||1)/4)+1;
-  const statList=Object.entries(data.stats||{}).map(([k,v])=>{
-    const m=Math.floor((v-10)/2);
-    const mStr=(m>=0?'+':'')+m;
-    const clickable=isOwn?`onclick="doRoll('${k.toUpperCase()} Check','${k}',false)"`:'' ;
-    return `<div class="pty-cs-stat" ${clickable} title="${isOwn?'Roll '+k.toUpperCase():''}">
-      <span class="pty-cs-stat-k">${k.toUpperCase()}</span>
-      <span class="pty-cs-stat-v">${v}</span>
-      <span class="pty-cs-stat-m">${mStr}</span>
-    </div>`;
-  }).join('');
-
+  const col=partyPlayers[peerId]?.color||'var(--fighter)';
   const hpPct=data.maxHp>0?Math.max(0,Math.min(100,Math.round(data.hp/data.maxHp*100))):0;
   const hpColor=hpPct>50?'var(--green)':hpPct>25?'#d4891a':'var(--red)';
 
-  body.innerHTML=`
-    <div class="pty-cs-id">
-      <div class="pty-cs-name">${_escH(data.charName||data.name)}</div>
-      <div class="pty-cs-sub">Level ${data.level} ${_escH(data.className||'')} · Prof +${pb}</div>
+  const statOrder=['str','dex','con','int','wis','cha'];
+  const statHtml=statOrder.map(k=>{
+    const v=(data.stats||{})[k]||10;
+    const m=Math.floor((v-10)/2);
+    return `<div class="pty-peer-stat">
+      <span class="pty-peer-stat-k">${k.toUpperCase()}</span>
+      <span class="pty-peer-stat-v">${v}</span>
+      <span class="pty-peer-stat-m">${m>=0?'+':''}${m}</span>
+    </div>`;
+  }).join('');
+
+  const equipped=(data.inventory||[]).filter(i=>i.equipped);
+  const unequipped=(data.inventory||[]).filter(i=>!i.equipped);
+
+  const invHtml=[...equipped,...unequipped].map(i=>`
+    <div class="pty-peer-inv-row">
+      <span class="pty-peer-inv-name">${_escH(i.name)}${(i.qty||1)>1?' ×'+(i.qty||1):''}</span>
+      ${i.equipped?'<span class="pty-peer-inv-equipped">Equipped</span>':''}
+      <span style="font-size:10px;color:var(--text-dim)">${i.stat||''}</span>
+    </div>`).join('');
+
+  el.innerHTML=`
+    <div class="pty-peer-hd">
+      <div>
+        <div class="pty-peer-name" style="color:${col}">${_escH(data.charName||data.name)}</div>
+        <div class="pty-peer-sub">Level ${data.level||1} ${_escH(data.className||'')}${data.subclass?' — '+_escH(data.subclass):''} · Prof +${pb}</div>
+      </div>
+      <span class="pty-peer-ro-badge">Read-Only</span>
     </div>
-    <div class="pty-cs-hp-row">
-      <span class="pty-cs-hp-lbl">HP ${data.hp}/${data.maxHp}</span>
-      <div class="pty-cs-hp-bar"><div class="pty-cs-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>
+    <div class="pty-peer-stats">${statHtml}</div>
+    <div class="pty-peer-row">
+      <div class="pty-peer-box">
+        <div class="pty-peer-box-lbl">Hit Points</div>
+        <div class="pty-peer-box-val" style="color:${hpColor}">${data.hp}<span style="font-size:14px;color:var(--text-dim)">/${data.maxHp}</span>${data.hpTemp?'<span style="font-size:13px;color:var(--blue)"> +'+data.hpTemp+'t</span>':''}</div>
+        <div class="pty-peer-hp-bar"><div class="pty-peer-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>
+      </div>
+      <div class="pty-peer-box">
+        <div class="pty-peer-box-lbl">Armor Class</div>
+        <div class="pty-peer-box-val">${data.ac||10}</div>
+      </div>
+      <div class="pty-peer-box">
+        <div class="pty-peer-box-lbl">Initiative</div>
+        <div class="pty-peer-box-val">${data.init||'+0'}</div>
+      </div>
+      <div class="pty-peer-box">
+        <div class="pty-peer-box-lbl">Speed</div>
+        <div class="pty-peer-box-val">${data.speed||30}<span style="font-size:12px;color:var(--text-dim)"> ft</span></div>
+      </div>
     </div>
-    <div class="pty-cs-stats">${statList}</div>
-    ${isOwn?'<div class="pty-cs-roll-badge">Click a stat to roll a check</div>':''}
+    ${data.inventory?.length?`<div class="pty-peer-section-hd">Inventory (${data.inventory.length} items)</div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;max-height:220px;overflow-y:auto">${invHtml}</div>`:''}
   `;
 }
 
 function _partySetViewPeer(pid){
-  _partyViewingPeer=pid;
+  const myId=partyPeer?.id;
+  _partyViewingPeer=(pid===myId)?null:pid;
   _renderPartyCharSheet();
 }
 
@@ -7187,6 +7539,7 @@ function _cvSyncPayload(){
     floorRoomQueue:_floorRoomQueue,
     cvFloorHistory:_cvFloorHistory.map(f=>({...f,images:f.images})),
     descentCell:_cvDescentCell,
+    stairsUp:_cvStairsUp,
   };
 }
 
@@ -7201,6 +7554,7 @@ function _cvApplySync(d){
   _floorRoomBudget=d.floorRoomBudget||0;
   _floorRoomQueue=d.floorRoomQueue||[];
   _cvDescentCell=d.descentCell||null;
+  _cvStairsUp=d.stairsUp||null;
   if(d.cvFloorHistory) _cvFloorHistory=d.cvFloorHistory;
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
   const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display=_cvFloorHistory.length>0&&partyIsDM?'':'none';
@@ -7222,7 +7576,7 @@ function _cvHandleMsg(d){
       if(!_cvRooms.find(r=>r.id===d.room.id)) _cvRooms.push(d.room); break;
     case 'cv-room-update':
       { const ru=_cvRooms.find(r=>r.id===d.room.id);
-        if(ru){ru.gx=d.room.gx;ru.gy=d.room.gy;ru.gw=d.room.gw;ru.gh=d.room.gh;} } break;
+        if(ru){ru.gx=d.room.gx;ru.gy=d.room.gy;ru.gw=d.room.gw;ru.gh=d.room.gh;if(d.room.rects)ru.rects=d.room.rects;} } break;
     case 'cv-room-rolled':
       { const rr=_cvRooms.find(r=>r.id===d.id);
         if(rr){rr.type=d.rtype;rr.label=d.label;rr.color=d.color;}
@@ -7253,7 +7607,7 @@ function _cvHandleMsg(d){
         const fbi=document.getElementById('vtc-floor-num');if(fbi)fbi.textContent='1'; } break;
     case 'cv-new-floor':
       { _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvPartials={};_cvCur=null;
-        _floorCount=d.floor; _healingCount=0; _cvDescentCell=null;
+        _floorCount=d.floor; _healingCount=0; _cvDescentCell=null; _cvStairsUp=d.stairsUp||null;
         _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
         if(d.history) _cvFloorHistory=d.history;
         _sysMsg('Descended to Floor '+_floorCount+' ('+_floorRoomBudget+' rooms planned).');
@@ -7264,6 +7618,7 @@ function _cvHandleMsg(d){
         _cvImages=(d.images||[]).map(img=>{const el=new Image();el.src=img.src;return{...img,el};});
         _cvTokens=d.tokens||{}; _cvPartials={}; _cvCur=null;
         _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
+        _cvStairsUp=d.stairsUp||null;
         if(d.history) _cvFloorHistory=d.history;
         _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
         _sysMsg('Returned to Floor '+_floorCount+'.');
@@ -7342,7 +7697,15 @@ function _appendMsg({user,text,ts,isDM,announce}){
   const t=new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   const d=document.createElement('div');
   d.className='pty-msg'+(announce?' pty-announce':'');
-  d.innerHTML=`<div class="pty-mhead"><span class="pty-muser${isDM?' dm':''}">${_escH(user)}</span><span class="pty-mtime">${t}</span></div><div class="pty-mtext">${_escH(text)}</div>`;
+  // Look up color: DM=purple, otherwise use per-peer color if available
+  let nameColor='';
+  if(isDM){nameColor='color:#c084fc';}
+  else{
+    const peer=Object.values(partyPlayers).find(p=>p.name===user);
+    if(peer&&peer.color) nameColor='color:'+peer.color;
+  }
+  const styleAttr=nameColor?` style="${nameColor}"`:' class="pty-muser"';
+  d.innerHTML=`<div class="pty-mhead"><span class="pty-muser${isDM?' dm':''}"${nameColor?' style="'+nameColor+'"':''}>${_escH(user)}</span><span class="pty-mtime">${t}</span></div><div class="pty-mtext">${_escH(text)}</div>`;
   log.appendChild(d);log.scrollTop=log.scrollHeight;
 }
 
@@ -7428,6 +7791,7 @@ function _handleData(d,fromConn){
       if(partyPlayers[d.id]){
         _sysMsg(d.name+' left');
         delete partyCharSheets[d.id];
+        if(_partyViewingPeer===d.id) _partyViewingPeer=null;
         delete partyPlayers[d.id];_renderPlayers();
         _renderPartyCharSheet();
       }break;
@@ -7694,7 +8058,7 @@ function leaveRoom(){
   myPlayerColor=null;
   _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvTokens={};_cvPartials={};_cvCur=null;
   _cvDraft=null;_healingCount=0;_floorCount=1;_cvUndoIds=[];_cvSid=0;
-  _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;_cvResizingImg=null;
+  _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;_cvStairsUp=null;_cvResizingImg=null;
   _cvPins=[];_cvPinPending=null;
   const pf=document.getElementById('vtc-pin-form');if(pf)pf.style.display='none';
   _lastFloorHadHealing=true;partyCharSheets={};_partyViewingPeer=null;
@@ -7749,6 +8113,8 @@ _saveBtn.onmouseout=function(){this.style.opacity='.4'};
 _saveBtn.onclick=function(){if(confirm('Clear saved data and reset everything?'))clearSave();};
 const _navRight=document.querySelector('.tabs-inner')||document.querySelector('.tabs-bar');
 if(_navRight)_navRight.appendChild(_saveBtn);
+
+
 </script>
 
 <!-- ROLL OVERLAY -->
