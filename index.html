@@ -4057,11 +4057,20 @@ function renderCharSheet(){
   const _cd=getCD(),allCards=[..._cd.generalCards,...Object.values(_cd.subclassCards).flat()];
   const abEl=document.getElementById('cs-abilities');
   if(abEl){
-    if(acquiredMain.size===0){abEl.innerHTML='<div class="cs-no-feats">No abilities yet — draw from the Ability Deck tab</div>';}
-    else{abEl.innerHTML='<div class="cs-abilities-box">'+[...acquiredMain].map(id=>{
-      const c=allCards.find(x=>x.id===id);
-      return c?`<div class="cs-ability-row">${typeTag(c.type)}<div><div class="cs-ability-name">${c.name}</div><div class="cs-ability-desc">${c.desc}</div></div></div>`:'';
-    }).join('')+'</div>';}
+    const classFeats=(CLASS_STARTING_FEATURES[currentClass]||[]).filter(f=>f.level<=currentLevel);
+    const classSection=classFeats.length?
+      '<div class="cs-panel-hd" style="margin:0 0 6px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Class Features</div>'+
+      '<div class="cs-abilities-box" style="margin-bottom:12px">'+
+      classFeats.map(f=>`<div class="cs-ability-row">${typeTag(f.type)}<div><div class="cs-ability-name">${f.name}</div><div class="cs-ability-desc">${f.desc}</div></div></div>`).join('')+
+      '</div>':'';
+    const deckSection=acquiredMain.size===0?
+      '<div class="cs-no-feats">No abilities yet — draw from the Ability Deck tab</div>':
+      '<div class="cs-panel-hd" style="margin:0 0 6px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Acquired Abilities</div>'+
+      '<div class="cs-abilities-box">'+[...acquiredMain].map(id=>{
+        const c=allCards.find(x=>x.id===id);
+        return c?`<div class="cs-ability-row">${typeTag(c.type)}<div><div class="cs-ability-name">${c.name}</div><div class="cs-ability-desc">${c.desc}</div></div></div>`:'';
+      }).join('')+'</div>';
+    abEl.innerHTML=classSection+deckSection;
   }
   // maneuvers
   const manTab=document.getElementById('cs-maneuvers-tab');
@@ -5563,6 +5572,77 @@ const CLASS_RESOURCES = {
 };
 
 // Superiority dice for Battle Master
+// ── Core class features (auto-shown at appropriate levels, no deck draw required) ──
+const CLASS_STARTING_FEATURES = {
+  fighter:[
+    {id:'cf_ftr_sw',  level:1,  name:'Second Wind',      type:'c', desc:'Bonus action: regain 1d10 + fighter level HP. Once per short or long rest.'},
+    {id:'cf_ftr_as',  level:2,  name:'Action Surge',     type:'c', desc:'Take one additional action on your turn (two uses at LV 17). Recharges on short or long rest.'},
+    {id:'cf_ftr_ea',  level:5,  name:'Extra Attack',     type:'p', desc:'When you take the Attack action, you can attack twice instead of once.'},
+    {id:'cf_ftr_id',  level:9,  name:'Indomitable',      type:'c', desc:'Reroll a failed saving throw; you must use the new result. Once per long rest (two at LV 13, three at LV 17).'},
+    {id:'cf_ftr_ea2', level:11, name:'Extra Attack (3)',  type:'p', desc:'When you take the Attack action, you can attack three times (LV 20: four times).'},
+  ],
+  barbarian:[
+    {id:'cf_bar_rage',level:1,  name:'Rage',              type:'c', desc:'Bonus action: enter rage for 1 minute. +2 melee damage, resistance to B/P/S damage, advantage on STR checks and saves. Uses scale with level: 2 at LV1, up to unlimited at LV 20.'},
+    {id:'cf_bar_ud',  level:1,  name:'Unarmored Defense', type:'p', desc:'While not wearing armor, your AC = 10 + DEX modifier + CON modifier.'},
+    {id:'cf_bar_ra',  level:2,  name:'Reckless Attack',   type:'c', desc:'When you make your first attack on your turn, choose to attack recklessly. Advantage on all STR attacks this turn; attackers have advantage against you until next turn.'},
+    {id:'cf_bar_ds',  level:2,  name:'Danger Sense',      type:'p', desc:'Advantage on DEX saving throws against effects you can see (not blind/deaf/incapacitated).'},
+    {id:'cf_bar_ea',  level:5,  name:'Extra Attack',      type:'p', desc:'Attack twice when you take the Attack action.'},
+    {id:'cf_bar_fi',  level:7,  name:'Feral Instinct',    type:'p', desc:'Advantage on initiative rolls. If surprised and not incapacitated, you can act normally if you enter rage before doing anything else.'},
+  ],
+  wizard:[
+    {id:'cf_wiz_sc',  level:1,  name:'Spellcasting',      type:'p', desc:'You are a full spellcaster. Your spellcasting ability is Intelligence. You have a spellbook; prepare INT modifier + wizard level spells from it after each long rest.'},
+    {id:'cf_wiz_rc',  level:1,  name:'Ritual Casting',    type:'p', desc:'Cast wizard spells tagged as rituals without expending a spell slot (takes 10 minutes extra).'},
+    {id:'cf_wiz_ar',  level:1,  name:'Arcane Recovery',   type:'c', desc:'Once per day during a short rest, recover spell slots totaling half your wizard level (rounded up). Slots must be 5th level or lower.'},
+    {id:'cf_wiz_sm',  level:18, name:'Spell Mastery',     type:'p', desc:'Choose one 1st and one 2nd-level spell from your spellbook. Cast each at their lowest level without expending a spell slot when prepared.'},
+  ],
+  paladin:[
+    {id:'cf_pal_ds',  level:1,  name:'Divine Sense',      type:'c', desc:'Detect the presence of strong evil or good: celestials, fiends, undead within 60 ft. Uses: 1 + CHA modifier per long rest.'},
+    {id:'cf_pal_loh', level:1,  name:'Lay on Hands',      type:'c', desc:'HP healing pool equal to paladin level × 5. Touch a creature to restore HP, or spend 5 HP to cure a disease or poison. Recharges on long rest.'},
+    {id:'cf_pal_fs',  level:2,  name:'Fighting Style',    type:'p', desc:'Choose a fighting style: Defense (+1 AC in armor), Dueling (+2 damage with one-handed weapon), Great Weapon Fighting, or Protection.'},
+    {id:'cf_pal_spc', level:2,  name:'Spellcasting',      type:'p', desc:'Spellcasting ability is Charisma. Prepare CHA modifier + half paladin level (round down) spells per long rest.'},
+    {id:'cf_pal_dsm', level:2,  name:'Divine Smite',      type:'c', desc:'When you hit with a melee attack, expend a spell slot to deal +2d8 radiant damage (+1d8 per slot level above 1st, +1d8 vs undead/fiends).'},
+    {id:'cf_pal_ap',  level:6,  name:'Aura of Protection',type:'p', desc:'Friendly creatures within 10 ft (30 ft at LV 18) add your CHA modifier (min +1) to saving throws while you are conscious.'},
+    {id:'cf_pal_ea',  level:5,  name:'Extra Attack',      type:'p', desc:'Attack twice when you take the Attack action.'},
+  ],
+  warlock:[
+    {id:'cf_wlk_pm',  level:1,  name:'Pact Magic',        type:'p', desc:'Spell slots recharge on short or long rest. All slots are the same level (max 5th). Number and level of slots scale with level.'},
+    {id:'cf_wlk_ei',  level:2,  name:'Eldritch Invocations',type:'p',desc:'Learn 2 eldritch invocations (additional at higher levels). These modify Eldritch Blast and add passive or active abilities.'},
+    {id:'cf_wlk_pb',  level:3,  name:'Pact Boon',         type:'p', desc:'Choose Pact of the Chain (familiar), Pact of the Blade (weapon), or Pact of the Tome (three cantrips + rituals).'},
+    {id:'cf_wlk_ma',  level:11, name:'Mystic Arcanum',    type:'c', desc:'Your patron bestows a powerful spell (6th–9th level) learned at levels 11, 13, 15, 17. Each can be cast once per long rest.'},
+  ],
+  rogue:[
+    {id:'cf_rog_exp', level:1,  name:'Expertise',         type:'p', desc:'Choose 2 proficiencies (skills or thieves\' tools): double your proficiency bonus for those checks. Two more at LV 6.'},
+    {id:'rg01',       level:1,  name:'Sneak Attack',      type:'c', desc:'Once per turn, deal extra damage when you hit with a finesse or ranged weapon and have advantage, or an ally is adjacent to target. 1d6 at LV 1, scaling to 10d6 at LV 19.'},
+    {id:'cf_rog_tc',  level:1,  name:"Thieves' Cant",     type:'p', desc:'You know a secret mix of dialect, jargon, and code for passing messages to other rogues. Takes 4× longer to convey messages.'},
+    {id:'cf_rog_ca',  level:2,  name:'Cunning Action',    type:'b', desc:'Bonus action on each turn: Dash, Disengage, or Hide.'},
+    {id:'cf_rog_ud',  level:5,  name:'Uncanny Dodge',     type:'r', desc:'When an attacker you can see hits you, use your reaction to halve the attack\'s damage.'},
+    {id:'cf_rog_ev',  level:7,  name:'Evasion',           type:'p', desc:'When you make a DEX save for half damage, you take no damage on success and half on failure.'},
+    {id:'cf_rog_ra',  level:11, name:'Reliable Talent',   type:'p', desc:'Whenever you make an ability check that lets you add your proficiency bonus, treat any d20 roll of 9 or lower as a 10.'},
+  ],
+  druid:[
+    {id:'cf_drd_dr',  level:1,  name:'Druidic',           type:'p', desc:'You know Druidic, a secret language spoken only by druids. You can leave hidden messages only druids can spot.'},
+    {id:'cf_drd_sc',  level:1,  name:'Spellcasting',      type:'p', desc:'Spellcasting ability is Wisdom. Prepare WIS modifier + druid level spells from the druid list after each long rest. You can use a druidic focus.'},
+    {id:'cf_drd_ws',  level:2,  name:'Wild Shape',        type:'c', desc:'Use your action to transform into a beast you have seen. CR limit scales by level. 2 uses per short rest.'},
+    {id:'cf_drd_tg',  level:10, name:'Timeless Body',     type:'p', desc:'You age 10 times more slowly than normal. You are immune to magical aging.'},
+    {id:'cf_drd_bs',  level:18, name:'Beast Spells',      type:'p', desc:'Cast druid spells in any shape from Wild Shape (somatic/verbal components work; material still requires normal form).'},
+  ],
+  cleric:[
+    {id:'cf_clr_sc',  level:1,  name:'Spellcasting',      type:'p', desc:'Spellcasting ability is Wisdom. Prepare WIS modifier + cleric level spells per long rest. You can use a holy symbol as spellcasting focus.'},
+    {id:'cl01',       level:2,  name:'Channel Divinity',  type:'c', desc:'Channel divine energy: Turn Undead + one domain-specific option. Once per short rest (twice at LV 6, three times at LV 18).'},
+    {id:'cl02',       level:2,  name:'Turn Undead',       type:'c', desc:'As an action, present your holy symbol. Each undead within 30 ft must make a WIS save or be turned for 1 minute or until it takes damage.'},
+    {id:'cl03',       level:5,  name:'Destroy Undead',    type:'p', desc:'When an undead fails its Turn Undead save, it is instantly destroyed if its CR is at or below your threshold (scales with level).'},
+    {id:'cf_clr_di',  level:10, name:'Divine Intervention',type:'c',desc:'Call on your deity for intercession. Roll d100 ≤ your cleric level to succeed. Guaranteed success at LV 20.'},
+  ],
+  oathbreaker:[
+    {id:'cf_ob_ds',   level:1,  name:'Divine Sense',      type:'c', desc:'As an action, detect the presence of celestials, fiends, and undead within 60 ft. Uses: 1 + CHA modifier per long rest.'},
+    {id:'cf_ob_loh',  level:1,  name:'Lay on Hands',      type:'c', desc:'HP pool = paladin level × 5. Touch to heal. Spend 5 HP to cure a disease or neutralize a poison. Recharges on long rest.'},
+    {id:'cf_ob_dd',   level:3,  name:"Dark Devotion",     type:'p', desc:"Your alignment shift is complete. You can't be frightened or charmed."},
+    {id:'cf_ob_spc',  level:2,  name:'Spellcasting',      type:'p', desc:'Charisma-based spellcasting. Prepare CHA modifier + half paladin level spells per long rest.'},
+    {id:'cf_ob_dsm',  level:2,  name:'Divine Smite',      type:'c', desc:'Expend a spell slot when you hit: +2d8 necrotic damage (+1d8 per slot above 1st, +1d8 vs undead/fiends).'},
+    {id:'cf_ob_ea',   level:5,  name:'Extra Attack',      type:'p', desc:'Attack twice when you take the Attack action.'},
+  ],
+};
+
 let superiorityDice = {total:4, used:0, size:'d8'};
 
 // Maneuvers known (for Battle Master sub-deck draw extension)
@@ -6432,6 +6512,7 @@ let _cvFloorHistory=[];     // saved floor states when descending
 let _floorRoomBudget=0;     // total rooms planned for this floor (15-26)
 let _floorRoomQueue=[];     // remaining room types to assign as rooms are drawn
 let _cvDescentCell=null;    // {gx,gy} of descent room on current floor
+let _cvStairsUp=null;       // {gx,gy} where party entered current floor from above
 let _lastFloorHadHealing=true; // tracks healing for "every 2 floors" rule
 // Character sheets shared by players
 let partyCharSheets={};     // {peerId: {name,charName,level,className,stats,hp,maxHp}}
@@ -6549,56 +6630,80 @@ function _cvRender(){
     ctx.fillText(p.name,0,11);
     ctx.restore();
   });
+
+  // Staircase up indicator (entry point from floor above)
+  if(_cvStairsUp){
+    const t=TILE*_cvZoom;
+    const sp=_w2s(_cvStairsUp.gx,_cvStairsUp.gy);
+    ctx.save();
+    ctx.translate(sp.x+t/2,sp.y+t/2);
+    ctx.fillStyle='rgba(124,58,237,.35)';
+    ctx.strokeStyle='#a855f7';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(-t/2,-t/2,t,t,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#d8b4fe';ctx.font='bold '+Math.min(15,t*0.45)+'px sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('⬆',0,-t*0.12);
+    ctx.font=Math.min(9,t*0.22)+'px sans-serif';
+    ctx.fillText('STAIRS UP',0,t*0.28);
+    ctx.restore();
+  }
 }
 
 function _cvDrawRoom(ctx,r){
   const t=TILE*_cvZoom;
-  const p=_w2s(r.gx,r.gy); const pw=r.gw*t, ph=r.gh*t;
+  const rects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
+  // Determine fill/border colors once
   const isHall=r.gw===1||r.gh===1;
+  let fillStyle,strokeStyle;
+  if(r.type==='combat')        fillStyle='rgba(224,85,85,.2)';
+  else if(r.type==='treasure') fillStyle='rgba(212,137,26,.2)';
+  else if(r.type==='shop')     fillStyle='rgba(85,153,212,.2)';
+  else if(r.type==='healing')  fillStyle='rgba(74,140,58,.2)';
+  else if(r.type==='descent')  fillStyle='rgba(124,58,237,.25)';
+  else if(isHall)              fillStyle='rgba(60,80,130,.35)';
+  else                         fillStyle='rgba(25,32,60,.7)';
+  strokeStyle=r.type?(VTT_ROOM_TYPES.find(x=>x.type===r.type)||{color:'#3a4260'}).color:isHall?'#3a4a80':'#3a4260';
   ctx.save();
-  // Fill
-  if(r.type==='combat')        ctx.fillStyle='rgba(224,85,85,.2)';
-  else if(r.type==='treasure') ctx.fillStyle='rgba(212,137,26,.2)';
-  else if(r.type==='shop')     ctx.fillStyle='rgba(85,153,212,.2)';
-  else if(r.type==='healing')  ctx.fillStyle='rgba(74,140,58,.2)';
-  else if(r.type==='descent')  ctx.fillStyle='rgba(124,58,237,.25)';
-  else if(isHall)              ctx.fillStyle='rgba(60,80,130,.35)';
-  else                         ctx.fillStyle='rgba(25,32,60,.7)';
-  ctx.fillRect(p.x,p.y,pw,ph);
-  // Border
-  ctx.strokeStyle=r.type?(VTT_ROOM_TYPES.find(x=>x.type===r.type)||{color:'#3a4260'}).color:isHall?'#3a4a80':'#3a4260';
-  ctx.lineWidth=1.5; ctx.strokeRect(p.x,p.y,pw,ph);
-  // Label / roll button (rooms only)
-  if(!isHall&&pw>24&&ph>24){
-    const cx=p.x+pw/2, cy=p.y+ph/2;
+  // Draw each rectangle
+  rects.forEach(rc=>{
+    const p=_w2s(rc.gx,rc.gy); const pw=rc.gw*t, ph=rc.gh*t;
+    ctx.fillStyle=fillStyle; ctx.fillRect(p.x,p.y,pw,ph);
+    ctx.strokeStyle=strokeStyle; ctx.lineWidth=1.5; ctx.strokeRect(p.x,p.y,pw,ph);
+    // Hall label per-rect
+    const rcIsHall=rc.gw===1||rc.gh===1;
+    if(rcIsHall&&(pw>36||ph>36)){
+      ctx.fillStyle='rgba(255,255,255,.22)'; ctx.font='9px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('hall',p.x+pw/2,p.y+ph/2);
+    }
+  });
+  // Label at centroid of bounding box
+  const bp=_w2s(r.gx,r.gy); const bw=r.gw*t, bh=r.gh*t;
+  if(!isHall&&bw>24&&bh>24){
+    const cx=bp.x+bw/2, cy=bp.y+bh/2;
     if(r.type){
       const rt=VTT_ROOM_TYPES.find(x=>x.type===r.type);
       ctx.fillStyle=rt?rt.color:'#e8e4d9';
-      ctx.font='bold '+Math.min(13,pw/5)+'px sans-serif';
+      ctx.font='bold '+Math.min(13,bw/5)+'px sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
       const icon=r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':r.type==='descent'?'🪜 ':'';
       ctx.fillText(icon+r.label,cx,cy);
     } else if(partyIsDM&&_floorRoomQueue.length>0){
-      const bw=Math.min(80,pw-6),bh=Math.min(24,ph-6);
+      const rbw=Math.min(80,bw-6),rbh=Math.min(24,bh-6);
       ctx.fillStyle='rgba(212,137,26,.15)';
-      ctx.beginPath();ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,3);ctx.fill();
+      ctx.beginPath();ctx.roundRect(cx-rbw/2,cy-rbh/2,rbw,rbh,3);ctx.fill();
       ctx.strokeStyle='#d4891a';ctx.lineWidth=1;ctx.stroke();
       ctx.fillStyle='#d4891a';
-      ctx.font='bold '+Math.min(10,bw/6)+'px sans-serif';
+      ctx.font='bold '+Math.min(10,rbw/6)+'px sans-serif';
       ctx.textAlign='center';ctx.textBaseline='middle';
       const nxt=_floorRoomQueue[0];
       ctx.fillText('Roll ('+nxt+')',cx,cy);
     } else if(!r.type){
       ctx.fillStyle='rgba(255,255,255,.25)';
-      ctx.font='bold '+Math.min(12,pw/5)+'px sans-serif';
+      ctx.font='bold '+Math.min(12,bw/5)+'px sans-serif';
       ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText('?',cx,cy);
     }
-  }
-  if(isHall&&(pw>36||ph>36)){
-    ctx.fillStyle='rgba(255,255,255,.22)'; ctx.font='9px sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('hall',p.x+pw/2,p.y+ph/2);
   }
   ctx.restore();
 }
@@ -6722,11 +6827,14 @@ function _cvPDown(e){
 
     if(partyIsDM){
       const w=_s2w(sx,sy);
-      // Room roll-button click (untyped rooms)
+      // Room roll-button click (untyped rooms) — check all rects
       for(const r of _cvRooms){
         const isHall=r.gw===1||r.gh===1;
-        if(!isHall&&!r.type&&w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
-          _cvDmRollRoom(r.id); return;
+        if(!isHall&&!r.type){
+          const rects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
+          if(rects.some(rc=>w.x>=rc.gx&&w.x<=rc.gx+rc.gw&&w.y>=rc.gy&&w.y<=rc.gy+rc.gh)){
+            _cvDmRollRoom(r.id); return;
+          }
         }
       }
       // Image resize handle hit-test (selected image only)
@@ -6894,11 +7002,15 @@ function _cvPUp(e){
     // Check for overlap with existing rooms
     const overlaps=_cvRooms.filter(r=>!(gx>=r.gx+r.gw||gx+gw<=r.gx||gy>=r.gy+r.gh||gy+gh<=r.gy));
     if(overlaps.length>0){
-      // Expand first overlapping room to bounding box, remove the rest
+      // Add new rect to first overlapping room, preserving irregular shape
       const tgt=overlaps[0];
-      const nx1=Math.min(gx,tgt.gx),ny1=Math.min(gy,tgt.gy);
-      const nx2=Math.max(gx+gw,tgt.gx+tgt.gw),ny2=Math.max(gy+gh,tgt.gy+tgt.gh);
-      tgt.gx=nx1;tgt.gy=ny1;tgt.gw=nx2-nx1;tgt.gh=ny2-ny1;
+      if(!tgt.rects) tgt.rects=[{gx:tgt.gx,gy:tgt.gy,gw:tgt.gw,gh:tgt.gh}];
+      tgt.rects.push({gx,gy,gw,gh});
+      // Update bounding box from all rects
+      const allX=tgt.rects.map(rc=>rc.gx), allY=tgt.rects.map(rc=>rc.gy);
+      const allX2=tgt.rects.map(rc=>rc.gx+rc.gw), allY2=tgt.rects.map(rc=>rc.gy+rc.gh);
+      tgt.gx=Math.min(...allX);tgt.gy=Math.min(...allY);
+      tgt.gw=Math.max(...allX2)-tgt.gx;tgt.gh=Math.max(...allY2)-tgt.gy;
       _broadcast({type:'cv-room-update',room:{...tgt}});
       for(let i=1;i<overlaps.length;i++){
         if(overlaps[i].type==='healing') _healingCount=Math.max(0,_healingCount-1);
@@ -7054,9 +7166,12 @@ function _cvDmNewFloor(){
     tokens:JSON.parse(JSON.stringify(_cvTokens)),
     budget:_floorRoomBudget,
     descentCell:_cvDescentCell?{..._cvDescentCell}:null,
+    stairsUp:_cvStairsUp?{..._cvStairsUp}:null,
   });
   // Advance to next floor
-  _floorCount++; _healingCount=0; _cvDescentCell=null;
+  // Set staircase-up marker for new floor from previous descent position
+  const prevDescentCell=_cvDescentCell?{..._cvDescentCell}:null;
+  _floorCount++; _healingCount=0; _cvDescentCell=null; _cvStairsUp=prevDescentCell;
   _cvStrokes=[]; _cvRooms=[]; _cvImages=[]; _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
   // Roll new floor plan
   _floorRoomBudget=15+Math.floor(Math.random()*12);
@@ -7068,7 +7183,7 @@ function _cvDmNewFloor(){
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
   const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display='';
   _broadcast({type:'cv-new-floor',floor:_floorCount,budget:_floorRoomBudget,queue:_floorRoomQueue,
-    history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
+    stairsUp:_cvStairsUp,history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
 }
 
 function _cvDmGoUpFloor(){
@@ -7082,13 +7197,14 @@ function _cvDmGoUpFloor(){
   _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
   _floorRoomBudget=prev.budget||0;
   _cvDescentCell=prev.descentCell||null;
+  _cvStairsUp=prev.stairsUp||null;
   _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
   _floorRoomQueue=[]; // can't draw more rooms on previous floors
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
   const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display=_cvFloorHistory.length>0?'':'none';
   _sysMsg('Went up to Floor '+_floorCount+'.');
   _broadcast({type:'cv-go-up-floor',floor:_floorCount,budget:_floorRoomBudget,queue:_floorRoomQueue,
-    strokes:_cvStrokes,rooms:_cvRooms,images:prev.images,tokens:_cvTokens,history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
+    stairsUp:_cvStairsUp,strokes:_cvStrokes,rooms:_cvRooms,images:prev.images,tokens:_cvTokens,history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
 }
 
 function _cvDmClearDrawings(){
@@ -7132,7 +7248,8 @@ function _cvDmDeleteRoomAt(sx,sy){
   const w=_s2w(sx,sy);
   for(let i=_cvRooms.length-1;i>=0;i--){
     const r=_cvRooms[i];
-    if(w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
+    const _drRects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
+    if(_drRects.some(rc=>w.x>=rc.gx&&w.x<=rc.gx+rc.gw&&w.y>=rc.gy&&w.y<=rc.gy+rc.gh)){
       const isHall=r.gw===1||r.gh===1;
       if(r.type==='healing') _healingCount=Math.max(0,_healingCount-1);
       if(!isHall&&r.type&&_floorRoomQueue!==null){
@@ -7409,6 +7526,7 @@ function _cvSyncPayload(){
     floorRoomQueue:_floorRoomQueue,
     cvFloorHistory:_cvFloorHistory.map(f=>({...f,images:f.images})),
     descentCell:_cvDescentCell,
+    stairsUp:_cvStairsUp,
   };
 }
 
@@ -7423,6 +7541,7 @@ function _cvApplySync(d){
   _floorRoomBudget=d.floorRoomBudget||0;
   _floorRoomQueue=d.floorRoomQueue||[];
   _cvDescentCell=d.descentCell||null;
+  _cvStairsUp=d.stairsUp||null;
   if(d.cvFloorHistory) _cvFloorHistory=d.cvFloorHistory;
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
   const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display=_cvFloorHistory.length>0&&partyIsDM?'':'none';
@@ -7444,7 +7563,7 @@ function _cvHandleMsg(d){
       if(!_cvRooms.find(r=>r.id===d.room.id)) _cvRooms.push(d.room); break;
     case 'cv-room-update':
       { const ru=_cvRooms.find(r=>r.id===d.room.id);
-        if(ru){ru.gx=d.room.gx;ru.gy=d.room.gy;ru.gw=d.room.gw;ru.gh=d.room.gh;} } break;
+        if(ru){ru.gx=d.room.gx;ru.gy=d.room.gy;ru.gw=d.room.gw;ru.gh=d.room.gh;if(d.room.rects)ru.rects=d.room.rects;} } break;
     case 'cv-room-rolled':
       { const rr=_cvRooms.find(r=>r.id===d.id);
         if(rr){rr.type=d.rtype;rr.label=d.label;rr.color=d.color;}
@@ -7475,7 +7594,7 @@ function _cvHandleMsg(d){
         const fbi=document.getElementById('vtc-floor-num');if(fbi)fbi.textContent='1'; } break;
     case 'cv-new-floor':
       { _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvPartials={};_cvCur=null;
-        _floorCount=d.floor; _healingCount=0; _cvDescentCell=null;
+        _floorCount=d.floor; _healingCount=0; _cvDescentCell=null; _cvStairsUp=d.stairsUp||null;
         _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
         if(d.history) _cvFloorHistory=d.history;
         _sysMsg('Descended to Floor '+_floorCount+' ('+_floorRoomBudget+' rooms planned).');
@@ -7486,6 +7605,7 @@ function _cvHandleMsg(d){
         _cvImages=(d.images||[]).map(img=>{const el=new Image();el.src=img.src;return{...img,el};});
         _cvTokens=d.tokens||{}; _cvPartials={}; _cvCur=null;
         _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
+        _cvStairsUp=d.stairsUp||null;
         if(d.history) _cvFloorHistory=d.history;
         _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
         _sysMsg('Returned to Floor '+_floorCount+'.');
@@ -7925,7 +8045,7 @@ function leaveRoom(){
   myPlayerColor=null;
   _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvTokens={};_cvPartials={};_cvCur=null;
   _cvDraft=null;_healingCount=0;_floorCount=1;_cvUndoIds=[];_cvSid=0;
-  _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;_cvResizingImg=null;
+  _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;_cvStairsUp=null;_cvResizingImg=null;
   _cvPins=[];_cvPinPending=null;
   const pf=document.getElementById('vtc-pin-form');if(pf)pf.style.display='none';
   _lastFloorHadHealing=true;partyCharSheets={};_partyViewingPeer=null;
