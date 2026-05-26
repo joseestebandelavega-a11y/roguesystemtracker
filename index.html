@@ -17,6 +17,7 @@
   --border:#252a3a;--border-hi:#3a4260;
   --note:#b5860a;--note-bg:#1e1505;
   --green:#4a8c3a;--green-bg:#0d1a0d;
+  --red:#c44040;--red-bg:rgba(196,64,64,.15);
   --tag-r:rgba(180,120,20,0.2);--tag-rc:#c8900a;
   --tag-b:rgba(42,114,181,0.2);--tag-bc:#5599d4;
   --tag-p:rgba(80,80,80,0.25);--tag-pc:#888;
@@ -1593,7 +1594,9 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 }
 
 /* ── PARTY ROOM ─────────────────────────────────────────────────────────── */
-#tab-party{display:none;flex-direction:column;gap:12px;padding:16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100%;max-width:1100px;margin:0 auto}
+body.party-mode .content{max-width:1400px}
+body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
+#tab-party{display:none;flex-direction:column;gap:12px;padding:16px;box-sizing:border-box;min-height:calc(100vh - 52px);width:100%;max-width:1400px;margin:0 auto}
 #tab-party.active{display:flex}
 
 /* Setup / connect area */
@@ -1604,10 +1607,11 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .pty-inp{background:var(--surface2);border:1px solid var(--border-hi);border-radius:6px;color:var(--text);font-size:13px;padding:7px 12px;outline:none;width:220px}
 .pty-inp:focus{border-color:var(--fighter)}
 .pty-inp.code{text-transform:uppercase;letter-spacing:.15em;text-align:center;width:140px}
-.pty-btn{background:var(--fighter-pale);border:1px solid var(--fighter-dim);border-radius:6px;color:var(--fighter);font-size:12px;font-weight:600;padding:8px 18px;cursor:pointer;transition:all .15s;letter-spacing:.04em;white-space:nowrap}
-.pty-btn:hover{background:var(--fighter-dim);border-color:var(--fighter)}
-.pty-btn.ghost{background:var(--surface2);border-color:var(--border-hi);color:var(--text-dim)}
-.pty-btn.ghost:hover{border-color:var(--border-hi);color:var(--text)}
+.pty-btn{background:linear-gradient(180deg,var(--fighter-pale),#1a1208);border:1px solid var(--fighter-dim);border-radius:7px;color:var(--fighter);font-size:12px;font-weight:700;padding:9px 20px;cursor:pointer;transition:all .18s cubic-bezier(.4,1.2,.5,1);letter-spacing:.08em;text-transform:uppercase;font-family:'Cinzel',Georgia,serif;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,200,100,.08),0 1px 0 rgba(0,0,0,.3)}
+.pty-btn:hover{background:linear-gradient(180deg,var(--fighter-dim),#3a2710);border-color:var(--fighter);transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,200,100,.15),0 4px 14px -4px rgba(212,137,26,.5)}
+.pty-btn:active{transform:translateY(0)}
+.pty-btn.ghost{background:linear-gradient(180deg,var(--surface2),var(--surface));border-color:var(--border-hi);color:var(--text-dim);font-family:'Cinzel',Georgia,serif}
+.pty-btn.ghost:hover{background:linear-gradient(180deg,#1b2030,#13161f);border-color:var(--fighter);color:var(--fighter);transform:translateY(-1px);box-shadow:0 4px 14px -6px rgba(212,137,26,.4)}
 .pty-divider{display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:11px;width:260px}
 .pty-divider::before,.pty-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 .pty-join-row{display:flex;gap:6px;align-items:center}
@@ -1628,18 +1632,55 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-unlock-row{display:flex;gap:6px;align-items:center}
 .dm-unlock-lbl{font-size:10px;color:var(--text-muted);letter-spacing:.05em;white-space:nowrap}
 
-/* Main layout — always shows right col (player list); DM panel toggled inside */
-.pty-layout{display:grid;grid-template-columns:1fr 220px;gap:10px;align-items:start}
-.pty-right-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+/* Party room two-column layout: char sheet (left) + tools (right) */
+.pty-row{display:flex;flex-direction:row;gap:14px;align-items:flex-start;flex:1;min-width:0}
+.pty-cs-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.pty-tools-col{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 100px);overflow-y:auto;position:sticky;top:10px;padding-right:4px}
+.pty-tools-col > *{flex-shrink:0}
+.pty-tools-col::-webkit-scrollbar{width:5px}
+.pty-tools-col::-webkit-scrollbar-track{background:transparent}
+.pty-tools-col::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+/* Legacy aliases preserved for any inline refs */
+.pty-main-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.pty-side-col{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 100px);overflow-y:auto;position:sticky;top:10px;padding-right:4px}
+.pty-side-col > *{flex-shrink:0}
+.pty-side-col::-webkit-scrollbar{width:5px}
+.pty-side-col::-webkit-scrollbar-track{background:transparent}
+.pty-side-col::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+
+.pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;width:100%;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 4px 20px -10px rgba(0,0,0,.4)}
+.pty-cs-full-wrap #tab-character{padding:20px 22px !important;font-size:14px}
+.pty-cs-full-wrap .cs-stat-shell{width:72px}
+.pty-cs-full-wrap .cs-stat-mod{font-size:28px}
+.pty-cs-full-wrap .cs-quick-val{font-size:22px}
+.vtc-pin-form{position:absolute;z-index:50;background:var(--surface2);border:1px solid var(--border-hi);border-radius:8px;padding:10px;display:none;flex-direction:column;gap:8px;min-width:170px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+
+/* Dice roller panel */
+.pty-dice-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
+.pty-dice-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:12px}
+.pty-dice-btn{position:relative;background:linear-gradient(180deg,#2a1d0a 0%,#1a1208 100%);border:1px solid var(--fighter-dim);border-radius:8px;color:var(--fighter);font-family:'Cinzel',Georgia,serif;font-size:14px;font-weight:700;padding:10px 4px 8px;cursor:pointer;transition:all .18s cubic-bezier(.4,1.2,.5,1);letter-spacing:.06em;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1;box-shadow:inset 0 1px 0 rgba(255,200,100,.08),0 1px 0 rgba(0,0,0,.4)}
+.pty-dice-btn:hover{border-color:var(--fighter);background:linear-gradient(180deg,#3a2710,#241808);transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,200,100,.15),0 6px 18px -6px rgba(212,137,26,.5)}
+.pty-dice-btn:active{transform:translateY(0);box-shadow:inset 0 2px 4px rgba(0,0,0,.4)}
+.pty-dice-btn .die-glyph{font-size:18px;line-height:1;color:var(--fighter);filter:drop-shadow(0 0 4px rgba(212,137,26,.4));font-family:Georgia,serif}
+.pty-dice-btn .die-lbl{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--fighter);font-family:'Cinzel',Georgia,serif;text-transform:uppercase}
+.pty-dice-opts{display:flex;gap:10px;padding:0 12px 12px;align-items:center}
+.pty-dice-opts label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--fighter);display:flex;align-items:center;gap:7px;flex:1;font-weight:700;font-family:'Cinzel',Georgia,serif}
+.pty-dice-opts input{background:var(--surface2);border:1px solid var(--border-hi);border-radius:5px;color:var(--text);font-size:13px;font-weight:600;padding:5px 7px;width:100%;min-width:0;outline:none;font-family:Georgia,serif;text-align:center;transition:border-color .15s}
+.pty-dice-opts input:focus{border-color:var(--fighter);box-shadow:0 0 0 2px rgba(212,137,26,.15)}
+.pty-dice-result{margin:0 12px 12px;background:linear-gradient(180deg,var(--surface2) 0%,#0f1219 100%);border:1px solid var(--border-hi);border-radius:8px;padding:10px 14px;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:10px;transition:all .25s}
+.pty-dice-result.rolling{border-color:var(--fighter);box-shadow:0 0 0 1px var(--fighter) inset,0 0 18px -4px rgba(212,137,26,.55)}
+.pty-dice-result.empty{color:var(--text-muted);font-style:italic;font-size:12px;justify-content:center;font-family:Georgia,serif}
+.pty-dice-result-total{font-size:28px;font-weight:700;font-family:Georgia,serif;color:var(--fighter);line-height:1;text-shadow:0 0 12px rgba(212,137,26,.4)}
+.pty-dice-result-detail{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;text-align:right;flex:1;min-width:0;word-break:break-word;line-height:1.4;letter-spacing:.02em}
 
 /* VTT Canvas */
 .vtc-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
 .vtc-tb{background:var(--surface2);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .vtc-tg{display:flex;align-items:center;gap:4px}
 .vtc-tg+.vtc-tg{padding-left:8px;border-left:1px solid var(--border)}
-.vtc-btn{background:var(--surface);border:1px solid var(--border-hi);border-radius:4px;color:var(--text-dim);font-size:11px;font-weight:600;padding:4px 8px;cursor:pointer;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;line-height:1.3}
-.vtc-btn:hover{border-color:var(--fighter);color:var(--text)}
-.vtc-btn.active{background:var(--fighter-pale);border-color:var(--fighter);color:var(--fighter)}
+.vtc-btn{background:linear-gradient(180deg,var(--surface),#0e1119);border:1px solid var(--border-hi);border-radius:6px;color:var(--text-dim);font-size:11px;font-weight:600;padding:5px 9px;cursor:pointer;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;line-height:1.3;letter-spacing:.02em}
+.vtc-btn:hover{border-color:var(--fighter);color:var(--fighter);background:linear-gradient(180deg,var(--surface),#1a1208);transform:translateY(-1px);box-shadow:0 2px 8px -4px rgba(212,137,26,.4)}
+.vtc-btn.active{background:linear-gradient(180deg,#2a1d0a,#1a1208);border-color:var(--fighter);color:var(--fighter);box-shadow:inset 0 1px 0 rgba(255,200,100,.1),0 0 0 1px rgba(212,137,26,.2)}
 .vtc-btn-danger{color:#c44040;border-color:rgba(196,64,64,.3)}
 .vtc-btn-danger:hover{background:rgba(196,64,64,.12);border-color:#c44040;color:#c44040}
 .vtc-swatch{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);flex-shrink:0;cursor:default}
@@ -1690,22 +1731,52 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-sec-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#a855f7;margin-bottom:4px}
 .dm-textarea{width:100%;background:var(--surface2);border:1px solid #5b21b6;border-radius:6px;color:var(--text);font-size:12px;padding:8px 10px;resize:vertical;min-height:72px;outline:none;font-family:inherit;line-height:1.45}
 .dm-textarea:focus{border-color:#c084fc}
-.dm-announce-btn{background:rgba(139,92,246,.15);border:1px solid #5b21b6;border-radius:6px;color:#c084fc;font-size:12px;font-weight:600;padding:7px 14px;cursor:pointer;width:100%;letter-spacing:.04em;transition:all .15s;margin-top:5px}
-.dm-announce-btn:hover{background:rgba(139,92,246,.28);border-color:#c084fc}
+.dm-announce-btn{background:linear-gradient(180deg,rgba(139,92,246,.25),rgba(91,33,182,.2));border:1px solid #5b21b6;border-radius:7px;color:#c084fc;font-size:12px;font-weight:700;padding:9px 16px;cursor:pointer;width:100%;letter-spacing:.08em;text-transform:uppercase;font-family:'Cinzel',Georgia,serif;transition:all .18s cubic-bezier(.4,1.2,.5,1);margin-top:6px;box-shadow:inset 0 1px 0 rgba(196,132,252,.15),0 1px 0 rgba(0,0,0,.3)}
+.dm-announce-btn:hover{background:linear-gradient(180deg,rgba(139,92,246,.4),rgba(91,33,182,.3));border-color:#c084fc;transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(196,132,252,.2),0 4px 14px -4px rgba(139,92,246,.5)}
+.dm-announce-btn:active{transform:translateY(0)}
 .dm-map-placeholder{background:var(--surface2);border:1px dashed #5b21b6;border-radius:6px;padding:24px;text-align:center;color:#7c3aed;font-size:11px;opacity:.65}
 
 @media(max-width:860px){
-  .pty-layout{grid-template-columns:1fr}
-  .pty-layout.no-dm{grid-template-columns:1fr}
   .pty-right-col{display:flex !important}
-  .pty-layout .pty-right-col{order:3}
 }
 @media(max-width:480px){
   .pty-setup{margin:16px auto;padding:20px 16px}
   .pty-header{gap:8px}
   .pty-header-right{width:100%}
 }
+/* Floor badge (all players see floor number) */
+.vtc-floor-badge{background:var(--surface);border:1px solid var(--border-hi);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--text-dim);display:inline-flex;align-items:center;gap:4px;pointer-events:none;flex-shrink:0}
+.vtc-floor-num{color:var(--fighter);font-weight:700}
+/* Per-player draw mute toggle (DM only) */
+.pty-mute-btn{background:none;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--text-dim);cursor:pointer;margin-left:auto;flex-shrink:0;transition:all .15s;line-height:1.4}
+.pty-mute-btn:hover{border-color:rgba(196,64,64,.5);color:var(--red)}
+.pty-mute-btn.muted{background:var(--red-bg);border-color:rgba(196,64,64,.5);color:var(--red)}
+/* Mini character sheet panel in party room */
+.pty-cs-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pty-cs-head{background:var(--surface2);padding:6px 10px;font-size:11px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
+.pty-cs-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pty-cs-switcher{display:flex;gap:3px;flex-wrap:wrap;padding:5px 8px;border-bottom:1px solid var(--border)}
+.pty-cs-tab{background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;font-size:10px;color:var(--text-dim);cursor:pointer;transition:all .15s}
+.pty-cs-tab:hover{border-color:var(--fighter);color:var(--fighter)}
+.pty-cs-tab.active{background:var(--fighter-pale);border-color:var(--fighter);color:var(--fighter)}
+.pty-cs-body{padding:8px 10px;font-size:11px;max-height:280px;overflow-y:auto}
+.pty-cs-id{margin-bottom:7px}
+.pty-cs-name{font-weight:700;color:var(--text);font-size:12px}
+.pty-cs-sub{color:var(--text-dim);font-size:10px}
+.pty-cs-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:7px}
+.pty-cs-stat{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 2px;text-align:center;cursor:pointer;transition:border-color .15s;user-select:none}
+.pty-cs-stat:hover{border-color:var(--fighter)}
+.pty-cs-stat-k{font-size:8px;color:var(--text-dim);text-transform:uppercase;display:block}
+.pty-cs-stat-v{font-size:13px;font-weight:700;color:var(--text);display:block;line-height:1.1}
+.pty-cs-stat-m{font-size:9px;color:var(--fighter);display:block}
+.pty-cs-hp-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.pty-cs-hp-lbl{font-size:10px;color:var(--text-dim);white-space:nowrap;min-width:0}
+.pty-cs-hp-bar{flex:1;height:5px;background:var(--border-hi);border-radius:3px;overflow:hidden}
+.pty-cs-hp-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+.pty-cs-empty{color:var(--text-dim);font-style:italic;font-size:11px;padding:6px 0}
 
+/* Image resize handle on canvas */
+.vtc-resize-cursor{cursor:nwse-resize!important}
 </style>
 </head>
 <body>
@@ -1986,7 +2057,17 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
     <div class="equip-filter-panel">
       <div class="equip-filter-hd">Categories</div>
       <div class="equip-cats">
-<div class="equip-cat-btn active" id="ecat-all" data-cat="all" onclick="setEquipCat('all')"><span class="equip-cat-icon">📦</span>All Items<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-simple-melee" data-cat="simple-melee" onclick="setEquipCat('simple-melee')"><span class="equip-cat-icon">🗡</span>Simple Melee<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-simple-ranged" data-cat="simple-ranged" onclick="setEquipCat('simple-ranged')"><span class="equip-cat-icon">🏹</span>Simple Ranged<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-martial-melee" data-cat="martial-melee" onclick="setEquipCat('martial-melee')"><span class="equip-cat-icon">⚔</span>Martial Melee<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-martial-ranged" data-cat="martial-ranged" onclick="setEquipCat('martial-ranged')"><span class="equip-cat-icon">🎯</span>Martial Ranged<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-armor" data-cat="armor" onclick="setEquipCat('armor')"><span class="equip-cat-icon">🛡</span>Armor & Shields<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-gear" data-cat="gear" onclick="setEquipCat('gear')"><span class="equip-cat-icon">🎒</span>Adventuring Gear<span class="equip-cat-count">0</span></div><div class="equip-cat-btn" id="ecat-magic-weapons" data-cat="magic" onclick="setEquipCat('magic-weapons')"><span class="equip-cat-icon">✨</span>Magic Items<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn active" id="ecat-all" data-cat="all" onclick="setEquipCat('all')"><span class="equip-cat-icon">📦</span>All Items<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-simple-melee" data-cat="simple-melee" onclick="setEquipCat('simple-melee')"><span class="equip-cat-icon">🗡</span>Simple Melee<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-simple-ranged" data-cat="simple-ranged" onclick="setEquipCat('simple-ranged')"><span class="equip-cat-icon">🏹</span>Simple Ranged<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-martial-melee" data-cat="martial-melee" onclick="setEquipCat('martial-melee')"><span class="equip-cat-icon">⚔</span>Martial Melee<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-martial-ranged" data-cat="martial-ranged" onclick="setEquipCat('martial-ranged')"><span class="equip-cat-icon">🎯</span>Martial Ranged<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-armor" data-cat="armor" onclick="setEquipCat('armor')"><span class="equip-cat-icon">🛡</span>Armor & Shields<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-gear" data-cat="gear" onclick="setEquipCat('gear')"><span class="equip-cat-icon">🎒</span>Adventuring Gear<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-consumables" data-cat="consumables" onclick="setEquipCat('consumables')"><span class="equip-cat-icon">🧪</span>Potions & Scrolls<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-magic-weapons" data-cat="magic-weapons" onclick="setEquipCat('magic-weapons')"><span class="equip-cat-icon">⚔</span>Magic Weapons<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-magic-armor" data-cat="magic-armor" onclick="setEquipCat('magic-armor')"><span class="equip-cat-icon">🛡</span>Magic Armor<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-wondrous" data-cat="wondrous" onclick="setEquipCat('wondrous')"><span class="equip-cat-icon">✨</span>Wondrous Items<span class="equip-cat-count">0</span></div>
       </div>
       <div class="class-prof-filter">
         <div class="cpf-lbl">Class Proficiency Filter</div>
@@ -2048,9 +2129,9 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   </div>
 
   <!-- Active room view -->
-  <div id="pty-room-view" style="display:none;flex-direction:column;gap:10px;flex:1">
+  <div id="pty-room-view" style="display:none;flex-direction:column;gap:14px;flex:1">
 
-    <!-- Room header -->
+    <!-- Room header (full width across the top) -->
     <div class="pty-header">
       <div>
         <div class="pty-code-lbl">Room Code</div>
@@ -2063,52 +2144,80 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <div class="pty-header-right">
         <div class="dm-unlock-row" id="dm-unlock-row">
           <span class="dm-unlock-lbl">DM:</span>
-          <input type="password" class="pty-inp" id="dm-pw-inp" placeholder="DM password" style="width:120px;padding:5px 10px">
-          <button class="pty-btn ghost" onclick="tryDMUnlock()" style="padding:5px 10px">Unlock</button>
+          <input type="password" class="pty-inp" id="dm-pw-inp" placeholder="DM password" style="width:130px;padding:6px 11px">
+          <button class="pty-btn ghost" onclick="tryDMUnlock()">Unlock</button>
         </div>
-        <button class="pty-btn ghost" onclick="leaveRoom()" style="padding:5px 10px">Leave</button>
+        <button class="pty-btn ghost" onclick="leaveRoom()">Leave Room</button>
       </div>
     </div>
 
-    <!-- VTT Canvas -->
-    <div class="vtc-wrap">
-      <div class="vtc-tb" id="vtc-tb">
-        <div class="vtc-tg">
-          <button class="vtc-btn active" id="vtc-pan" onclick="_cvSetTool('pan')">✋ Pan</button>
-          <button class="vtc-btn" id="vtc-pen" onclick="_cvSetTool('pen')">✏ Draw</button>
-          <button class="vtc-btn" id="vtc-eraser" onclick="_cvSetTool('eraser')">⬜ Erase</button>
-          <button class="vtc-btn" id="vtc-room" onclick="_cvSetTool('room')" style="display:none" title="Draw room or hallway">▭ Room</button>
-        </div>
-        <div class="vtc-tg">
-          <div class="vtc-swatch" id="vtc-swatch" title="Your color"></div>
-          <input type="range" class="vtc-slider" id="vtc-brush" min="2" max="16" value="4" oninput="_cvSetBrush(+this.value)" title="Brush size">
-        </div>
-        <div class="vtc-tg">
-          <button class="vtc-btn" onclick="_cvUndo()" title="Undo my last stroke">↩ Undo</button>
-        </div>
-        <div class="vtc-tg">
-          <button class="vtc-btn" onclick="_cvZoomBy(-0.25)" title="Zoom out">−</button>
-          <span class="vtc-zoom-lbl" id="vtc-zoom-lbl">100%</span>
-          <button class="vtc-btn" onclick="_cvZoomBy(0.25)" title="Zoom in">+</button>
-          <button class="vtc-btn" onclick="_cvResetView()" title="Reset view">⊡</button>
-        </div>
-        <div class="vtc-tg" id="vtc-dm-tools" style="display:none">
-          <label class="vtc-btn" title="Upload image onto map">
-            🖼 Image<input type="file" accept="image/*" style="display:none" onchange="_cvDmUploadImg(this)">
-          </label>
-          <button class="vtc-btn" onclick="_cvDmDeleteSelImg()" title="Delete selected image">✖ Img</button>
-          <button class="vtc-btn vtc-btn-danger" onclick="_cvDmClearDrawings()" title="Erase all player drawings">🗑 Drawings</button>
-          <button class="vtc-btn" onclick="_cvDmNewFloor()" title="Advance to next dungeon floor">⬇ Floor</button>
-        </div>
-      </div>
-      <div class="vtc-cont" id="vtc-cont">
-        <canvas id="pty-canvas"></canvas>
-        <div style="position:absolute;bottom:6px;right:8px;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none;letter-spacing:.04em">Pan: drag · Draw: ✏ · Zoom: scroll · DM: ▭ draws rooms</div>
-      </div>
-    </div>
+    <!-- Two-column row: char sheet (left) + tools (right) -->
+    <div class="pty-row">
 
-    <!-- Chat + Sidebar -->
-    <div class="pty-layout" id="pty-layout">
+      <!-- LEFT: full-width character sheet -->
+      <div class="pty-cs-col">
+        <div id="pty-cs-full" class="pty-cs-full-wrap"></div>
+      </div>
+
+      <!-- RIGHT: tools — canvas, chat, dice, players, DM -->
+      <div class="pty-tools-col">
+
+      <!-- VTT Canvas -->
+      <div class="vtc-wrap">
+        <div class="vtc-tb" id="vtc-tb">
+          <div class="vtc-tg">
+            <button class="vtc-btn active" id="vtc-cursor" onclick="_cvSetTool('cursor')" title="Cursor — click rooms, drag tokens, pan map">⬆ Cursor</button>
+            <button class="vtc-btn" id="vtc-pan" onclick="_cvSetTool('pan')" title="Pan — drag the map">✋ Pan</button>
+            <button class="vtc-btn" id="vtc-pen" onclick="_cvSetTool('pen')">✏ Draw</button>
+            <button class="vtc-btn" id="vtc-eraser" onclick="_cvSetTool('eraser')">⬜ Erase</button>
+            <button class="vtc-btn" id="vtc-room" onclick="_cvSetTool('room')" style="display:none" title="Draw room or hallway">▭ Room</button>
+          </div>
+          <div class="vtc-tg">
+            <div class="vtc-swatch" id="vtc-swatch" title="Your color"></div>
+            <input type="range" class="vtc-slider" id="vtc-brush" min="2" max="16" value="4" oninput="_cvSetBrush(+this.value)" title="Brush size">
+          </div>
+          <div class="vtc-tg">
+            <button class="vtc-btn" onclick="_cvUndo()" title="Undo my last stroke">↩ Undo</button>
+          </div>
+          <div class="vtc-tg">
+            <button class="vtc-btn" onclick="_cvZoomBy(-0.25)" title="Zoom out">−</button>
+            <span class="vtc-zoom-lbl" id="vtc-zoom-lbl">100%</span>
+            <button class="vtc-btn" onclick="_cvZoomBy(0.25)" title="Zoom in">+</button>
+            <button class="vtc-btn" onclick="_cvResetView()" title="Reset view">⊡</button>
+          </div>
+          <div class="vtc-tg">
+            <span class="vtc-floor-badge">Floor <span id="vtc-floor-num">1</span></span>
+          </div>
+          <div class="vtc-tg" id="vtc-dm-tools" style="display:none">
+            <label class="vtc-btn" title="Upload image onto map">
+              🖼 Image<input type="file" accept="image/*" style="display:none" onchange="_cvDmUploadImg(this)">
+            </label>
+            <button class="vtc-btn" onclick="_cvDmDeleteSelImg()" title="Delete selected image">✖ Img</button>
+            <button class="vtc-btn vtc-btn-danger" onclick="_cvDmClearDrawings()" title="Erase all player drawings">🗑 Drawings</button>
+            <button class="vtc-btn" id="vtc-pin" onclick="_cvSetTool('pin')" title="Drop a named pin (enemy/NPC)">📍 Pin</button>
+            <button class="vtc-btn" id="vtc-go-up" onclick="_cvDmGoUpFloor()" style="display:none" title="Go up to previous floor">⬆ Up</button>
+            <button class="vtc-btn" id="vtc-go-down" onclick="_cvDmNewFloor()" title="Descend to next floor">⬇ Down</button>
+          </div>
+        </div>
+        <div class="vtc-cont" id="vtc-cont">
+          <canvas id="pty-canvas"></canvas>
+          <div id="vtc-floor-counter" style="position:absolute;top:6px;left:8px;font-size:10px;color:rgba(255,255,255,.55);pointer-events:none;display:none"></div>
+          <div style="position:absolute;bottom:6px;right:8px;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none;letter-spacing:.04em">Pan: drag · Draw: ✏ · Zoom: scroll · Right-click: delete</div>
+          <!-- Pin placement form -->
+          <div id="vtc-pin-form" class="vtc-pin-form">
+            <input id="vtc-pin-name" class="pty-inp" placeholder="Name…" maxlength="40" style="padding:5px 8px;font-size:12px"
+              onkeydown="if(event.key==='Enter')_cvConfirmPin();if(event.key==='Escape')_cvCancelPin()">
+            <select id="vtc-pin-type" class="pty-inp" style="padding:5px 8px;font-size:12px;cursor:pointer">
+              <option value="enemy">⚔ Enemy</option>
+              <option value="npc">💬 NPC</option>
+            </select>
+            <div style="display:flex;gap:6px">
+              <button class="pty-btn" onclick="_cvConfirmPin()" style="flex:1;padding:5px 0;font-size:11px">Place</button>
+              <button class="pty-btn ghost" onclick="_cvCancelPin()" style="flex:1;padding:5px 0;font-size:11px">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Chat -->
       <div class="pty-chat-panel">
@@ -2117,36 +2226,55 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
         <div class="pty-input-row">
           <input class="pty-msg-inp" id="pty-msg-inp" placeholder="Message the party…" maxlength="500"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPartyMsg()}">
-          <button class="pty-btn" onclick="sendPartyMsg()" style="padding:7px 14px">Send</button>
+          <button class="pty-btn" onclick="sendPartyMsg()" style="padding:7px 16px">Send</button>
         </div>
       </div>
 
-      <!-- Right column: players + DM panel -->
-      <div class="pty-right-col">
-        <div class="pty-players-panel">
-          <div class="pty-panel-head">Connected Players</div>
-          <div class="pty-player-list" id="party-player-list"></div>
+      <!-- Dice Roller -->
+      <div class="pty-dice-panel">
+        <div class="pty-panel-head">🎲 Dice Roller</div>
+        <div class="pty-dice-grid">
+          <button class="pty-dice-btn" onclick="partyRollDie(4)" title="Roll d4"><span class="die-glyph">▲</span><span class="die-lbl">d4</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(6)" title="Roll d6"><span class="die-glyph">◼</span><span class="die-lbl">d6</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(8)" title="Roll d8"><span class="die-glyph">◆</span><span class="die-lbl">d8</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(10)" title="Roll d10"><span class="die-glyph">⬢</span><span class="die-lbl">d10</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(12)" title="Roll d12"><span class="die-glyph">⬟</span><span class="die-lbl">d12</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(20)" title="Roll d20"><span class="die-glyph">✦</span><span class="die-lbl">d20</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(100)" title="Roll d100"><span class="die-glyph">%</span><span class="die-lbl">d100</span></button>
+          <button class="pty-dice-btn" onclick="partyRollDie(2)" title="Coin flip"><span class="die-glyph">◐</span><span class="die-lbl">d2</span></button>
         </div>
-        <div class="dm-panel" id="dm-panel">
-          <div class="dm-panel-head">
-            <div class="dm-panel-icon">👑</div>
-            <div class="dm-panel-title">Dungeon Master</div>
+        <div class="pty-dice-opts">
+          <label>Qty<input id="pty-dice-count" type="number" min="1" max="20" value="1"></label>
+          <label>Mod<input id="pty-dice-mod" type="number" value="0"></label>
+        </div>
+        <div class="pty-dice-result empty" id="pty-dice-result">Click a die to roll</div>
+      </div>
+
+      <div class="pty-players-panel">
+        <div class="pty-panel-head">Connected Players</div>
+        <div class="pty-player-list" id="party-player-list"></div>
+      </div>
+
+      <div class="dm-panel" id="dm-panel">
+        <div class="dm-panel-head">
+          <div class="dm-panel-icon">👑</div>
+          <div class="dm-panel-title">Dungeon Master</div>
+        </div>
+        <div class="dm-body">
+          <div>
+            <div class="dm-sec-lbl">Private Notes</div>
+            <textarea class="dm-textarea" id="dm-notes-area" placeholder="DM notes — only visible to you…" rows="4"></textarea>
           </div>
-          <div class="dm-body">
-            <div>
-              <div class="dm-sec-lbl">Private Notes</div>
-              <textarea class="dm-textarea" id="dm-notes-area" placeholder="DM notes — only visible to you…" rows="4"></textarea>
-            </div>
-            <div>
-              <div class="dm-sec-lbl">Party Announcement</div>
-              <textarea class="dm-textarea" id="dm-announce-area" placeholder="Announce to the party…" rows="3"></textarea>
-              <button class="dm-announce-btn" onclick="dmAnnounce()">📣 Announce</button>
-            </div>
+          <div>
+            <div class="dm-sec-lbl">Party Announcement</div>
+            <textarea class="dm-textarea" id="dm-announce-area" placeholder="Announce to the party…" rows="3"></textarea>
+            <button class="dm-announce-btn" onclick="dmAnnounce()">📣 Announce</button>
           </div>
         </div>
       </div>
 
-    </div><!-- /pty-layout -->
+      </div><!-- /pty-tools-col -->
+    </div><!-- /pty-row -->
 
   </div><!-- /pty-room-view -->
 </div><!-- /tab-party -->
@@ -4143,6 +4271,13 @@ function execRoll(){
     detailEl.style.opacity='1';
     totalEl.style.opacity='1';
     if(isCrit) burstSparks();
+    // Post roll to party chat if in a room
+    if(partyPeer&&partyPeer.open!==false){
+      const rollText=`[${_rl.label}] ${detail+' = '+total}${isCrit?' \u2014 CRITICAL!':isFumble?' \u2014 Fumble!':''}`;
+      const msg={type:'chat',user:partyMyName,text:rollText,ts:Date.now(),isDM:partyIsDM};
+      _broadcast(msg);
+      _appendMsg({user:partyMyName,text:rollText,ts:msg.ts,isDM:partyIsDM,announce:false});
+    }
   },650);
 }
 function burstSparks(){
@@ -4857,57 +4992,18 @@ const EQUIP_ITEMS = [
  cost:"18000gp",wt:0,props:["Legendary","Plate"],rarity:"Legendary",
  desc:"Resistance to nonmagical bludgeoning/piercing/slashing while attuned. 1/day use action: immunity to nonmagical damage for 10 minutes."},
 // ─── WONDROUS ITEMS ───────────────────────────────────────────────────────────
-{id:"wi01",cat:"wondrous",name:"Cloak of Protection",stat:"+1 AC & saves",statType:"Magic",
- cost:"3500gp",wt:0,props:["Uncommon","Attunement"],rarity:"Uncommon",
- desc:"+1 bonus to AC and all saving throws while attuned."},
-{id:"wi02",cat:"wondrous",name:"Ring of Protection",stat:"+1 AC & saves",statType:"Magic",
- cost:"3500gp",wt:0,props:["Rare","Ring","Attunement"],rarity:"Rare",
- desc:"+1 bonus to AC and all saving throws while attuned."},
-{id:"wi03",cat:"wondrous",name:"Gauntlets of Ogre Power",stat:"STR 19",statType:"Magic",
- cost:"8000gp",wt:1,props:["Uncommon","Attunement"],rarity:"Uncommon",
- desc:"STR score becomes 19 (if not already higher) while wearing these gauntlets."},
-{id:"wi04",cat:"wondrous",name:"Headband of Intellect",stat:"INT 19",statType:"Magic",
- cost:"8000gp",wt:0,props:["Uncommon","Attunement"],rarity:"Uncommon",
- desc:"INT score becomes 19 (if not already higher) while wearing this headband."},
-{id:"wi05",cat:"wondrous",name:"Amulet of Health",stat:"CON 19",statType:"Magic",
- cost:"8000gp",wt:0,props:["Rare","Attunement"],rarity:"Rare",
- desc:"CON score becomes 19 (if not already higher) while wearing this amulet."},
-{id:"wi06",cat:"wondrous",name:"Boots of Speed",stat:"Dbl speed, OA disadv.",statType:"Magic",
- cost:"4000gp",wt:1,props:["Rare","Boots","Attunement"],rarity:"Rare",
- desc:"Bonus action: double walking speed and opportunity attacks against you have disadvantage. Lasts 10 minutes (recharge at dawn)."},
-{id:"wi07",cat:"wondrous",name:"Boots of Elvenkind",stat:"Stealth advantage",statType:"Magic",
- cost:"2500gp",wt:1,props:["Uncommon","Boots"],rarity:"Uncommon",
- desc:"Your steps make no sound. Advantage on DEX (Stealth) checks that rely on moving quietly."},
-{id:"wi08",cat:"wondrous",name:"Cloak of Elvenkind",stat:"Stealth advantage",statType:"Magic",
- cost:"5000gp",wt:1,props:["Uncommon","Cloak","Attunement"],rarity:"Uncommon",
- desc:"While hood is up: advantage on DEX (Stealth) checks; creatures making WIS (Perception) checks to detect you have disadvantage."},
 {id:"wi09",cat:"wondrous",name:"Slippers of Spider Climbing",stat:"Climb speed",statType:"Magic",
  cost:"5000gp",wt:0.5,props:["Uncommon","Attunement"],rarity:"Uncommon",
  desc:"Climb speed = walking speed on difficult surfaces including upside-down ceilings. Cannot use if hands free required."},
 {id:"wi10",cat:"wondrous",name:"Ring of Spell Storing",stat:"5 levels of spells",statType:"Magic",
  cost:"24000gp",wt:0,props:["Rare","Ring","Attunement"],rarity:"Rare",
  desc:"Stores up to 5 spell levels. Any attuned spellcaster can cast stored spells (using the original caster's ability and save DC)."},
-{id:"wi11",cat:"wondrous",name:"Necklace of Fireballs",stat:"Various fireball sizes",statType:"Magic",
- cost:"5000gp",wt:0,props:["Rare","Necklace"],rarity:"Rare",
- desc:"1d6+3 beads. Throw 1–3 as a bonus action; each deals 2d6 fire per bead in a 20-ft radius (DEX DC 15 for half). Damaging the beads causes all to explode."},
 {id:"wi12",cat:"wondrous",name:"Stone of Good Luck",stat:"+1 checks & saves",statType:"Magic",
  cost:"4000gp",wt:0,props:["Uncommon","Attunement"],rarity:"Uncommon",
  desc:"+1 bonus to ability checks and saving throws while attuned to this stone (also called a Luckstone)."},
-{id:"wi13",cat:"wondrous",name:"Periapt of Wound Closure",stat:"Stabilize & double dice",statType:"Magic",
- cost:"5000gp",wt:0,props:["Uncommon","Attunement"],rarity:"Uncommon",
- desc:"Stabilize automatically at start of turn when at 0 HP. When you roll dice to recover HP, double the number of dice rolled."},
-{id:"wi14",cat:"wondrous",name:"Wand of Magic Missiles",stat:"7 charges",statType:"Magic",
- cost:"2400gp",wt:1,props:["Uncommon","Wand"],rarity:"Uncommon",
- desc:"7 charges (1d6+1 regained at dawn). Spend 1–3 charges to cast Magic Missile at 1st–3rd level (no attack roll required)."},
-{id:"wi15",cat:"wondrous",name:"Wand of Fireballs",stat:"7 charges",statType:"Magic",
- cost:"24000gp",wt:1,props:["Rare","Wand","Attunement"],rarity:"Rare",
- desc:"7 charges (1d6+1 regained at dawn). Spend 1–3 charges to cast Fireball at 3rd–5th level (DC 15 DEX)."},
 {id:"wi16",cat:"wondrous",name:"Wand of Lightning Bolts",stat:"7 charges",statType:"Magic",
  cost:"24000gp",wt:1,props:["Rare","Wand","Attunement"],rarity:"Rare",
  desc:"7 charges. Spend 1–3 charges to cast Lightning Bolt at 3rd–5th level (DC 15 DEX)."},
-{id:"wi17",cat:"wondrous",name:"Staff of Healing",stat:"10 charges",statType:"Magic",
- cost:"16000gp",wt:4,props:["Rare","Staff","Attunement: Bard/Cleric/Druid"],rarity:"Rare",
- desc:"10 charges (1d6+4 regained at dawn). Cure Wounds (1 charge per spell level, up to 4th), Lesser Restoration (2), Mass Cure Wounds (5)."},
 {id:"wi18",cat:"wondrous",name:"Ioun Stone of Intellect",stat:"INT 19",statType:"Magic",
  cost:"8000gp",wt:0,props:["Very Rare","Attunement"],rarity:"Very Rare",
  desc:"Orbits your head. INT score becomes 19 (if not higher). More prestigious (and expensive) than a Headband."},
@@ -4921,68 +5017,68 @@ const EQUIP_ITEMS = [
 {id:"mu02",cat:"magic-weapons",name:"Vicious Weapon",stat:"+7 dmg on 20",statType:"Any weapon",cost:"350 gp",wt:0,rarity:"Rare",
  props:["Counts as magical"],prof:["fighter","barbarian","paladin","rogue","cleric","druid"],
  desc:"When you roll a 20 on your attack roll with this magic weapon, the target takes an extra 7 damage of the weapon's type."},
-{id:"mu06",cat:"magic-wondrous",name:"Boots of Elvenkind",stat:"Stealth adv",statType:"Wondrous Item",cost:"2,500 gp",wt:1,rarity:"Uncommon",
+{id:"mu06",cat:"wondrous",name:"Boots of Elvenkind",stat:"Stealth adv",statType:"Wondrous Item",cost:"2,500 gp",wt:1,rarity:"Uncommon",
  props:["No attunement required"],prof:["all"],
  desc:"While you wear these boots, your steps make no sound, regardless of the surface you are moving across. You also have advantage on Dexterity (Stealth) checks that rely on moving silently."},
-{id:"mu07",cat:"magic-wondrous",name:"Cloak of Elvenkind",stat:"Stealth adv",statType:"Wondrous Item",cost:"5,000 gp",wt:1,rarity:"Uncommon",
+{id:"mu07",cat:"wondrous",name:"Cloak of Elvenkind",stat:"Stealth adv",statType:"Wondrous Item",cost:"5,000 gp",wt:1,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"While you wear this cloak with its hood up, Wisdom (Perception) checks made to see you have disadvantage. You also have advantage on Dexterity (Stealth) checks made to hide."},
-{id:"mu08",cat:"magic-wondrous",name:"Cloak of Protection",stat:"+1 AC & saves",statType:"Wondrous Item",cost:"3,500 gp",wt:1,rarity:"Uncommon",
+{id:"mu08",cat:"wondrous",name:"Cloak of Protection",stat:"+1 AC & saves",statType:"Wondrous Item",cost:"3,500 gp",wt:1,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"You gain a +1 bonus to AC and saving throws while you wear this cloak."},
-{id:"mu09",cat:"magic-wondrous",name:"Ring of Protection",stat:"+1 AC & saves",statType:"Ring",cost:"3,500 gp",wt:0,rarity:"Uncommon",
+{id:"mu09",cat:"wondrous",name:"Ring of Protection",stat:"+1 AC & saves",statType:"Ring",cost:"3,500 gp",wt:0,rarity:"Uncommon",
  props:["Attunement","Ring slot"],prof:["all"],
  desc:"You gain a +1 bonus to AC and saving throws while wearing this ring."},
-{id:"mu10",cat:"magic-wondrous",name:"Gauntlets of Ogre Power",stat:"STR 19",statType:"Wondrous Item",cost:"8,000 gp",wt:1,rarity:"Uncommon",
+{id:"mu10",cat:"wondrous",name:"Gauntlets of Ogre Power",stat:"STR 19",statType:"Wondrous Item",cost:"8,000 gp",wt:1,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"Your Strength score is 19 while you wear these gauntlets. They have no effect on you if your Strength is already 19 or higher."},
-{id:"mu11",cat:"magic-wondrous",name:"Headband of Intellect",stat:"INT 19",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Uncommon",
+{id:"mu11",cat:"wondrous",name:"Headband of Intellect",stat:"INT 19",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"Your Intelligence score is 19 while you wear this headband. It has no effect on you if your Intelligence is already 19 or higher."},
-{id:"mu12",cat:"magic-wondrous",name:"Amulet of Health",stat:"CON 19",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Uncommon",
+{id:"mu12",cat:"wondrous",name:"Amulet of Health",stat:"CON 19",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"Your Constitution score is 19 while you wear this amulet. It has no effect on you if your Constitution is already 19 or higher."},
-{id:"mu13",cat:"magic-wondrous",name:"Bag of Holding",stat:"500 lb / 64 cu ft",statType:"Wondrous Item",cost:"4,000 gp",wt:15,rarity:"Uncommon",
+{id:"mu13",cat:"wondrous",name:"Bag of Holding",stat:"500 lb / 64 cu ft",statType:"Wondrous Item",cost:"4,000 gp",wt:15,rarity:"Uncommon",
  props:["No attunement required"],prof:["all"],
  desc:"This bag has an interior space considerably larger than its outside dimensions. The bag can hold up to 500 pounds, not exceeding a volume of 64 cubic feet. Weighs 15 lb regardless of contents."},
-{id:"mu14",cat:"magic-wondrous",name:"Sending Stones",stat:"25 words/day",statType:"Wondrous Item",cost:"3,000 gp",wt:0,rarity:"Uncommon",
+{id:"mu14",cat:"wondrous",name:"Sending Stones",stat:"25 words/day",statType:"Wondrous Item",cost:"3,000 gp",wt:0,rarity:"Uncommon",
  props:["No attunement required","Paired set"],prof:["all"],
  desc:"While you touch one stone, you can use an action to cast the Sending spell from it. One stone is usable once per day."},
-{id:"mu15",cat:"magic-wondrous",name:"Wand of Magic Missiles",stat:"7 charges",statType:"Wand",cost:"4,000 gp",wt:1,rarity:"Uncommon",
+{id:"mu15",cat:"wondrous",name:"Wand of Magic Missiles",stat:"7 charges",statType:"Wand",cost:"4,000 gp",wt:1,rarity:"Uncommon",
  props:["No attunement required","7 charges"],prof:["all"],
  desc:"This wand has 7 charges. While holding it, you can use an action to expend 1 to 7 of its charges to cast the Magic Missile spell from it. Regains 1d6+1 expended charges daily at dawn."},
 // ─── RARE MAGIC ITEMS ────────────────────────────────────────────────────────
-{id:"mr04",cat:"magic-weapons",name:"Giant Slayer",stat:"+2d6 vs giants",statType:"Axe or Sword",cost:"5,000 gp",wt:3,rarity:"Rare",
+{id:"mw13",cat:"magic-weapons",name:"Giant Slayer",stat:"+2d6 vs giants",statType:"Axe or Sword",cost:"5,000 gp",wt:3,rarity:"Rare",
  props:["Attunement","Extra effect vs Giants"],prof:["fighter","barbarian","paladin"],
  desc:"You gain a +1 bonus to attack and damage rolls made with this magic weapon. When you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone."},
-{id:"mr09",cat:"magic-wondrous",name:"Belt of Giant Strength (Hill)",stat:"STR 21",statType:"Wondrous Item",cost:"12,000 gp",wt:1,rarity:"Rare",
+{id:"mr09",cat:"wondrous",name:"Belt of Giant Strength (Hill)",stat:"STR 21",statType:"Wondrous Item",cost:"12,000 gp",wt:1,rarity:"Rare",
  props:["Attunement"],prof:["all"],
  desc:"While wearing this belt, your Strength score changes to 21. The belt has no effect on you if your Strength is already 21 or higher."},
-{id:"mr10",cat:"magic-wondrous",name:"Boots of Speed",stat:"Double speed, 10 min/day",statType:"Wondrous Item",cost:"4,000 gp",wt:1,rarity:"Rare",
+{id:"mr10",cat:"wondrous",name:"Boots of Speed",stat:"Double speed, 10 min/day",statType:"Wondrous Item",cost:"4,000 gp",wt:1,rarity:"Rare",
  props:["Attunement"],prof:["all"],
  desc:"While you wear these boots, you can use a bonus action and click the boots' heels together to double your walking speed. When you use this property, opportunity attacks made against you have disadvantage. The effect ends when you use a bonus action to click the heels together again, or when 10 minutes have elapsed."},
-{id:"mr11",cat:"magic-wondrous",name:"Necklace of Fireballs",stat:"9 beads, 5d6 each",statType:"Wondrous Item",cost:"3,600 gp",wt:0,rarity:"Rare",
+{id:"mr11",cat:"wondrous",name:"Necklace of Fireballs",stat:"9 beads, 5d6 each",statType:"Wondrous Item",cost:"3,600 gp",wt:0,rarity:"Rare",
  props:["No attunement","9 beads"],prof:["all"],
  desc:"This necklace has 1d6+3 beads hanging from it. You can use an action to detach a bead and throw it up to 60 feet away. When it reaches the end of its trajectory, the bead detonates as a 3rd-level Fireball (save DC 15)."},
-{id:"mr12",cat:"magic-wondrous",name:"Cape of the Mountebank",stat:"Dimension Door 1/day",statType:"Wondrous Item",cost:"8,000 gp",wt:1,rarity:"Rare",
+{id:"mr12",cat:"wondrous",name:"Cape of the Mountebank",stat:"Dimension Door 1/day",statType:"Wondrous Item",cost:"8,000 gp",wt:1,rarity:"Rare",
  props:["No attunement"],prof:["all"],
  desc:"This cape smells faintly of brimstone. While wearing it, you can use it to cast the Dimension Door spell as an action. This property of the cape can't be used again until the next dawn."},
-{id:"mr13",cat:"magic-wondrous",name:"Wand of Fireballs",stat:"7 charges",statType:"Wand",cost:"8,000 gp",wt:1,rarity:"Rare",
+{id:"mr13",cat:"wondrous",name:"Wand of Fireballs",stat:"7 charges",statType:"Wand",cost:"8,000 gp",wt:1,rarity:"Rare",
  props:["Attunement: spellcaster","7 charges"],prof:["wizard","cleric","druid","paladin","warlock"],
  desc:"This wand has 7 charges. While holding it, you can use an action to expend 1 to 7 of its charges to cast the Fireball spell (save DC 15) from it. Regains 1d6+1 charges daily at dawn."},
-{id:"mr14",cat:"magic-wondrous",name:"Periapt of Wound Closure",stat:"Double HD healing",statType:"Wondrous Item",cost:"5,000 gp",wt:0,rarity:"Uncommon",
+{id:"mr14",cat:"wondrous",name:"Periapt of Wound Closure",stat:"Double HD healing",statType:"Wondrous Item",cost:"5,000 gp",wt:0,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"While you wear this pendant, you stabilize whenever you are dying at the start of your turn. In addition, whenever you roll a Hit Die to regain hit points, double the number of hit points it restores."},
-{id:"mr15",cat:"magic-wondrous",name:"Eyes of the Eagle",stat:"Perception adv.",statType:"Wondrous Item",cost:"2,500 gp",wt:0,rarity:"Uncommon",
+{id:"mr15",cat:"wondrous",name:"Eyes of the Eagle",stat:"Perception adv.",statType:"Wondrous Item",cost:"2,500 gp",wt:0,rarity:"Uncommon",
  props:["Attunement"],prof:["all"],
  desc:"These crystal lenses fit over the eyes. While wearing them, you have advantage on Wisdom (Perception) checks that rely on sight. In conditions of clear visibility, you can make out details of even extremely distant creatures and objects as small as 2 feet across."},
-{id:"mr16",cat:"magic-wondrous",name:"Ring of Evasion",stat:"3 charges, negate DEX fail",statType:"Ring",cost:"5,000 gp",wt:0,rarity:"Rare",
+{id:"mr16",cat:"wondrous",name:"Ring of Evasion",stat:"3 charges, negate DEX fail",statType:"Ring",cost:"5,000 gp",wt:0,rarity:"Rare",
  props:["Attunement","3 charges"],prof:["all"],
  desc:"This ring has 3 charges. When you fail a Dexterity saving throw while wearing it, you can use your reaction to expend 1 of its charges to succeed on that saving throw instead. The ring regains 1d3 expended charges daily at dawn."},
-{id:"mr17",cat:"magic-wondrous",name:"Staff of Healing",stat:"10 charges, heal spells",statType:"Staff",cost:"16,000 gp",wt:4,rarity:"Rare",
+{id:"mr17",cat:"wondrous",name:"Staff of Healing",stat:"10 charges, heal spells",statType:"Staff",cost:"16,000 gp",wt:4,rarity:"Rare",
  props:["Attunement: bard/cleric/druid","10 charges"],prof:["cleric","druid"],
  desc:"This staff has 10 charges. While holding it, you can use an action to expend 1 or more of its charges to cast one of the following spells: Cure Wounds (1 charge per spell level, up to 4th), Lesser Restoration (2 charges), or Mass Cure Wounds (5 charges). Regains 1d6+4 charges daily at dawn."},
-{id:"mr18",cat:"magic-wondrous",name:"Portable Hole",stat:"10 ft deep cylinder",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Rare",
+{id:"mr18",cat:"wondrous",name:"Portable Hole",stat:"10 ft deep cylinder",statType:"Wondrous Item",cost:"8,000 gp",wt:0,rarity:"Rare",
  props:["No attunement"],prof:["all"],
  desc:"This fine black cloth, soft as silk, is folded up to the dimensions of a handkerchief. It unfolds into a circular sheet 6 feet in diameter. You can use an action to unfold a portable hole and place it on or against a solid surface, whereupon the hole creates an extradimensional hole 10 feet deep."},
 // ─── VERY RARE MAGIC ITEMS ───────────────────────────────────────────────────
@@ -5001,21 +5097,18 @@ const EQUIP_ITEMS = [
 {id:"mvr05",cat:"magic-armor",name:"Studded Leather of Elvenkind",stat:"+1 AC & Stealth adv.",statType:"Light armor",cost:"2,000 gp",wt:13,rarity:"Uncommon",
  props:["Attunement"],prof:["fighter","rogue","barbarian","warlock","druid"],
  desc:"You have a +1 bonus to AC while wearing this armor, and Dexterity (Stealth) checks made while wearing it have advantage if you are proficient with the armor."},
-{id:"mvr06",cat:"magic-wondrous",name:"Belt of Giant Strength (Stone)",stat:"STR 23",statType:"Wondrous Item",cost:"18,000 gp",wt:1,rarity:"Very Rare",
+{id:"mvr06",cat:"wondrous",name:"Belt of Giant Strength (Stone)",stat:"STR 23",statType:"Wondrous Item",cost:"18,000 gp",wt:1,rarity:"Very Rare",
  props:["Attunement"],prof:["all"],
  desc:"While wearing this belt, your Strength score changes to 23. The belt has no effect on you if your Strength is already 23 or higher."},
-{id:"mvr07",cat:"magic-wondrous",name:"Ioun Stone (Absorption)",stat:"Absorb spells LV 1-4",statType:"Wondrous Item",cost:"24,000 gp",wt:0,rarity:"Very Rare",
+{id:"mvr07",cat:"wondrous",name:"Ioun Stone (Absorption)",stat:"Absorb spells LV 1-4",statType:"Wondrous Item",cost:"24,000 gp",wt:0,rarity:"Very Rare",
  props:["Attunement","Orbits head"],prof:["all"],
  desc:"While this pale lavender ellipsoid orbits your head, you can use your reaction to cancel a spell of 4th level or lower cast by a creature you can see. The stone can absorb 20 levels of spells before it burns out and turns dull gray."},
-{id:"mvr08",cat:"magic-wondrous",name:"Tome of Clear Thought",stat:"+2 INT (permanent)",statType:"Wondrous Item",cost:"27,500 gp",wt:5,rarity:"Very Rare",
+{id:"mvr08",cat:"wondrous",name:"Tome of Clear Thought",stat:"+2 INT (permanent)",statType:"Wondrous Item",cost:"27,500 gp",wt:5,rarity:"Very Rare",
  props:["48 hours to study","100-year recharge"],prof:["all"],
  desc:"If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Intelligence score increases by 2, as does your maximum for that score. The manual then loses its magic."},
-{id:"mvr09",cat:"magic-wondrous",name:"Manual of Bodily Health",stat:"+2 CON (permanent)",statType:"Wondrous Item",cost:"27,500 gp",wt:5,rarity:"Very Rare",
+{id:"mvr09",cat:"wondrous",name:"Manual of Bodily Health",stat:"+2 CON (permanent)",statType:"Wondrous Item",cost:"27,500 gp",wt:5,rarity:"Very Rare",
  props:["48 hours to study","100-year recharge"],prof:["all"],
  desc:"If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Constitution score increases by 2, as does your maximum for that score. The manual then loses its magic."},
-{id:"mvr10",cat:"magic-wondrous",name:"Potion of Speed",stat:"Haste effect 1 min",statType:"Consumable",cost:"400 gp",wt:0.5,rarity:"Very Rare",
- props:["Consumable"],prof:["all"],
- desc:"When you drink this potion, you gain the effect of the Haste spell for 1 minute (no concentration required). The potion's yellow fluid is streaked with black and swirls on its own."},
 // ─── LEGENDARY MAGIC ITEMS ───────────────────────────────────────────────────
 {id:"ml01",cat:"magic-weapons",name:"Holy Avenger",stat:"+3, +2d10 vs fiends/undead",statType:"Sword",cost:"165,000 gp",wt:3,rarity:"Legendary",
  props:["Attunement: paladin only","30 ft aura"],prof:["paladin"],
@@ -5026,13 +5119,13 @@ const EQUIP_ITEMS = [
 {id:"ml04",cat:"magic-armor",name:"Plate Armor of Etherealness",stat:"AC 18 + Etherealness",statType:"Plate armor",cost:"48,000 gp",wt:65,rarity:"Legendary",
  props:["Attunement","STR 15","10 charges"],prof:["fighter","paladin"],
  desc:"While you're wearing this armor, you can speak its command word as an action to gain the effect of the Etherealness spell, which lasts for 10 minutes or until you remove the armor or use an action to speak the command word again. This property of the armor can't be used again until the next dawn. The armor has 10 charges."},
-{id:"ml05",cat:"magic-wondrous",name:"Belt of Giant Strength (Storm)",stat:"STR 29",statType:"Wondrous Item",cost:"200,000 gp",wt:1,rarity:"Legendary",
+{id:"ml05",cat:"wondrous",name:"Belt of Giant Strength (Storm)",stat:"STR 29",statType:"Wondrous Item",cost:"200,000 gp",wt:1,rarity:"Legendary",
  props:["Attunement"],prof:["all"],
  desc:"While wearing this belt, your Strength score changes to 29. The belt has no effect on you if your Strength is already 29 or higher. Storm giant belts are the rarest and most powerful of the giant belts."},
-{id:"ml06",cat:"magic-wondrous",name:"Deck of Many Things",stat:"Variable — draw a card",statType:"Wondrous Item",cost:"priceless",wt:0,rarity:"Legendary",
+{id:"ml06",cat:"wondrous",name:"Deck of Many Things",stat:"Variable — draw a card",statType:"Wondrous Item",cost:"priceless",wt:0,rarity:"Legendary",
  props:["No attunement","Declare draws before drawing"],prof:["all"],
  desc:"Usually found in a box or pouch, this deck contains a number of cards made of ivory or vellum. Before you draw a card, you must declare how many cards you intend to draw and then draw them randomly. Any cards drawn in excess of this number have no effect. Drawing a card can grant wishes, summon undead, cause death, or grant powerful artifacts — or take them away."},
-{id:"ml07",cat:"magic-wondrous",name:"Cubic Gate",stat:"Six planes of existence",statType:"Wondrous Item",cost:"priceless",wt:0,rarity:"Legendary",
+{id:"ml07",cat:"wondrous",name:"Cubic Gate",stat:"Six planes of existence",statType:"Wondrous Item",cost:"priceless",wt:0,rarity:"Legendary",
  props:["No attunement","6 charges"],prof:["all"],
  desc:"This cube is 3 inches across and radiates palpable magical energy. The six sides of the cube are each keyed to a different plane of existence. You can use an action to press one side of the cube to cast the Gate spell with it, opening a portal to the keyed plane."},
 
@@ -5650,11 +5743,13 @@ function switchTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   el.classList.add('active');
+  document.body.classList.toggle('party-mode', id==='party');
   if(id==='decks') render();
   if(id==='character') renderCharSheet();
   if(id==='equipment') renderEquipPage();
+  if(id!=='party') _detachCharSheetFromParty();
   if(id==='party' && partyPeer) _partyStatus();
-  if(id==='party') _cvInit();
+  if(id==='party'){ _cvInit(); _attachCharSheetToParty(); }
 }
 
 function openInfo(tab){
@@ -6183,11 +6278,13 @@ let partyPlayers = {};     // peerId → {name, isDM, color}
 // ─── VTT constants ──────────────────────────────────────────────────────────
 const PLAYER_COLORS=['#f87171','#60a5fa','#34d399','#fbbf24','#a78bfa','#f472b6','#38bdf8','#fb923c','#a3e635','#e879f9'];
 const VTT_ROOM_TYPES=[
-  {type:'combat',  label:'Combat',   color:'#e05555', weight:66},
-  {type:'treasure',label:'Treasure', color:'#d4891a', weight:20},
-  {type:'shop',    label:'Shop',     color:'#5599d4', weight:10},
-  {type:'healing', label:'Healing',  color:'#4a8c3a', weight:4},
+  {type:'combat',  label:'Combat',   color:'#e05555'},
+  {type:'treasure',label:'Treasure', color:'#d4891a'},
+  {type:'shop',    label:'Shop',     color:'#5599d4'},
+  {type:'healing', label:'Healing',  color:'#4a8c3a'},
+  {type:'descent', label:'Descent',  color:'#7c3aed'},
 ];
+function _vttRtDef(type){return VTT_ROOM_TYPES.find(t=>t.type===type)||null;}
 const TILE=40;  // base tile size in pixels at zoom=1
 
 // ─── VTT canvas state ───────────────────────────────────────────────────────
@@ -6197,7 +6294,7 @@ let _cvW=800,_cvH=500;
 let _cvZoom=1,_cvOX=0,_cvOY=0;
 // Drawings
 let _cvStrokes=[],_cvPartials={},_cvCur=null;
-let _cvTool='pan',_cvBrush=4,_cvSid=0,_cvUndoIds=[];
+let _cvTool='cursor',_cvBrush=4,_cvSid=0,_cvUndoIds=[];
 // Map structures
 let _cvRooms=[],_cvDraft=null,_healingCount=0,_floorCount=1;
 // Images
@@ -6208,6 +6305,21 @@ let _cvTokens={},_cvDragTokId=null;
 let _cvPtrDown=false;
 let _cvPanSX=0,_cvPanSY=0,_cvPanOX=0,_cvPanOY=0;
 let _cvTokTimer=null;
+// Offscreen canvas for strokes (so eraser only erases drawings, not map)
+let _cvStrokeCvs=null,_cvStrokeCtx=null;
+// Named pins
+let _cvPins=[],_cvPinPending=null;
+// Image resize state
+let _cvResizingImg=null; // {id,corner,origWW,origWH,origWX,origWY,startSX,startSY}
+// Floor system
+let _cvFloorHistory=[];     // saved floor states when descending
+let _floorRoomBudget=0;     // total rooms planned for this floor (15-26)
+let _floorRoomQueue=[];     // remaining room types to assign as rooms are drawn
+let _cvDescentCell=null;    // {gx,gy} of descent room on current floor
+let _lastFloorHadHealing=true; // tracks healing for "every 2 floors" rule
+// Character sheets shared by players
+let partyCharSheets={};     // {peerId: {name,charName,level,className,stats,hp,maxHp}}
+let _partyViewingPeer=null; // which peer sheet the DM is viewing (null = own)
 
 // ─── Coord & color helpers ───────────────────────────────────────────────────
 function _hubId(code){ return 'rsg-h-'+code.toUpperCase(); }
@@ -6284,15 +6396,43 @@ function _cvRender(){
   // Images
   _cvImages.forEach(img=>_cvDrawImg(ctx,img));
 
-  // Strokes
-  ctx.save();
-  _cvStrokes.forEach(s=>_cvDrawStroke(ctx,s));
-  Object.values(_cvPartials).forEach(s=>_cvDrawStroke(ctx,s));
-  if(_cvCur) _cvDrawStroke(ctx,_cvCur);
-  ctx.restore();
+  // Strokes — drawn on an offscreen canvas so eraser only affects drawings
+  if(!_cvStrokeCvs||_cvStrokeCvs.width!==_cvW||_cvStrokeCvs.height!==_cvH){
+    _cvStrokeCvs=document.createElement('canvas');
+    _cvStrokeCvs.width=_cvW; _cvStrokeCvs.height=_cvH;
+    _cvStrokeCtx=_cvStrokeCvs.getContext('2d');
+  }
+  _cvStrokeCtx.clearRect(0,0,_cvW,_cvH);
+  _cvStrokes.forEach(s=>_cvDrawStroke(_cvStrokeCtx,s));
+  Object.values(_cvPartials).forEach(s=>_cvDrawStroke(_cvStrokeCtx,s));
+  if(_cvCur) _cvDrawStroke(_cvStrokeCtx,_cvCur);
+  ctx.drawImage(_cvStrokeCvs,0,0);
 
   // Tokens
   Object.entries(_cvTokens).forEach(([pid,tok])=>_cvDrawToken(ctx,pid,tok));
+
+  // Pins
+  _cvPins.forEach(p=>{
+    const s=_w2s(p.wx,p.wy);
+    const col=p.type==='enemy'?'#e05252':'#52b4e0';
+    ctx.save();
+    ctx.translate(s.x,s.y);
+    ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=4;
+    ctx.beginPath();ctx.arc(0,-2,9,0,Math.PI*2);
+    ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(p.type==='enemy'?'E':'N',0,-2);
+    const tw=ctx.measureText(p.name).width;
+    ctx.fillStyle='rgba(0,0,0,.65)';
+    ctx.beginPath();ctx.roundRect(-tw/2-4,9,tw+8,15,3);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';
+    ctx.textBaseline='top';
+    ctx.fillText(p.name,0,11);
+    ctx.restore();
+  });
 }
 
 function _cvDrawRoom(ctx,r){
@@ -6305,6 +6445,7 @@ function _cvDrawRoom(ctx,r){
   else if(r.type==='treasure') ctx.fillStyle='rgba(212,137,26,.2)';
   else if(r.type==='shop')     ctx.fillStyle='rgba(85,153,212,.2)';
   else if(r.type==='healing')  ctx.fillStyle='rgba(74,140,58,.2)';
+  else if(r.type==='descent')  ctx.fillStyle='rgba(124,58,237,.25)';
   else if(isHall)              ctx.fillStyle='rgba(60,80,130,.35)';
   else                         ctx.fillStyle='rgba(25,32,60,.7)';
   ctx.fillRect(p.x,p.y,pw,ph);
@@ -6319,16 +6460,23 @@ function _cvDrawRoom(ctx,r){
       ctx.fillStyle=rt?rt.color:'#e8e4d9';
       ctx.font='bold '+Math.min(13,pw/5)+'px sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText((r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':'')+r.label,cx,cy);
-    } else {
-      const bw=Math.min(72,pw-6), bh=Math.min(26,ph-6);
-      ctx.fillStyle='rgba(212,137,26,.2)';
-      ctx.beginPath(); ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,3); ctx.fill();
-      ctx.strokeStyle='#d4891a'; ctx.lineWidth=1; ctx.stroke();
+      const icon=r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':r.type==='descent'?'🪜 ':'';
+      ctx.fillText(icon+r.label,cx,cy);
+    } else if(partyIsDM&&_floorRoomQueue.length>0){
+      const bw=Math.min(80,pw-6),bh=Math.min(24,ph-6);
+      ctx.fillStyle='rgba(212,137,26,.15)';
+      ctx.beginPath();ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,3);ctx.fill();
+      ctx.strokeStyle='#d4891a';ctx.lineWidth=1;ctx.stroke();
       ctx.fillStyle='#d4891a';
-      ctx.font='bold '+Math.min(10,bw/7)+'px sans-serif';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('Roll Room',cx,cy);
+      ctx.font='bold '+Math.min(10,bw/6)+'px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      const nxt=_floorRoomQueue[0];
+      ctx.fillText('Roll ('+nxt+')',cx,cy);
+    } else if(!r.type){
+      ctx.fillStyle='rgba(255,255,255,.25)';
+      ctx.font='bold '+Math.min(12,pw/5)+'px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('?',cx,cy);
     }
   }
   if(isHall&&(pw>36||ph>36)){
@@ -6350,6 +6498,13 @@ function _cvDrawImg(ctx,img){
   if(_cvSelImgId===img.id){
     ctx.strokeStyle='#d4891a'; ctx.lineWidth=2; ctx.setLineDash([4,4]);
     ctx.strokeRect(-sw/2,-sh/2,sw,sh);
+    ctx.setLineDash([]);
+    // Corner resize handles
+    const hs=7;
+    [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([hx,hy])=>{
+      ctx.fillStyle='#d4891a';
+      ctx.fillRect(hx*sw/2-hs/2,hy*sh/2-hs/2,hs,hs);
+    });
   }
   ctx.restore();
 }
@@ -6400,7 +6555,21 @@ function _cvAttachEvents(){
   c.addEventListener('pointerup',_cvPUp,{passive:false});
   c.addEventListener('pointerleave',_cvPUp,{passive:false});
   c.addEventListener('wheel',_cvWheel,{passive:false});
-  c.addEventListener('contextmenu',e=>e.preventDefault());
+  c.addEventListener('contextmenu',e=>{
+    e.preventDefault();
+    if(!partyIsDM||_cvTool==='cursor') return;
+    const sx=e.offsetX,sy=e.offsetY;
+    for(let i=_cvPins.length-1;i>=0;i--){
+      const p=_cvPins[i];
+      const ps=_w2s(p.wx,p.wy);
+      if(Math.hypot(sx-ps.x,sy-(ps.y-2))<14){
+        _cvPins.splice(i,1);
+        _broadcast({type:'cv-pin-del',id:p.id});
+        return;
+      }
+    }
+    _cvDmDeleteRoomAt(sx,sy);
+  });
 }
 
 function _cvPDown(e){
@@ -6409,48 +6578,92 @@ function _cvPDown(e){
   _cvPtrDown=true;
   const sx=e.offsetX, sy=e.offsetY;
 
-  // Middle-mouse or pan tool → pan
-  if(e.button===1||(_cvTool==='pan'&&e.button===0)){
+  // Middle-mouse always pans
+  if(e.button===1){
     _cvPanSX=sx;_cvPanSY=sy;_cvPanOX=_cvOX;_cvPanOY=_cvOY;
     _cvCvs.style.cursor='grabbing'; return;
   }
 
   const myId=partyPeer?.id;
 
-  // Token hit check — my token first, then DM any
-  if(myId&&_cvTokens[myId]){
-    const tp=_w2s(_cvTokens[myId].wx,_cvTokens[myId].wy);
-    const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
-    if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=myId; return; }
-  }
-  if(partyIsDM){
-    for(const [pid,tok] of Object.entries(_cvTokens)){
-      if(pid===myId) continue;
-      const tp=_w2s(tok.wx,tok.wy);
+  // Cursor & Pan tools: try interactive targets (tokens, rooms, images) first,
+  // fall through to panning if nothing is hit.
+  if((_cvTool==='cursor'||_cvTool==='pan')&&e.button===0){
+    // Token hit check — my token first, then DM any
+    if(myId&&_cvTokens[myId]){
+      const tp=_w2s(_cvTokens[myId].wx,_cvTokens[myId].wy);
       const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
-      if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
+      if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=myId; return; }
     }
+    if(partyIsDM){
+      for(const [pid,tok] of Object.entries(_cvTokens)){
+        if(pid===myId) continue;
+        const tp=_w2s(tok.wx,tok.wy);
+        const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
+        if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
+      }
+    }
+
+    if(partyIsDM){
+      const w=_s2w(sx,sy);
+      // Room roll-button click (untyped rooms)
+      for(const r of _cvRooms){
+        const isHall=r.gw===1||r.gh===1;
+        if(!isHall&&!r.type&&w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
+          _cvDmRollRoom(r.id); return;
+        }
+      }
+      // Image resize handle hit-test (selected image only)
+      if(_cvSelImgId){
+        const selImg=_cvImages.find(i=>i.id===_cvSelImgId);
+        if(selImg){
+          const t2=TILE*_cvZoom;
+          const ps=_w2s(selImg.wx,selImg.wy);
+          const imgSX=ps.x,imgSY=ps.y,imgEX=ps.x+selImg.ww*t2,imgEY=ps.y+selImg.wh*t2;
+          const hs=10;
+          const corners=[[imgSX,imgSY,'nw'],[imgEX,imgSY,'ne'],[imgEX,imgEY,'se'],[imgSX,imgEY,'sw']];
+          for(const [cx2,cy2,cname] of corners){
+            if(Math.abs(sx-cx2)<hs&&Math.abs(sy-cy2)<hs){
+              _cvResizingImg={id:selImg.id,corner:cname,
+                origWW:selImg.ww,origWH:selImg.wh,origWX:selImg.wx,origWY:selImg.wy,
+                startSX:sx,startSY:sy};
+              return;
+            }
+          }
+        }
+      }
+      // Image body drag
+      const w2=_s2w(sx,sy);
+      for(let i=_cvImages.length-1;i>=0;i--){
+        const img=_cvImages[i];
+        if(w2.x>=img.wx&&w2.x<=img.wx+img.ww&&w2.y>=img.wy&&w2.y<=img.wy+img.wh){
+          _cvSelImgId=img.id;
+          _cvDragImgData={id:img.id,startSX:sx,startSY:sy,origWX:img.wx,origWY:img.wy}; return;
+        }
+      }
+      _cvSelImgId=null;
+    }
+
+    // Nothing interactive hit → start panning
+    _cvPanSX=sx;_cvPanSY=sy;_cvPanOX=_cvOX;_cvPanOY=_cvOY;
+    _cvCvs.style.cursor='grabbing'; return;
   }
 
-  // Room roll-button click (DM only, untyped rooms)
-  if(partyIsDM){
+  // Pin placement (DM only)
+  if(_cvTool==='pin'&&partyIsDM){
     const w=_s2w(sx,sy);
-    for(const r of _cvRooms){
-      const isHall=r.gw===1||r.gh===1;
-      if(!isHall&&!r.type&&w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
-        _cvDmRollRoom(r.id); return;
-      }
+    _cvPinPending={wx:w.x,wy:w.y};
+    const form=document.getElementById('vtc-pin-form');
+    if(form){
+      form.style.display='flex';
+      const cont=document.getElementById('vtc-cont');
+      const cr=cont?cont.getBoundingClientRect():{left:0,top:0};
+      form.style.left=Math.min(sx+10,_cvW-180)+'px';
+      form.style.top=Math.min(sy+10,_cvH-120)+'px';
+      const ni=document.getElementById('vtc-pin-name');
+      if(ni){ni.value='';ni.focus();}
     }
-    // Image drag
-    const w2=_s2w(sx,sy);
-    for(let i=_cvImages.length-1;i>=0;i--){
-      const img=_cvImages[i];
-      if(w2.x>=img.wx&&w2.x<=img.wx+img.ww&&w2.y>=img.wy&&w2.y<=img.wy+img.wh){
-        _cvSelImgId=img.id;
-        _cvDragImgData={id:img.id,startSX:sx,startSY:sy,origWX:img.wx,origWY:img.wy}; return;
-      }
-    }
-    _cvSelImgId=null;
+    return;
   }
 
   // Room draw tool (DM)
@@ -6460,8 +6673,8 @@ function _cvPDown(e){
     _cvDraft={gx1:gx,gy1:gy,gx2:gx+1,gy2:gy+1}; return;
   }
 
-  // Drawing
-  if((_cvTool==='pen'||_cvTool==='eraser')&&myId){
+  // Drawing (blocked if DM muted this player)
+  if((_cvTool==='pen'||_cvTool==='eraser')&&myId&&!partyPlayers[myId]?.drawDisabled){
     const w=_s2w(sx,sy);
     _cvCur={
       id:myId+'-'+(++_cvSid),
@@ -6478,7 +6691,7 @@ function _cvPMove(e){
   e.preventDefault();
   const sx=e.offsetX, sy=e.offsetY;
 
-  if(_cvPtrDown&&(e.buttons===4||(_cvTool==='pan'&&e.buttons===1))){
+  if(_cvPtrDown&&(e.buttons===4||((_cvTool==='pan'||_cvTool==='cursor')&&e.buttons===1))){
     _cvOX=_cvPanOX-(sx-_cvPanSX); _cvOY=_cvPanOY-(sy-_cvPanSY); return;
   }
 
@@ -6489,6 +6702,20 @@ function _cvPMove(e){
     _cvTokTimer=setTimeout(()=>{
       if(_cvDragTokId) _broadcast({type:'cv-token-move',peerId:_cvDragTokId,wx:_cvTokens[_cvDragTokId].wx,wy:_cvTokens[_cvDragTokId].wy});
     },50);
+    return;
+  }
+
+  if(_cvPtrDown&&_cvResizingImg&&partyIsDM){
+    const img=_cvImages.find(i=>i.id===_cvResizingImg.id);
+    if(img){
+      const dx=(sx-_cvResizingImg.startSX)/(TILE*_cvZoom);
+      const dy=(sy-_cvResizingImg.startSY)/(TILE*_cvZoom);
+      const c=_cvResizingImg.corner;
+      if(c==='se'){img.ww=Math.max(0.5,_cvResizingImg.origWW+dx);img.wh=Math.max(0.5,_cvResizingImg.origWH+dy);}
+      else if(c==='sw'){img.wx=_cvResizingImg.origWX+dx;img.ww=Math.max(0.5,_cvResizingImg.origWW-dx);img.wh=Math.max(0.5,_cvResizingImg.origWH+dy);}
+      else if(c==='ne'){img.ww=Math.max(0.5,_cvResizingImg.origWW+dx);img.wy=_cvResizingImg.origWY+dy;img.wh=Math.max(0.5,_cvResizingImg.origWH-dy);}
+      else if(c==='nw'){img.wx=_cvResizingImg.origWX+dx;img.wy=_cvResizingImg.origWY+dy;img.ww=Math.max(0.5,_cvResizingImg.origWW-dx);img.wh=Math.max(0.5,_cvResizingImg.origWH-dy);}
+    }
     return;
   }
 
@@ -6516,13 +6743,24 @@ function _cvPMove(e){
 
 function _cvPUp(e){
   _cvPtrDown=false;
-  if(_cvCvs) _cvCvs.style.cursor=_cvTool==='pen'||_cvTool==='room'?'crosshair':_cvTool==='eraser'?'cell':'grab';
+  if(_cvCvs) _cvCvs.style.cursor=
+    (_cvTool==='pen'||_cvTool==='room')?'crosshair':
+    _cvTool==='eraser'?'cell':
+    _cvTool==='pin'?'copy':
+    (_cvTool==='pan'||_cvTool==='cursor')?'grab':
+    'default';
 
   if(_cvDragTokId){
     const tok=_cvTokens[_cvDragTokId];
     if(tok){ tok.wx=Math.round(tok.wx*2)/2; tok.wy=Math.round(tok.wy*2)/2;
       _broadcast({type:'cv-token-move',peerId:_cvDragTokId,wx:tok.wx,wy:tok.wy}); }
     _cvDragTokId=null; return;
+  }
+
+  if(_cvResizingImg&&partyIsDM){
+    const img=_cvImages.find(i=>i.id===_cvResizingImg.id);
+    if(img) _broadcast({type:'cv-image-move',id:img.id,wx:img.wx,wy:img.wy,ww:img.ww,wh:img.wh,rot:img.rot||0});
+    _cvResizingImg=null; return;
   }
 
   if(_cvDragImgData&&partyIsDM){
@@ -6536,9 +6774,34 @@ function _cvPUp(e){
     const gy=Math.min(_cvDraft.gy1,_cvDraft.gy2);
     const gw=Math.max(1,Math.abs(_cvDraft.gx2-_cvDraft.gx1));
     const gh=Math.max(1,Math.abs(_cvDraft.gy2-_cvDraft.gy1));
-    const room={id:'r'+Date.now(),gx,gy,gw,gh,type:null,label:null,color:null};
-    _cvRooms.push(room);
-    _broadcast({type:'cv-room-add',room});
+    const isHall=gw===1||gh===1;
+    // Check for overlap with existing rooms
+    const overlaps=_cvRooms.filter(r=>!(gx>=r.gx+r.gw||gx+gw<=r.gx||gy>=r.gy+r.gh||gy+gh<=r.gy));
+    if(overlaps.length>0){
+      // Expand first overlapping room to bounding box, remove the rest
+      const tgt=overlaps[0];
+      const nx1=Math.min(gx,tgt.gx),ny1=Math.min(gy,tgt.gy);
+      const nx2=Math.max(gx+gw,tgt.gx+tgt.gw),ny2=Math.max(gy+gh,tgt.gy+tgt.gh);
+      tgt.gx=nx1;tgt.gy=ny1;tgt.gw=nx2-nx1;tgt.gh=ny2-ny1;
+      _broadcast({type:'cv-room-update',room:{...tgt}});
+      for(let i=1;i<overlaps.length;i++){
+        if(overlaps[i].type==='healing') _healingCount=Math.max(0,_healingCount-1);
+        _cvRooms=_cvRooms.filter(r=>r.id!==overlaps[i].id);
+        _broadcast({type:'cv-room-del',id:overlaps[i].id});
+      }
+    } else {
+      // Check budget for non-hallway rooms
+      const nonHallCount=_cvRooms.filter(r=>r.gw>1&&r.gh>1).length;
+      if(!isHall&&_floorRoomBudget>0&&nonHallCount>=_floorRoomBudget){
+        _sysMsg('Floor room budget reached ('+_floorRoomBudget+' rooms). All types assigned.');
+        _cvDraft=null; return;
+      }
+      // Draw room without type — DM clicks to roll from queue
+      const room={id:'r'+Date.now(),gx,gy,gw,gh,type:null,label:null,color:null};
+      _cvRooms.push(room);
+      _broadcast({type:'cv-room-add',room});
+      _renderFloorCounter();
+    }
     _cvDraft=null; return;
   }
 
@@ -6569,11 +6832,35 @@ function _cvWheel(e){
 // ─── Tool controls ───────────────────────────────────────────────────────────
 function _cvSetTool(t){
   _cvTool=t;
-  ['pan','pen','eraser','room'].forEach(id=>{
+  ['cursor','pan','pen','eraser','room','pin'].forEach(id=>{
     const b=document.getElementById('vtc-'+id);
     if(b) b.classList.toggle('active',id===t);
   });
-  if(_cvCvs) _cvCvs.style.cursor=(t==='pen'||t==='room')?'crosshair':t==='eraser'?'cell':'grab';
+  if(_cvCvs) _cvCvs.style.cursor=
+    (t==='pen'||t==='room')?'crosshair':
+    t==='eraser'?'cell':
+    t==='pin'?'copy':
+    t==='pan'?'grab':
+    'default';
+}
+
+function _cvConfirmPin(){
+  if(!_cvPinPending) return;
+  const name=(document.getElementById('vtc-pin-name')?.value||'').trim();
+  if(!name){document.getElementById('vtc-pin-name')?.focus();return;}
+  const type=document.getElementById('vtc-pin-type')?.value||'enemy';
+  const pin={id:'pin'+Date.now(),wx:_cvPinPending.wx,wy:_cvPinPending.wy,name,type};
+  _cvPins.push(pin);
+  _broadcast({type:'cv-pin-add',pin});
+  _cvPinPending=null;
+  const form=document.getElementById('vtc-pin-form');
+  if(form) form.style.display='none';
+}
+
+function _cvCancelPin(){
+  _cvPinPending=null;
+  const form=document.getElementById('vtc-pin-form');
+  if(form) form.style.display='none';
 }
 
 function _cvSetBrush(v){ _cvBrush=v; }
@@ -6602,23 +6889,90 @@ function _cvUndo(){
 }
 
 // ─── DM map actions ──────────────────────────────────────────────────────────
-function _vttRollType(){
-  const max=Math.ceil(0.75*_floorCount);
-  const pool=VTT_ROOM_TYPES.filter(t=>t.type!=='healing'||_healingCount<max);
-  const total=pool.reduce((s,t)=>s+t.weight,0);
-  let r=Math.random()*total;
-  for(const t of pool){ r-=t.weight; if(r<=0) return t; }
-  return pool[pool.length-1];
+function _buildFloorQueue(N){
+  // 1 descent always; remaining N-1: 66% combat, 23% treasure, 9% shop, 2% healing
+  const R=N-1;
+  const healingForced=!_lastFloorHadHealing;
+  let hCount=0;
+  if(healingForced){ hCount=Math.max(1,Math.round(R*0.02)); }
+  else { hCount=Math.random()<0.5?Math.max(1,Math.round(R*0.02)):0; }
+  let sCount=Math.max(1,Math.round(R*0.09));
+  let tCount=Math.max(1,Math.round(R*0.23));
+  let cCount=R-sCount-tCount-hCount;
+  if(cCount<1) cCount=1;
+  // Trim to exactly R
+  while(cCount+tCount+sCount+hCount>R){
+    if(cCount>1)cCount--;else if(tCount>1)tCount--;else if(sCount>1)sCount--;else if(hCount>0)hCount--;
+  }
+  while(cCount+tCount+sCount+hCount<R) cCount++;
+  const arr=['descent'];
+  for(let i=0;i<cCount;i++) arr.push('combat');
+  for(let i=0;i<tCount;i++) arr.push('treasure');
+  for(let i=0;i<sCount;i++) arr.push('shop');
+  for(let i=0;i<hCount;i++) arr.push('healing');
+  // Fisher-Yates shuffle
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
 }
 
-function _cvDmRollRoom(roomId){
+function _cvDmSetupFloor(){
+  if(_floorRoomBudget>0) return; // already set up
+  _floorRoomBudget=15+Math.floor(Math.random()*12); // 15-26
+  _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
+  const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
+  _sysMsg('Floor 1 — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
+  _renderFloorCounter();
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent='1';
+  _broadcast({type:'cv-floor-init',budget:_floorRoomBudget,queue:_floorRoomQueue});
+}
+
+function _cvDmNewFloor(){
   if(!partyIsDM) return;
-  const rt=_vttRollType();
-  const room=_cvRooms.find(r=>r.id===roomId);
-  if(!room) return;
-  room.type=rt.type; room.label=rt.label; room.color=rt.color;
-  if(rt.type==='healing') _healingCount++;
-  _broadcast({type:'cv-room-rolled',id:roomId,rtype:rt.type,label:rt.label,color:rt.color});
+  // Save current floor to history
+  _lastFloorHadHealing=_healingCount>0;
+  _cvFloorHistory.push({
+    floorNum:_floorCount,
+    strokes:_cvStrokes.map(s=>({...s,pts:[...s.pts]})),
+    rooms:JSON.parse(JSON.stringify(_cvRooms)),
+    images:_cvImages.map(({el,...rest})=>rest),
+    tokens:JSON.parse(JSON.stringify(_cvTokens)),
+    budget:_floorRoomBudget,
+    descentCell:_cvDescentCell?{..._cvDescentCell}:null,
+  });
+  // Advance to next floor
+  _floorCount++; _healingCount=0; _cvDescentCell=null;
+  _cvStrokes=[]; _cvRooms=[]; _cvImages=[]; _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
+  // Roll new floor plan
+  _floorRoomBudget=15+Math.floor(Math.random()*12);
+  _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
+  const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
+  _sysMsg('Floor '+_floorCount+' — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
+  _renderFloorCounter();
+  // Update floor badge and show up button
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
+  const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display='';
+  _broadcast({type:'cv-new-floor',floor:_floorCount,budget:_floorRoomBudget,queue:_floorRoomQueue,
+    history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
+}
+
+function _cvDmGoUpFloor(){
+  if(!partyIsDM||_cvFloorHistory.length===0) return;
+  const prev=_cvFloorHistory.pop();
+  _floorCount=prev.floorNum;
+  _cvStrokes=prev.strokes||[];
+  _cvRooms=prev.rooms||[];
+  _cvImages=(prev.images||[]).map(img=>{const el=new Image();el.src=img.src;return{...img,el};});
+  _cvTokens=prev.tokens||{};
+  _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
+  _floorRoomBudget=prev.budget||0;
+  _cvDescentCell=prev.descentCell||null;
+  _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
+  _floorRoomQueue=[]; // can't draw more rooms on previous floors
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
+  const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display=_cvFloorHistory.length>0?'':'none';
+  _sysMsg('Went up to Floor '+_floorCount+'.');
+  _broadcast({type:'cv-go-up-floor',floor:_floorCount,budget:_floorRoomBudget,queue:_floorRoomQueue,
+    strokes:_cvStrokes,rooms:_cvRooms,images:prev.images,tokens:_cvTokens,history:_cvFloorHistory.map(f=>({...f,images:f.images}))});
 }
 
 function _cvDmClearDrawings(){
@@ -6627,11 +6981,61 @@ function _cvDmClearDrawings(){
   _broadcast({type:'cv-clear-all'});
 }
 
-function _cvDmNewFloor(){
+function _cvDmRollRoom(roomId){
+  if(!partyIsDM||!_floorRoomQueue.length) return;
+  const room=_cvRooms.find(r=>r.id===roomId);
+  if(!room||room.type) return;
+  const ri=Math.floor(Math.random()*_floorRoomQueue.length);
+  const typeKey=_floorRoomQueue.splice(ri,1)[0];
+  const rtDef=_vttRtDef(typeKey);
+  room.type=rtDef.type;room.label=rtDef.label;room.color=rtDef.color;
+  if(room.type==='healing') _healingCount++;
+  if(room.type==='descent') _cvDescentCell={gx:room.gx+Math.floor(room.gw/2),gy:room.gy+Math.floor(room.gh/2)};
+  _broadcast({type:'cv-room-rolled',id:roomId,rtype:room.type,label:room.label,color:room.color});
+  _broadcast({type:'cv-queue-update',queue:_floorRoomQueue});
+  _renderFloorCounter();
+}
+
+function _renderFloorCounter(){
+  const el=document.getElementById('vtc-floor-counter');
+  if(!el||!partyIsDM) return;
+  if(!_floorRoomBudget){el.style.display='none';return;}
+  const typed=_cvRooms.filter(r=>r.type&&r.gw>1&&r.gh>1).length;
+  const total=_cvRooms.filter(r=>r.gw>1&&r.gh>1).length;
+  // Count remaining in queue
+  const counts={};
+  _floorRoomQueue.forEach(t=>{counts[t]=(counts[t]||0)+1;});
+  const parts=Object.entries(counts).map(([t,n])=>n+'×'+t[0].toUpperCase()+t.slice(1)).join(' · ');
+  el.style.display='';
+  el.textContent='Floor '+_floorCount+': '+total+'/'+_floorRoomBudget+' rooms drawn, '+typed+' typed'+(parts?' · Remaining: '+parts:'');
+}
+
+function _cvDmDeleteRoomAt(sx,sy){
   if(!partyIsDM) return;
-  _floorCount++; _healingCount=0;
-  _sysMsg('New floor started — Floor '+_floorCount+'. Healing rooms reset.');
-  _broadcast({type:'cv-new-floor',floor:_floorCount});
+  const w=_s2w(sx,sy);
+  for(let i=_cvRooms.length-1;i>=0;i--){
+    const r=_cvRooms[i];
+    if(w.x>=r.gx&&w.x<=r.gx+r.gw&&w.y>=r.gy&&w.y<=r.gy+r.gh){
+      const isHall=r.gw===1||r.gh===1;
+      if(r.type==='healing') _healingCount=Math.max(0,_healingCount-1);
+      if(!isHall&&r.type&&_floorRoomQueue!==null){
+        _floorRoomQueue.unshift(r.type);
+        _broadcast({type:'cv-queue-update',queue:_floorRoomQueue});
+      }
+      _cvRooms.splice(i,1);
+      _broadcast({type:'cv-room-del',id:r.id});
+      _renderFloorCounter();
+      break;
+    }
+  }
+}
+
+function _cvDmToggleDrawing(peerId){
+  if(!partyIsDM||peerId===partyPeer?.id) return;
+  const p=partyPlayers[peerId];if(!p) return;
+  p.drawDisabled=!p.drawDisabled;
+  _broadcast({type:'cv-draw-mute',peerId,disabled:p.drawDisabled});
+  _renderPlayers();
 }
 
 function _cvDmDeleteSelImg(){
@@ -6674,6 +7078,100 @@ function _cvPlaceMyToken(){
   const wx=ctr.x+(Math.random()*6-3), wy=ctr.y+(Math.random()*6-3);
   _cvTokens[id]={wx,wy};
   _broadcast({type:'cv-token-move',peerId:id,wx,wy});
+  // Share character sheet with the party
+  _partyBroadcastCharSheet();
+}
+
+// ─── Character sheet sharing ─────────────────────────────────────────────────
+function _getPartyCharData(){
+  const maxHp=hpLevels.reduce((a,x)=>a+x.total,0);
+  const curEl=document.getElementById('cs-hp-cur');
+  return {
+    name:partyMyName,
+    charName:charName||partyMyName,
+    level:currentLevel,
+    className:currentClass,
+    stats:{...stats},
+    hp:parseInt(curEl?.value)||0,
+    maxHp:maxHp||parseInt(document.getElementById('cs-hp-max')?.textContent)||0,
+  };
+}
+
+function _partyBroadcastCharSheet(){
+  if(!partyPeer) return;
+  const data=_getPartyCharData();
+  partyCharSheets[partyPeer.id]=data;
+  _broadcast({type:'char-share',peerId:partyPeer.id,data});
+  _renderPartyCharSheet();
+}
+
+function _renderPartyCharSheet(){
+  const body=document.getElementById('pty-cs-body');
+  const titleEl=document.getElementById('pty-cs-title');
+  const switcher=document.getElementById('pty-cs-switcher');
+  if(!body) return;
+  const myId=partyPeer?.id;
+
+  // DM switcher tabs (DM sees all player sheets)
+  if(partyIsDM&&switcher){
+    const peers=Object.keys(partyCharSheets);
+    if(peers.length>1){
+      switcher.style.display='flex';
+      let tabs='';
+      peers.forEach(pid=>{
+        const d=partyCharSheets[pid];
+        const active=(_partyViewingPeer||myId)===pid;
+        tabs+=`<button class="pty-cs-tab${active?' active':''}" onclick="_partySetViewPeer('${pid}')">${_escH(d.name||'?')}</button>`;
+      });
+      switcher.innerHTML=tabs;
+    } else { switcher.style.display='none'; }
+  } else if(switcher){ switcher.style.display='none'; }
+
+  // Determine whose data to show
+  const viewId=partyIsDM?(_partyViewingPeer||myId):myId;
+  const data=viewId?partyCharSheets[viewId]:null;
+  const isOwn=viewId===myId;
+
+  if(!data){
+    body.innerHTML='<div class="pty-cs-empty">No character data yet.</div>';
+    if(titleEl) titleEl.textContent='Character Sheet';
+    return;
+  }
+
+  if(titleEl) titleEl.textContent=isOwn?'Your Sheet':_escH(data.name)+'\'s Sheet';
+
+  const pb=Math.ceil((data.level||1)/4)+1;
+  const statList=Object.entries(data.stats||{}).map(([k,v])=>{
+    const m=Math.floor((v-10)/2);
+    const mStr=(m>=0?'+':'')+m;
+    const clickable=isOwn?`onclick="doRoll('${k.toUpperCase()} Check','${k}',false)"`:'' ;
+    return `<div class="pty-cs-stat" ${clickable} title="${isOwn?'Roll '+k.toUpperCase():''}">
+      <span class="pty-cs-stat-k">${k.toUpperCase()}</span>
+      <span class="pty-cs-stat-v">${v}</span>
+      <span class="pty-cs-stat-m">${mStr}</span>
+    </div>`;
+  }).join('');
+
+  const hpPct=data.maxHp>0?Math.max(0,Math.min(100,Math.round(data.hp/data.maxHp*100))):0;
+  const hpColor=hpPct>50?'var(--green)':hpPct>25?'#d4891a':'var(--red)';
+
+  body.innerHTML=`
+    <div class="pty-cs-id">
+      <div class="pty-cs-name">${_escH(data.charName||data.name)}</div>
+      <div class="pty-cs-sub">Level ${data.level} ${_escH(data.className||'')} · Prof +${pb}</div>
+    </div>
+    <div class="pty-cs-hp-row">
+      <span class="pty-cs-hp-lbl">HP ${data.hp}/${data.maxHp}</span>
+      <div class="pty-cs-hp-bar"><div class="pty-cs-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>
+    </div>
+    <div class="pty-cs-stats">${statList}</div>
+    ${isOwn?'<div class="pty-cs-roll-badge">Click a stat to roll a check</div>':''}
+  `;
+}
+
+function _partySetViewPeer(pid){
+  _partyViewingPeer=pid;
+  _renderPartyCharSheet();
 }
 
 function _cvSyncPayload(){
@@ -6682,18 +7180,30 @@ function _cvSyncPayload(){
     rooms:_cvRooms,
     images:_cvImages.map(({el,...rest})=>rest),
     tokens:_cvTokens,
+    pins:_cvPins,
     healingCount:_healingCount,
-    floorCount:_floorCount
+    floorCount:_floorCount,
+    floorRoomBudget:_floorRoomBudget,
+    floorRoomQueue:_floorRoomQueue,
+    cvFloorHistory:_cvFloorHistory.map(f=>({...f,images:f.images})),
+    descentCell:_cvDescentCell,
   };
 }
 
 function _cvApplySync(d){
   _cvStrokes=d.strokes||[];
   _cvRooms=d.rooms||[];
+  _cvPins=d.pins||[];
   _healingCount=d.healingCount||0;
   _floorCount=d.floorCount||1;
   _cvTokens=d.tokens||{};
   _cvImages=(d.images||[]).map(img=>{ const el=new Image();el.src=img.src; return {...img,el}; });
+  _floorRoomBudget=d.floorRoomBudget||0;
+  _floorRoomQueue=d.floorRoomQueue||[];
+  _cvDescentCell=d.descentCell||null;
+  if(d.cvFloorHistory) _cvFloorHistory=d.cvFloorHistory;
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
+  const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display=_cvFloorHistory.length>0&&partyIsDM?'':'none';
 }
 
 function _cvHandleMsg(d){
@@ -6710,12 +7220,23 @@ function _cvHandleMsg(d){
       _cvStrokes=[];_cvPartials={};_cvUndoIds=[]; break;
     case 'cv-room-add':
       if(!_cvRooms.find(r=>r.id===d.room.id)) _cvRooms.push(d.room); break;
+    case 'cv-room-update':
+      { const ru=_cvRooms.find(r=>r.id===d.room.id);
+        if(ru){ru.gx=d.room.gx;ru.gy=d.room.gy;ru.gw=d.room.gw;ru.gh=d.room.gh;} } break;
     case 'cv-room-rolled':
       { const rr=_cvRooms.find(r=>r.id===d.id);
         if(rr){rr.type=d.rtype;rr.label=d.label;rr.color=d.color;}
         if(d.rtype==='healing') _healingCount++; } break;
     case 'cv-room-del':
       _cvRooms=_cvRooms.filter(r=>r.id!==d.id); break;
+    case 'cv-queue-update':
+      _floorRoomQueue=d.queue||[]; break;
+    case 'cv-draw-mute':
+      if(partyPlayers[d.peerId]) partyPlayers[d.peerId].drawDisabled=d.disabled;
+      _renderPlayers();
+      if(d.peerId===partyPeer?.id){
+        _sysMsg(d.disabled?'DM disabled your drawing.':'DM re-enabled your drawing.');
+      } break;
     case 'cv-image-add':
       if(!_cvImages.find(i=>i.id===d.img.id)){
         const el=new Image();el.src=d.img.src;
@@ -6727,11 +7248,37 @@ function _cvHandleMsg(d){
       _cvImages=_cvImages.filter(i=>i.id!==d.id); break;
     case 'cv-token-move':
       _cvTokens[d.peerId]={wx:d.wx,wy:d.wy}; break;
+    case 'cv-floor-init':
+      { _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
+        const fbi=document.getElementById('vtc-floor-num');if(fbi)fbi.textContent='1'; } break;
     case 'cv-new-floor':
-      _floorCount=d.floor; _healingCount=0;
-      _sysMsg('Floor '+_floorCount+' started. Healing rooms reset.'); break;
+      { _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvPartials={};_cvCur=null;
+        _floorCount=d.floor; _healingCount=0; _cvDescentCell=null;
+        _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
+        if(d.history) _cvFloorHistory=d.history;
+        _sysMsg('Descended to Floor '+_floorCount+' ('+_floorRoomBudget+' rooms planned).');
+        const fbn=document.getElementById('vtc-floor-num');if(fbn)fbn.textContent=_floorCount; } break;
+    case 'cv-go-up-floor':
+      { _floorCount=d.floor; _healingCount=0;
+        _cvStrokes=d.strokes||[]; _cvRooms=d.rooms||[];
+        _cvImages=(d.images||[]).map(img=>{const el=new Image();el.src=img.src;return{...img,el};});
+        _cvTokens=d.tokens||{}; _cvPartials={}; _cvCur=null;
+        _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
+        if(d.history) _cvFloorHistory=d.history;
+        _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
+        _sysMsg('Returned to Floor '+_floorCount+'.');
+        const fbup=document.getElementById('vtc-floor-num');if(fbup)fbup.textContent=_floorCount; } break;
+    case 'cv-pin-add':
+      if(!_cvPins.find(p=>p.id===d.pin.id)) _cvPins.push(d.pin); break;
+    case 'cv-pin-del':
+      _cvPins=_cvPins.filter(p=>p.id!==d.id); break;
     case 'cv-sync':
       _cvApplySync(d); break;
+    case 'char-share':
+      if(d.peerId&&d.data){
+        partyCharSheets[d.peerId]=d.data;
+        _renderPartyCharSheet();
+      } break;
   }
 }
 
@@ -6776,10 +7323,14 @@ function _renderPlayers(){
   Object.entries(partyPlayers).forEach(([id,p])=>{
     const self=id===myId;
     const dotColor=p.color||_colorForPeer(id);
+    const muteBtn=partyIsDM&&!self&&!p.isDM
+      ?`<button class="pty-mute-btn${p.drawDisabled?' muted':''}" onclick="_cvDmToggleDrawing('${id}')" title="${p.drawDisabled?'Re-enable drawing':'Disable drawing'}">${p.drawDisabled?'🚫':'✏'}</button>`
+      :'';
     html+=`<div class="pty-player">
       <div class="pty-pdot" style="background:${dotColor}"></div>
       <div class="pty-pname">${_escH(p.name)}${self?'<span class="pty-self"> (you)</span>':''}</div>
       ${p.isDM?'<div class="pty-badge dm">DM</div>':''}
+      ${muteBtn}
     </div>`;
   });
   list.innerHTML=html||'<div class="pty-empty">No players yet</div>';
@@ -6865,15 +7416,20 @@ function _handleData(d,fromConn){
       break;
     case 'hello':
       if(d.id) partyPlayers[d.id]={name:d.name,isDM:d.isDM,color:_colorForPeer(d.id)};
-      _renderPlayers();break;
+      _renderPlayers();
+      // Re-send my char sheet to anyone who just said hello
+      _partyBroadcastCharSheet(); break;
     case 'peer-join':
       _sysMsg(d.name+' joined the room');
       partyPlayers[d.id]={name:d.name,isDM:false,color:_colorForPeer(d.id)};
-      _renderPlayers();break;
+      _renderPlayers();
+      _partyBroadcastCharSheet(); break;
     case 'peer-leave':
       if(partyPlayers[d.id]){
         _sysMsg(d.name+' left');
+        delete partyCharSheets[d.id];
         delete partyPlayers[d.id];_renderPlayers();
+        _renderPartyCharSheet();
       }break;
     case 'chat':
       _appendMsg({user:d.user,text:d.text,ts:d.ts,isDM:d.isDM,announce:false});break;
@@ -6889,7 +7445,7 @@ function _handleData(d,fromConn){
       _ptyHubId=d.hubId;
       _sysMsg('Room connection restored');break;
     default:
-      if(d.type&&d.type.startsWith('cv-')) _cvHandleMsg(d,fromConn);
+      if(d.type&&(d.type.startsWith('cv-')||d.type==='char-share')) _cvHandleMsg(d,fromConn);
       break;
   }
 }
@@ -6936,6 +7492,7 @@ async function hostRoom(){
     if(!pw) document.getElementById('dm-unlock-row').style.display='none';
     _cvPlaceMyToken();
     _renderPlayers();_partyStatus();
+    _saveRoomSession(code,name,pw);
   });
   partyPeer.on('connection',conn=>_setupConn(conn));
   partyPeer.on('error',err=>{
@@ -6969,6 +7526,7 @@ function _joinInternal(code,name){
     _showRoom(code);
     _sysMsg('Connecting to room '+code+'…');
     _renderPlayers();
+    _saveRoomSession(code,name,null);
   });
   partyPeer.on('connection',conn=>_setupConn(conn));
   partyPeer.on('error',err=>{
@@ -6989,6 +7547,56 @@ function sendPartyMsg(){
   _broadcast(msg);
   _appendMsg({user:partyMyName,text,ts:msg.ts,isDM:partyIsDM,announce:false});
   inp.value='';
+}
+
+// Free-form dice roller (party room sidebar). Posts to chat if connected.
+function partyRollDie(sides){
+  const countEl=document.getElementById('pty-dice-count');
+  const modEl=document.getElementById('pty-dice-mod');
+  const resEl=document.getElementById('pty-dice-result');
+  if(!resEl) return;
+  const count=Math.max(1,Math.min(20,parseInt(countEl&&countEl.value)||1));
+  const mod=parseInt(modEl&&modEl.value)||0;
+  const rolls=[];
+  for(let i=0;i<count;i++) rolls.push(1+Math.floor(Math.random()*sides));
+  const sum=rolls.reduce((a,b)=>a+b,0);
+  const total=sum+mod;
+  const modStr=mod?(mod>0?'+'+mod:String(mod)):'';
+  const rollsStr=count>1?'['+rolls.join(', ')+']':'('+rolls[0]+')';
+  const expr=count+'d'+sides+modStr;
+  const detail=expr+' '+rollsStr+(count>1?' = '+sum+modStr:'')+' → '+total;
+
+  // Special-cases (single d20) — crit/fumble flavor
+  let flavor='';
+  if(sides===20&&count===1){
+    if(rolls[0]===20) flavor=' ✦ CRIT';
+    else if(rolls[0]===1) flavor=' ✗ Fumble';
+  }
+
+  // Animate roll
+  resEl.classList.remove('empty');
+  resEl.classList.add('rolling');
+  let cycles=0;
+  clearInterval(window._pdiceCycle);
+  window._pdiceCycle=setInterval(()=>{
+    cycles++;
+    const fake=1+Math.floor(Math.random()*sides);
+    resEl.innerHTML='<div class="pty-dice-result-total">'+(count>1?'…':fake)+'</div>'
+      +'<div class="pty-dice-result-detail">rolling '+expr+'…</div>';
+    if(cycles>=8){
+      clearInterval(window._pdiceCycle);
+      resEl.classList.remove('rolling');
+      resEl.innerHTML='<div class="pty-dice-result-total">'+total+'</div>'
+        +'<div class="pty-dice-result-detail">'+detail.replace('→ '+total,'')+'</div>';
+      // Post to chat if in a room
+      if(partyPeer&&partyPeer.open!==false){
+        const rollText='🎲 '+detail+flavor;
+        const msg={type:'chat',user:partyMyName,text:rollText,ts:Date.now(),isDM:partyIsDM};
+        _broadcast(msg);
+        _appendMsg({user:partyMyName,text:rollText,ts:msg.ts,isDM:partyIsDM,announce:false});
+      }
+    }
+  },55);
 }
 
 function dmAnnounce(){
@@ -7021,6 +7629,62 @@ async function tryDMUnlock(){
   }
 }
 
+function _saveRoomSession(code,name,pw){
+  try{sessionStorage.setItem('_ptySession',JSON.stringify({code,name,pw:pw||null,ts:Date.now()}));}catch(e){}
+}
+function _clearRoomSession(){
+  try{sessionStorage.removeItem('_ptySession');}catch(e){}
+}
+async function _autoRejoinIfSaved(){
+  try{
+    const raw=sessionStorage.getItem('_ptySession');
+    if(!raw) return;
+    const s=JSON.parse(raw);
+    if(!s.code||!s.name||Date.now()-s.ts>3600000) return; // expired after 1h
+    // Switch to party tab
+    const ptab=document.querySelector('.tab[onclick*=\"party\"]');
+    if(ptab) switchTab('party',ptab);
+    // Prefill and auto-join
+    const ni=document.getElementById('party-name-inp');if(ni)ni.value=s.name;
+    const ci=document.getElementById('party-code-inp');if(ci)ci.value=s.code;
+    if(s.pw){
+      const pi=document.getElementById('party-host-pw');if(pi)pi.value=s.pw;
+    }
+    await new Promise(r=>setTimeout(r,300));
+    if(s.pw) hostRoom(); else joinRoom();
+  }catch(e){}
+}
+
+function _attachCharSheetToParty(){
+  const target=document.getElementById('pty-cs-full');
+  const cs=document.getElementById('tab-character');
+  if(!target||!cs||cs._ptyOrigParent) return;
+  cs._ptyOrigParent=cs.parentElement;
+  cs._ptyOrigNext=cs.nextElementSibling;
+  target.appendChild(cs);
+  cs.style.display='block';
+  cs.style.maxWidth='none';
+  cs.style.padding='12px';
+  cs.style.boxSizing='border-box';
+  renderCharSheet();
+}
+
+function _detachCharSheetFromParty(){
+  const cs=document.getElementById('tab-character');
+  if(!cs||!cs._ptyOrigParent) return;
+  if(cs._ptyOrigNext){
+    cs._ptyOrigParent.insertBefore(cs,cs._ptyOrigNext);
+  } else {
+    cs._ptyOrigParent.appendChild(cs);
+  }
+  cs.style.display='';
+  cs.style.maxWidth='';
+  cs.style.padding='';
+  cs.style.boxSizing='';
+  cs._ptyOrigParent=null;
+  cs._ptyOrigNext=null;
+}
+
 function leaveRoom(){
   Object.values(partyConns).forEach(c=>{try{c.close();}catch(e){}});
   if(partyPeer){try{partyPeer.destroy();}catch(e){}}
@@ -7030,10 +7694,17 @@ function leaveRoom(){
   myPlayerColor=null;
   _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvTokens={};_cvPartials={};_cvCur=null;
   _cvDraft=null;_healingCount=0;_floorCount=1;_cvUndoIds=[];_cvSid=0;
+  _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;_cvResizingImg=null;
+  _cvPins=[];_cvPinPending=null;
+  const pf=document.getElementById('vtc-pin-form');if(pf)pf.style.display='none';
+  _lastFloorHadHealing=true;partyCharSheets={};_partyViewingPeer=null;
+  const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent='1';
+  const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display='none';
   const setupV=document.getElementById('pty-setup-view');
   const roomV=document.getElementById('pty-room-view');
   if(setupV) setupV.style.display='';
   if(roomV)  roomV.style.display='none';
+  _clearRoomSession();
   const log=document.getElementById('pty-log');if(log)log.innerHTML='';
   const dmP=document.getElementById('dm-panel');if(dmP)dmP.classList.remove('active');
   const unlk=document.getElementById('dm-unlock-row');if(unlk)unlk.style.display='';
@@ -7060,9 +7731,13 @@ function _showDMPanel(){
   if(dmTools) dmTools.style.display='flex';
   const roomBtn=document.getElementById('vtc-room');
   if(roomBtn) roomBtn.style.display='';
+  // Init floor 1 if not already done
+  _cvDmSetupFloor();
 }
 
 // ── END PARTY ROOM ───────────────────────────────────────────────────────────
+// Auto-rejoin party room on page refresh
+window.addEventListener('load',()=>setTimeout(_autoRejoinIfSaved,600));
 
 // Save button in nav
 const _saveBtn = document.createElement('button');
