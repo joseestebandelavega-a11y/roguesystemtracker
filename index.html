@@ -6449,16 +6449,15 @@ document.addEventListener('input', function(e){
 
 // ── PARTY ROOM (PeerJS mesh + hub failover + VTT canvas) ────────────────────
 
-// TURN relay servers so peers behind symmetric NAT (Opera GX, strict firewalls) can connect
+// Extra STUN servers improve NAT traversal discovery (no data passes through STUN servers)
 const PEER_CONFIG = {
   debug: 0,
   config: {
     iceServers: [
       {urls: 'stun:stun.l.google.com:19302'},
       {urls: 'stun:stun1.l.google.com:19302'},
-      {urls: 'turn:openrelay.metered.ca:80',  username: 'openrelayproject', credential: 'openrelayproject'},
-      {urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject'},
-      {urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject'},
+      {urls: 'stun:stun2.l.google.com:19302'},
+      {urls: 'stun:stun3.l.google.com:19302'},
     ]
   }
 };
@@ -7741,7 +7740,7 @@ function _setupConn(conn){
   // Timeout: if ICE negotiation fails (symmetric NAT, firewall) conn.on('open') never fires
   const _connTimeout=setTimeout(()=>{
     if(!partyConns[conn.peer]){
-      _sysMsg('⚠ Connection timed out — peer may be behind a strict firewall. Try again.');
+      _sysMsg('⚠ Connection timed out. Opera GX users: go to Settings → Privacy → WebRTC and disable WebRTC leak protection, then try again.');
       conn.close();
     }
   }, 18000);
