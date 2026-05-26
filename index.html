@@ -2122,7 +2122,8 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <div class="vtc-wrap">
         <div class="vtc-tb" id="vtc-tb">
           <div class="vtc-tg">
-            <button class="vtc-btn active" id="vtc-pan" onclick="_cvSetTool('pan')">✋ Pan</button>
+            <button class="vtc-btn active" id="vtc-cursor" onclick="_cvSetTool('cursor')" title="Cursor — browse without triggering actions">⬆ Cursor</button>
+            <button class="vtc-btn" id="vtc-pan" onclick="_cvSetTool('pan')" title="Pan — move tokens, roll rooms, drag images">✋ Pan</button>
             <button class="vtc-btn" id="vtc-pen" onclick="_cvSetTool('pen')">✏ Draw</button>
             <button class="vtc-btn" id="vtc-eraser" onclick="_cvSetTool('eraser')">⬜ Erase</button>
             <button class="vtc-btn" id="vtc-room" onclick="_cvSetTool('room')" style="display:none" title="Draw room or hallway">▭ Room</button>
@@ -6237,7 +6238,7 @@ let _cvW=800,_cvH=500;
 let _cvZoom=1,_cvOX=0,_cvOY=0;
 // Drawings
 let _cvStrokes=[],_cvPartials={},_cvCur=null;
-let _cvTool='pan',_cvBrush=4,_cvSid=0,_cvUndoIds=[];
+let _cvTool='cursor',_cvBrush=4,_cvSid=0,_cvUndoIds=[];
 // Map structures
 let _cvRooms=[],_cvDraft=null,_healingCount=0,_floorCount=1;
 // Images
@@ -6500,7 +6501,7 @@ function _cvAttachEvents(){
   c.addEventListener('wheel',_cvWheel,{passive:false});
   c.addEventListener('contextmenu',e=>{
     e.preventDefault();
-    if(!partyIsDM) return;
+    if(!partyIsDM||_cvTool==='cursor') return;
     const sx=e.offsetX,sy=e.offsetY;
     for(let i=_cvPins.length-1;i>=0;i--){
       const p=_cvPins[i];
@@ -6521,8 +6522,8 @@ function _cvPDown(e){
   _cvPtrDown=true;
   const sx=e.offsetX, sy=e.offsetY;
 
-  // Middle-mouse or pan tool → pan
-  if(e.button===1||(_cvTool==='pan'&&e.button===0)){
+  // Middle-mouse, cursor tool, or pan tool → pan (cursor never triggers anything else)
+  if(e.button===1||(_cvTool==='cursor'&&e.button===0)||(_cvTool==='pan'&&e.button===0)){
     _cvPanSX=sx;_cvPanSY=sy;_cvPanOX=_cvOX;_cvPanOY=_cvOY;
     _cvCvs.style.cursor='grabbing'; return;
   }
@@ -6629,7 +6630,7 @@ function _cvPMove(e){
   e.preventDefault();
   const sx=e.offsetX, sy=e.offsetY;
 
-  if(_cvPtrDown&&(e.buttons===4||(_cvTool==='pan'&&e.buttons===1))){
+  if(_cvPtrDown&&(e.buttons===4||((_cvTool==='pan'||_cvTool==='cursor')&&e.buttons===1))){
     _cvOX=_cvPanOX-(sx-_cvPanSX); _cvOY=_cvPanOY-(sy-_cvPanSY); return;
   }
 
@@ -6681,7 +6682,12 @@ function _cvPMove(e){
 
 function _cvPUp(e){
   _cvPtrDown=false;
-  if(_cvCvs) _cvCvs.style.cursor=_cvTool==='pen'||_cvTool==='room'?'crosshair':_cvTool==='eraser'?'cell':'grab';
+  if(_cvCvs) _cvCvs.style.cursor=
+    (_cvTool==='pen'||_cvTool==='room')?'crosshair':
+    _cvTool==='eraser'?'cell':
+    _cvTool==='pin'?'copy':
+    _cvTool==='pan'?'grab':
+    'default';
 
   if(_cvDragTokId){
     const tok=_cvTokens[_cvDragTokId];
@@ -6765,11 +6771,16 @@ function _cvWheel(e){
 // ─── Tool controls ───────────────────────────────────────────────────────────
 function _cvSetTool(t){
   _cvTool=t;
-  ['pan','pen','eraser','room','pin'].forEach(id=>{
+  ['cursor','pan','pen','eraser','room','pin'].forEach(id=>{
     const b=document.getElementById('vtc-'+id);
     if(b) b.classList.toggle('active',id===t);
   });
-  if(_cvCvs) _cvCvs.style.cursor=(t==='pen'||t==='room')?'crosshair':t==='eraser'?'cell':t==='pin'?'copy':'grab';
+  if(_cvCvs) _cvCvs.style.cursor=
+    (t==='pen'||t==='room')?'crosshair':
+    t==='eraser'?'cell':
+    t==='pin'?'copy':
+    t==='pan'?'grab':
+    'default';
 }
 
 function _cvConfirmPin(){
@@ -6913,7 +6924,8 @@ function _cvDmRollRoom(roomId){
   if(!partyIsDM||!_floorRoomQueue.length) return;
   const room=_cvRooms.find(r=>r.id===roomId);
   if(!room||room.type) return;
-  const typeKey=_floorRoomQueue.shift();
+  const ri=Math.floor(Math.random()*_floorRoomQueue.length);
+  const typeKey=_floorRoomQueue.splice(ri,1)[0];
   const rtDef=_vttRtDef(typeKey);
   room.type=rtDef.type;room.label=rtDef.label;room.color=rtDef.color;
   if(room.type==='healing') _healingCount++;
