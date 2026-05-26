@@ -1629,9 +1629,10 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-unlock-row{display:flex;gap:6px;align-items:center}
 .dm-unlock-lbl{font-size:10px;color:var(--text-muted);letter-spacing:.05em;white-space:nowrap}
 
-/* Main layout — always shows right col (player list); DM panel toggled inside */
-.pty-layout{display:grid;grid-template-columns:1fr 250px;gap:10px;align-items:start}
-.pty-right-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+/* Party room two-column layout */
+.pty-main-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.pty-side-col{width:340px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 80px);overflow-y:auto;position:sticky;top:10px}
+.pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
 
 /* VTT Canvas */
 .vtc-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
@@ -1696,10 +1697,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-map-placeholder{background:var(--surface2);border:1px dashed #5b21b6;border-radius:6px;padding:24px;text-align:center;color:#7c3aed;font-size:11px;opacity:.65}
 
 @media(max-width:860px){
-  .pty-layout{grid-template-columns:1fr}
-  .pty-layout.no-dm{grid-template-columns:1fr}
   .pty-right-col{display:flex !important}
-  .pty-layout .pty-right-col{order:3}
 }
 @media(max-width:480px){
   .pty-setup{margin:16px auto;padding:20px 16px}
@@ -1737,6 +1735,8 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .pty-cs-hp-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
 .pty-cs-empty{color:var(--text-dim);font-style:italic;font-size:11px;padding:6px 0}
 
+/* Image resize handle on canvas */
+.vtc-resize-cursor{cursor:nwse-resize!important}
 </style>
 </head>
 <body>
@@ -2079,71 +2079,72 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   </div>
 
   <!-- Active room view -->
-  <div id="pty-room-view" style="display:none;flex-direction:column;gap:10px;flex:1">
+  <div id="pty-room-view" style="display:none;flex-direction:row;gap:12px;flex:1;align-items:flex-start">
 
-    <!-- Room header -->
-    <div class="pty-header">
-      <div>
-        <div class="pty-code-lbl">Room Code</div>
-        <div class="pty-code-badge" id="prv-code">——</div>
-      </div>
-      <div class="pty-status">
-        <div class="prv-dot connecting" id="prv-dot"></div>
-        <div class="pty-status-txt" id="prv-txt">Connecting…</div>
-      </div>
-      <div class="pty-header-right">
-        <div class="dm-unlock-row" id="dm-unlock-row">
-          <span class="dm-unlock-lbl">DM:</span>
-          <input type="password" class="pty-inp" id="dm-pw-inp" placeholder="DM password" style="width:120px;padding:5px 10px">
-          <button class="pty-btn ghost" onclick="tryDMUnlock()" style="padding:5px 10px">Unlock</button>
-        </div>
-        <button class="pty-btn ghost" onclick="leaveRoom()" style="padding:5px 10px">Leave</button>
-      </div>
-    </div>
+    <!-- Main column: header + canvas + chat -->
+    <div class="pty-main-col">
 
-    <!-- VTT Canvas -->
-    <div class="vtc-wrap">
-      <div class="vtc-tb" id="vtc-tb">
-        <div class="vtc-tg">
-          <button class="vtc-btn active" id="vtc-pan" onclick="_cvSetTool('pan')">✋ Pan</button>
-          <button class="vtc-btn" id="vtc-pen" onclick="_cvSetTool('pen')">✏ Draw</button>
-          <button class="vtc-btn" id="vtc-eraser" onclick="_cvSetTool('eraser')">⬜ Erase</button>
-          <button class="vtc-btn" id="vtc-room" onclick="_cvSetTool('room')" style="display:none" title="Draw room or hallway">▭ Room</button>
+      <!-- Room header -->
+      <div class="pty-header">
+        <div>
+          <div class="pty-code-lbl">Room Code</div>
+          <div class="pty-code-badge" id="prv-code">——</div>
         </div>
-        <div class="vtc-tg">
-          <div class="vtc-swatch" id="vtc-swatch" title="Your color"></div>
-          <input type="range" class="vtc-slider" id="vtc-brush" min="2" max="16" value="4" oninput="_cvSetBrush(+this.value)" title="Brush size">
+        <div class="pty-status">
+          <div class="prv-dot connecting" id="prv-dot"></div>
+          <div class="pty-status-txt" id="prv-txt">Connecting…</div>
         </div>
-        <div class="vtc-tg">
-          <button class="vtc-btn" onclick="_cvUndo()" title="Undo my last stroke">↩ Undo</button>
-        </div>
-        <div class="vtc-tg">
-          <button class="vtc-btn" onclick="_cvZoomBy(-0.25)" title="Zoom out">−</button>
-          <span class="vtc-zoom-lbl" id="vtc-zoom-lbl">100%</span>
-          <button class="vtc-btn" onclick="_cvZoomBy(0.25)" title="Zoom in">+</button>
-          <button class="vtc-btn" onclick="_cvResetView()" title="Reset view">⊡</button>
-        </div>
-        <div class="vtc-tg">
-          <span class="vtc-floor-badge">Floor <span id="vtc-floor-num">1</span></span>
-        </div>
-        <div class="vtc-tg" id="vtc-dm-tools" style="display:none">
-          <label class="vtc-btn" title="Upload image onto map">
-            🖼 Image<input type="file" accept="image/*" style="display:none" onchange="_cvDmUploadImg(this)">
-          </label>
-          <button class="vtc-btn" onclick="_cvDmDeleteSelImg()" title="Delete selected image">✖ Img</button>
-          <button class="vtc-btn vtc-btn-danger" onclick="_cvDmClearDrawings()" title="Erase all player drawings">🗑 Drawings</button>
-          <button class="vtc-btn" id="vtc-go-up" onclick="_cvDmGoUpFloor()" style="display:none" title="Go up to previous floor">⬆ Up</button>
-          <button class="vtc-btn" id="vtc-go-down" onclick="_cvDmNewFloor()" title="Descend to next floor">⬇ Down</button>
+        <div class="pty-header-right">
+          <div class="dm-unlock-row" id="dm-unlock-row">
+            <span class="dm-unlock-lbl">DM:</span>
+            <input type="password" class="pty-inp" id="dm-pw-inp" placeholder="DM password" style="width:120px;padding:5px 10px">
+            <button class="pty-btn ghost" onclick="tryDMUnlock()" style="padding:5px 10px">Unlock</button>
+          </div>
+          <button class="pty-btn ghost" onclick="leaveRoom()" style="padding:5px 10px">Leave</button>
         </div>
       </div>
-      <div class="vtc-cont" id="vtc-cont">
-        <canvas id="pty-canvas"></canvas>
-        <div style="position:absolute;bottom:6px;right:8px;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none;letter-spacing:.04em">Pan: drag · Draw: ✏ · Zoom: scroll · DM: ▭ draws rooms</div>
-      </div>
-    </div>
 
-    <!-- Chat + Sidebar -->
-    <div class="pty-layout" id="pty-layout">
+      <!-- VTT Canvas -->
+      <div class="vtc-wrap">
+        <div class="vtc-tb" id="vtc-tb">
+          <div class="vtc-tg">
+            <button class="vtc-btn active" id="vtc-pan" onclick="_cvSetTool('pan')">✋ Pan</button>
+            <button class="vtc-btn" id="vtc-pen" onclick="_cvSetTool('pen')">✏ Draw</button>
+            <button class="vtc-btn" id="vtc-eraser" onclick="_cvSetTool('eraser')">⬜ Erase</button>
+            <button class="vtc-btn" id="vtc-room" onclick="_cvSetTool('room')" style="display:none" title="Draw room or hallway">▭ Room</button>
+          </div>
+          <div class="vtc-tg">
+            <div class="vtc-swatch" id="vtc-swatch" title="Your color"></div>
+            <input type="range" class="vtc-slider" id="vtc-brush" min="2" max="16" value="4" oninput="_cvSetBrush(+this.value)" title="Brush size">
+          </div>
+          <div class="vtc-tg">
+            <button class="vtc-btn" onclick="_cvUndo()" title="Undo my last stroke">↩ Undo</button>
+          </div>
+          <div class="vtc-tg">
+            <button class="vtc-btn" onclick="_cvZoomBy(-0.25)" title="Zoom out">−</button>
+            <span class="vtc-zoom-lbl" id="vtc-zoom-lbl">100%</span>
+            <button class="vtc-btn" onclick="_cvZoomBy(0.25)" title="Zoom in">+</button>
+            <button class="vtc-btn" onclick="_cvResetView()" title="Reset view">⊡</button>
+          </div>
+          <div class="vtc-tg">
+            <span class="vtc-floor-badge">Floor <span id="vtc-floor-num">1</span></span>
+          </div>
+          <div class="vtc-tg" id="vtc-dm-tools" style="display:none">
+            <label class="vtc-btn" title="Upload image onto map">
+              🖼 Image<input type="file" accept="image/*" style="display:none" onchange="_cvDmUploadImg(this)">
+            </label>
+            <button class="vtc-btn" onclick="_cvDmDeleteSelImg()" title="Delete selected image">✖ Img</button>
+            <button class="vtc-btn vtc-btn-danger" onclick="_cvDmClearDrawings()" title="Erase all player drawings">🗑 Drawings</button>
+            <button class="vtc-btn" id="vtc-go-up" onclick="_cvDmGoUpFloor()" style="display:none" title="Go up to previous floor">⬆ Up</button>
+            <button class="vtc-btn" id="vtc-go-down" onclick="_cvDmNewFloor()" title="Descend to next floor">⬇ Down</button>
+          </div>
+        </div>
+        <div class="vtc-cont" id="vtc-cont">
+          <canvas id="pty-canvas"></canvas>
+          <div id="vtc-floor-counter" style="position:absolute;top:6px;left:8px;font-size:10px;color:rgba(255,255,255,.55);pointer-events:none;display:none"></div>
+          <div style="position:absolute;bottom:6px;right:8px;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none;letter-spacing:.04em">Pan: drag · Draw: ✏ · Zoom: scroll · Right-click room: delete</div>
+        </div>
+      </div>
 
       <!-- Chat -->
       <div class="pty-chat-panel">
@@ -2156,41 +2157,38 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
         </div>
       </div>
 
-      <!-- Right column: players + character sheet + DM panel -->
-      <div class="pty-right-col">
-        <div class="pty-players-panel">
-          <div class="pty-panel-head">Connected Players</div>
-          <div class="pty-player-list" id="party-player-list"></div>
-        </div>
+    </div><!-- /pty-main-col -->
 
-        <!-- Mini character sheet (own sheet for players; DM switcher) -->
-        <div class="pty-cs-wrap" id="pty-cs-wrap">
-          <div class="pty-cs-head">
-            <span class="pty-cs-title" id="pty-cs-title">Character Sheet</span>
-          </div>
-          <div class="pty-cs-switcher" id="pty-cs-switcher" style="display:none"></div>
-          <div class="pty-cs-body" id="pty-cs-body"><div class="pty-cs-empty">Connecting…</div></div>
+    <!-- Side column: players + character sheet + DM panel -->
+    <div class="pty-side-col">
+
+      <div class="pty-players-panel">
+        <div class="pty-panel-head">Connected Players</div>
+        <div class="pty-player-list" id="party-player-list"></div>
+      </div>
+
+      <!-- Full character sheet transplanted here when party tab is active -->
+      <div id="pty-cs-full" class="pty-cs-full-wrap"></div>
+
+      <div class="dm-panel" id="dm-panel">
+        <div class="dm-panel-head">
+          <div class="dm-panel-icon">👑</div>
+          <div class="dm-panel-title">Dungeon Master</div>
         </div>
-        <div class="dm-panel" id="dm-panel">
-          <div class="dm-panel-head">
-            <div class="dm-panel-icon">👑</div>
-            <div class="dm-panel-title">Dungeon Master</div>
+        <div class="dm-body">
+          <div>
+            <div class="dm-sec-lbl">Private Notes</div>
+            <textarea class="dm-textarea" id="dm-notes-area" placeholder="DM notes — only visible to you…" rows="4"></textarea>
           </div>
-          <div class="dm-body">
-            <div>
-              <div class="dm-sec-lbl">Private Notes</div>
-              <textarea class="dm-textarea" id="dm-notes-area" placeholder="DM notes — only visible to you…" rows="4"></textarea>
-            </div>
-            <div>
-              <div class="dm-sec-lbl">Party Announcement</div>
-              <textarea class="dm-textarea" id="dm-announce-area" placeholder="Announce to the party…" rows="3"></textarea>
-              <button class="dm-announce-btn" onclick="dmAnnounce()">📣 Announce</button>
-            </div>
+          <div>
+            <div class="dm-sec-lbl">Party Announcement</div>
+            <textarea class="dm-textarea" id="dm-announce-area" placeholder="Announce to the party…" rows="3"></textarea>
+            <button class="dm-announce-btn" onclick="dmAnnounce()">📣 Announce</button>
           </div>
         </div>
       </div>
 
-    </div><!-- /pty-layout -->
+    </div><!-- /pty-side-col -->
 
   </div><!-- /pty-room-view -->
 </div><!-- /tab-party -->
@@ -5704,8 +5702,9 @@ function switchTab(id,el){
   if(id==='decks') render();
   if(id==='character') renderCharSheet();
   if(id==='equipment') renderEquipPage();
+  if(id!=='party') _detachCharSheetFromParty();
   if(id==='party' && partyPeer) _partyStatus();
-  if(id==='party') _cvInit();
+  if(id==='party'){ _cvInit(); _attachCharSheetToParty(); }
 }
 
 function openInfo(tab){
@@ -6261,6 +6260,10 @@ let _cvTokens={},_cvDragTokId=null;
 let _cvPtrDown=false;
 let _cvPanSX=0,_cvPanSY=0,_cvPanOX=0,_cvPanOY=0;
 let _cvTokTimer=null;
+// Offscreen canvas for strokes (so eraser only erases drawings, not map)
+let _cvStrokeCvs=null,_cvStrokeCtx=null;
+// Image resize state
+let _cvResizingImg=null; // {id,corner,origWW,origWH,origWX,origWY,startSX,startSY}
 // Floor system
 let _cvFloorHistory=[];     // saved floor states when descending
 let _floorRoomBudget=0;     // total rooms planned for this floor (15-26)
@@ -6346,12 +6349,17 @@ function _cvRender(){
   // Images
   _cvImages.forEach(img=>_cvDrawImg(ctx,img));
 
-  // Strokes
-  ctx.save();
-  _cvStrokes.forEach(s=>_cvDrawStroke(ctx,s));
-  Object.values(_cvPartials).forEach(s=>_cvDrawStroke(ctx,s));
-  if(_cvCur) _cvDrawStroke(ctx,_cvCur);
-  ctx.restore();
+  // Strokes — drawn on an offscreen canvas so eraser only affects drawings
+  if(!_cvStrokeCvs||_cvStrokeCvs.width!==_cvW||_cvStrokeCvs.height!==_cvH){
+    _cvStrokeCvs=document.createElement('canvas');
+    _cvStrokeCvs.width=_cvW; _cvStrokeCvs.height=_cvH;
+    _cvStrokeCtx=_cvStrokeCvs.getContext('2d');
+  }
+  _cvStrokeCtx.clearRect(0,0,_cvW,_cvH);
+  _cvStrokes.forEach(s=>_cvDrawStroke(_cvStrokeCtx,s));
+  Object.values(_cvPartials).forEach(s=>_cvDrawStroke(_cvStrokeCtx,s));
+  if(_cvCur) _cvDrawStroke(_cvStrokeCtx,_cvCur);
+  ctx.drawImage(_cvStrokeCvs,0,0);
 
   // Tokens
   Object.entries(_cvTokens).forEach(([pid,tok])=>_cvDrawToken(ctx,pid,tok));
@@ -6384,6 +6392,21 @@ function _cvDrawRoom(ctx,r){
       ctx.textAlign='center'; ctx.textBaseline='middle';
       const icon=r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':r.type==='descent'?'🪜 ':'';
       ctx.fillText(icon+r.label,cx,cy);
+    } else if(partyIsDM&&_floorRoomQueue.length>0){
+      const bw=Math.min(80,pw-6),bh=Math.min(24,ph-6);
+      ctx.fillStyle='rgba(212,137,26,.15)';
+      ctx.beginPath();ctx.roundRect(cx-bw/2,cy-bh/2,bw,bh,3);ctx.fill();
+      ctx.strokeStyle='#d4891a';ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle='#d4891a';
+      ctx.font='bold '+Math.min(10,bw/6)+'px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      const nxt=_floorRoomQueue[0];
+      ctx.fillText('Roll ('+nxt+')',cx,cy);
+    } else if(!r.type){
+      ctx.fillStyle='rgba(255,255,255,.25)';
+      ctx.font='bold '+Math.min(12,pw/5)+'px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('?',cx,cy);
     }
   }
   if(isHall&&(pw>36||ph>36)){
@@ -6405,6 +6428,13 @@ function _cvDrawImg(ctx,img){
   if(_cvSelImgId===img.id){
     ctx.strokeStyle='#d4891a'; ctx.lineWidth=2; ctx.setLineDash([4,4]);
     ctx.strokeRect(-sw/2,-sh/2,sw,sh);
+    ctx.setLineDash([]);
+    // Corner resize handles
+    const hs=7;
+    [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([hx,hy])=>{
+      ctx.fillStyle='#d4891a';
+      ctx.fillRect(hx*sw/2-hs/2,hy*sh/2-hs/2,hs,hs);
+    });
   }
   ctx.restore();
 }
@@ -6500,8 +6530,46 @@ function _cvPDown(e){
         _cvDmRollRoom(r.id); return;
       }
     }
-    // Image drag
+    // Image resize handle hit-test (selected image only)
+    if(_cvSelImgId){
+      const selImg=_cvImages.find(i=>i.id===_cvSelImgId);
+      if(selImg){
+        const t2=TILE*_cvZoom;
+        const ps=_w2s(selImg.wx,selImg.wy);
+        const imgSX=ps.x,imgSY=ps.y,imgEX=ps.x+selImg.ww*t2,imgEY=ps.y+selImg.wh*t2;
+        const hs=10;
+        const corners=[[imgSX,imgSY,'nw'],[imgEX,imgSY,'ne'],[imgEX,imgEY,'se'],[imgSX,imgEY,'sw']];
+        for(const [cx2,cy2,cname] of corners){
+          if(Math.abs(sx-cx2)<hs&&Math.abs(sy-cy2)<hs){
+            _cvResizingImg={id:selImg.id,corner:cname,
+              origWW:selImg.ww,origWH:selImg.wh,origWX:selImg.wx,origWY:selImg.wy,
+              startSX:sx,startSY:sy};
+            return;
+          }
+        }
+      }
+    }
+    // Image resize or drag (selected image corners = resize, body = drag)
     const w2=_s2w(sx,sy);
+    if(_cvSelImgId){
+      const selImg=_cvImages.find(i=>i.id===_cvSelImgId);
+      if(selImg){
+        const t2=TILE*_cvZoom;
+        const imgSX=_w2s(selImg.wx,selImg.wy).x;
+        const imgSY=_w2s(selImg.wx,selImg.wy).y;
+        const imgEX=imgSX+selImg.ww*t2, imgEY=imgSY+selImg.wh*t2;
+        const hs=10;
+        const corners=[[imgSX,imgSY,'nw'],[imgEX,imgSY,'ne'],[imgEX,imgEY,'se'],[imgSX,imgEY,'sw']];
+        for(const [cx2,cy2,cname] of corners){
+          if(Math.abs(sx-cx2)<hs&&Math.abs(sy-cy2)<hs){
+            _cvResizingImg={id:selImg.id,corner:cname,
+              origWW:selImg.ww,origWH:selImg.wh,origWX:selImg.wx,origWY:selImg.wy,
+              startSX:sx,startSY:sy};
+            return;
+          }
+        }
+      }
+    }
     for(let i=_cvImages.length-1;i>=0;i--){
       const img=_cvImages[i];
       if(w2.x>=img.wx&&w2.x<=img.wx+img.ww&&w2.y>=img.wy&&w2.y<=img.wy+img.wh){
@@ -6551,6 +6619,20 @@ function _cvPMove(e){
     return;
   }
 
+  if(_cvPtrDown&&_cvResizingImg&&partyIsDM){
+    const img=_cvImages.find(i=>i.id===_cvResizingImg.id);
+    if(img){
+      const dx=(sx-_cvResizingImg.startSX)/(TILE*_cvZoom);
+      const dy=(sy-_cvResizingImg.startSY)/(TILE*_cvZoom);
+      const c=_cvResizingImg.corner;
+      if(c==='se'){img.ww=Math.max(0.5,_cvResizingImg.origWW+dx);img.wh=Math.max(0.5,_cvResizingImg.origWH+dy);}
+      else if(c==='sw'){img.wx=_cvResizingImg.origWX+dx;img.ww=Math.max(0.5,_cvResizingImg.origWW-dx);img.wh=Math.max(0.5,_cvResizingImg.origWH+dy);}
+      else if(c==='ne'){img.ww=Math.max(0.5,_cvResizingImg.origWW+dx);img.wy=_cvResizingImg.origWY+dy;img.wh=Math.max(0.5,_cvResizingImg.origWH-dy);}
+      else if(c==='nw'){img.wx=_cvResizingImg.origWX+dx;img.wy=_cvResizingImg.origWY+dy;img.ww=Math.max(0.5,_cvResizingImg.origWW-dx);img.wh=Math.max(0.5,_cvResizingImg.origWH-dy);}
+    }
+    return;
+  }
+
   if(_cvPtrDown&&_cvDragImgData&&partyIsDM){
     const t=TILE*_cvZoom;
     const dx=(sx-_cvDragImgData.startSX)/t, dy=(sy-_cvDragImgData.startSY)/t;
@@ -6584,6 +6666,12 @@ function _cvPUp(e){
     _cvDragTokId=null; return;
   }
 
+  if(_cvResizingImg&&partyIsDM){
+    const img=_cvImages.find(i=>i.id===_cvResizingImg.id);
+    if(img) _broadcast({type:'cv-image-move',id:img.id,wx:img.wx,wy:img.wy,ww:img.ww,wh:img.wh,rot:img.rot||0});
+    _cvResizingImg=null; return;
+  }
+
   if(_cvDragImgData&&partyIsDM){
     const img=_cvImages.find(i=>i.id===_cvDragImgData.id);
     if(img) _broadcast({type:'cv-image-move',id:img.id,wx:img.wx,wy:img.wy,ww:img.ww,wh:img.wh,rot:img.rot||0});
@@ -6614,23 +6702,14 @@ function _cvPUp(e){
       // Check budget for non-hallway rooms
       const nonHallCount=_cvRooms.filter(r=>r.gw>1&&r.gh>1).length;
       if(!isHall&&_floorRoomBudget>0&&nonHallCount>=_floorRoomBudget){
-        _sysMsg('Floor room budget reached ('+_floorRoomBudget+' rooms).');
+        _sysMsg('Floor room budget reached ('+_floorRoomBudget+' rooms). All types assigned.');
         _cvDraft=null; return;
       }
-      // Assign type from queue (non-hallways only)
-      let rType=null,rLabel=null,rColor=null;
-      if(!isHall&&_floorRoomQueue.length>0){
-        const typeKey=_floorRoomQueue.shift();
-        const rtDef=_vttRtDef(typeKey);
-        rType=rtDef?.type||null; rLabel=rtDef?.label||null; rColor=rtDef?.color||null;
-        if(rType==='healing') _healingCount++;
-        if(rType==='descent') _cvDescentCell={gx:gx+Math.floor(gw/2),gy:gy+Math.floor(gh/2)};
-      }
-      const room={id:'r'+Date.now(),gx,gy,gw,gh,type:rType,label:rLabel,color:rColor};
+      // Draw room without type — DM clicks to roll from queue
+      const room={id:'r'+Date.now(),gx,gy,gw,gh,type:null,label:null,color:null};
       _cvRooms.push(room);
       _broadcast({type:'cv-room-add',room});
-      // Keep queue in sync for others
-      _broadcast({type:'cv-queue-update',queue:_floorRoomQueue});
+      _renderFloorCounter();
     }
     _cvDraft=null; return;
   }
@@ -6727,6 +6806,7 @@ function _cvDmSetupFloor(){
   _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
   const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
   _sysMsg('Floor 1 — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
+  _renderFloorCounter();
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent='1';
   _broadcast({type:'cv-floor-init',budget:_floorRoomBudget,queue:_floorRoomQueue});
 }
@@ -6752,6 +6832,7 @@ function _cvDmNewFloor(){
   _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
   const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
   _sysMsg('Floor '+_floorCount+' — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
+  _renderFloorCounter();
   // Update floor badge and show up button
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent=_floorCount;
   const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display='';
@@ -6785,6 +6866,34 @@ function _cvDmClearDrawings(){
   _broadcast({type:'cv-clear-all'});
 }
 
+function _cvDmRollRoom(roomId){
+  if(!partyIsDM||!_floorRoomQueue.length) return;
+  const room=_cvRooms.find(r=>r.id===roomId);
+  if(!room||room.type) return;
+  const typeKey=_floorRoomQueue.shift();
+  const rtDef=_vttRtDef(typeKey);
+  room.type=rtDef.type;room.label=rtDef.label;room.color=rtDef.color;
+  if(room.type==='healing') _healingCount++;
+  if(room.type==='descent') _cvDescentCell={gx:room.gx+Math.floor(room.gw/2),gy:room.gy+Math.floor(room.gh/2)};
+  _broadcast({type:'cv-room-rolled',id:roomId,rtype:room.type,label:room.label,color:room.color});
+  _broadcast({type:'cv-queue-update',queue:_floorRoomQueue});
+  _renderFloorCounter();
+}
+
+function _renderFloorCounter(){
+  const el=document.getElementById('vtc-floor-counter');
+  if(!el||!partyIsDM) return;
+  if(!_floorRoomBudget){el.style.display='none';return;}
+  const typed=_cvRooms.filter(r=>r.type&&r.gw>1&&r.gh>1).length;
+  const total=_cvRooms.filter(r=>r.gw>1&&r.gh>1).length;
+  // Count remaining in queue
+  const counts={};
+  _floorRoomQueue.forEach(t=>{counts[t]=(counts[t]||0)+1;});
+  const parts=Object.entries(counts).map(([t,n])=>n+'×'+t[0].toUpperCase()+t.slice(1)).join(' · ');
+  el.style.display='';
+  el.textContent='Floor '+_floorCount+': '+total+'/'+_floorRoomBudget+' rooms drawn, '+typed+' typed'+(parts?' · Remaining: '+parts:'');
+}
+
 function _cvDmDeleteRoomAt(sx,sy){
   if(!partyIsDM) return;
   const w=_s2w(sx,sy);
@@ -6799,6 +6908,7 @@ function _cvDmDeleteRoomAt(sx,sy){
       }
       _cvRooms.splice(i,1);
       _broadcast({type:'cv-room-del',id:r.id});
+      _renderFloorCounter();
       break;
     }
   }
@@ -6995,6 +7105,10 @@ function _cvHandleMsg(d){
     case 'cv-room-update':
       { const ru=_cvRooms.find(r=>r.id===d.room.id);
         if(ru){ru.gx=d.room.gx;ru.gy=d.room.gy;ru.gw=d.room.gw;ru.gh=d.room.gh;} } break;
+    case 'cv-room-rolled':
+      { const rr=_cvRooms.find(r=>r.id===d.id);
+        if(rr){rr.type=d.rtype;rr.label=d.label;rr.color=d.color;}
+        if(d.rtype==='healing') _healingCount++; } break;
     case 'cv-room-del':
       _cvRooms=_cvRooms.filter(r=>r.id!==d.id); break;
     case 'cv-queue-update':
@@ -7256,6 +7370,7 @@ async function hostRoom(){
     if(!pw) document.getElementById('dm-unlock-row').style.display='none';
     _cvPlaceMyToken();
     _renderPlayers();_partyStatus();
+    _saveRoomSession(code,name,pw);
   });
   partyPeer.on('connection',conn=>_setupConn(conn));
   partyPeer.on('error',err=>{
@@ -7289,6 +7404,7 @@ function _joinInternal(code,name){
     _showRoom(code);
     _sysMsg('Connecting to room '+code+'…');
     _renderPlayers();
+    _saveRoomSession(code,name,null);
   });
   partyPeer.on('connection',conn=>_setupConn(conn));
   partyPeer.on('error',err=>{
@@ -7341,6 +7457,62 @@ async function tryDMUnlock(){
   }
 }
 
+function _saveRoomSession(code,name,pw){
+  try{sessionStorage.setItem('_ptySession',JSON.stringify({code,name,pw:pw||null,ts:Date.now()}));}catch(e){}
+}
+function _clearRoomSession(){
+  try{sessionStorage.removeItem('_ptySession');}catch(e){}
+}
+async function _autoRejoinIfSaved(){
+  try{
+    const raw=sessionStorage.getItem('_ptySession');
+    if(!raw) return;
+    const s=JSON.parse(raw);
+    if(!s.code||!s.name||Date.now()-s.ts>3600000) return; // expired after 1h
+    // Switch to party tab
+    const ptab=document.querySelector('.tab[onclick*=\"party\"]');
+    if(ptab) switchTab('party',ptab);
+    // Prefill and auto-join
+    const ni=document.getElementById('party-name-inp');if(ni)ni.value=s.name;
+    const ci=document.getElementById('party-code-inp');if(ci)ci.value=s.code;
+    if(s.pw){
+      const pi=document.getElementById('party-host-pw');if(pi)pi.value=s.pw;
+    }
+    await new Promise(r=>setTimeout(r,300));
+    if(s.pw) hostRoom(); else joinRoom();
+  }catch(e){}
+}
+
+function _attachCharSheetToParty(){
+  const target=document.getElementById('pty-cs-full');
+  const cs=document.getElementById('tab-character');
+  if(!target||!cs||cs._ptyOrigParent) return;
+  cs._ptyOrigParent=cs.parentElement;
+  cs._ptyOrigNext=cs.nextElementSibling;
+  target.appendChild(cs);
+  cs.style.display='block';
+  cs.style.maxWidth='none';
+  cs.style.padding='12px';
+  cs.style.boxSizing='border-box';
+  renderCharSheet();
+}
+
+function _detachCharSheetFromParty(){
+  const cs=document.getElementById('tab-character');
+  if(!cs||!cs._ptyOrigParent) return;
+  if(cs._ptyOrigNext){
+    cs._ptyOrigParent.insertBefore(cs,cs._ptyOrigNext);
+  } else {
+    cs._ptyOrigParent.appendChild(cs);
+  }
+  cs.style.display='';
+  cs.style.maxWidth='';
+  cs.style.padding='';
+  cs.style.boxSizing='';
+  cs._ptyOrigParent=null;
+  cs._ptyOrigNext=null;
+}
+
 function leaveRoom(){
   Object.values(partyConns).forEach(c=>{try{c.close();}catch(e){}});
   if(partyPeer){try{partyPeer.destroy();}catch(e){}}
@@ -7350,7 +7522,7 @@ function leaveRoom(){
   myPlayerColor=null;
   _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvTokens={};_cvPartials={};_cvCur=null;
   _cvDraft=null;_healingCount=0;_floorCount=1;_cvUndoIds=[];_cvSid=0;
-  _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;
+  _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;_cvResizingImg=null;
   _lastFloorHadHealing=true;partyCharSheets={};_partyViewingPeer=null;
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent='1';
   const upBtn=document.getElementById('vtc-go-up');if(upBtn)upBtn.style.display='none';
@@ -7358,6 +7530,7 @@ function leaveRoom(){
   const roomV=document.getElementById('pty-room-view');
   if(setupV) setupV.style.display='';
   if(roomV)  roomV.style.display='none';
+  _clearRoomSession();
   const log=document.getElementById('pty-log');if(log)log.innerHTML='';
   const dmP=document.getElementById('dm-panel');if(dmP)dmP.classList.remove('active');
   const unlk=document.getElementById('dm-unlock-row');if(unlk)unlk.style.display='';
@@ -7389,6 +7562,8 @@ function _showDMPanel(){
 }
 
 // ── END PARTY ROOM ───────────────────────────────────────────────────────────
+// Auto-rejoin party room on page refresh
+window.addEventListener('load',()=>setTimeout(_autoRejoinIfSaved,600));
 
 // Save button in nav
 const _saveBtn = document.createElement('button');
