@@ -1648,12 +1648,12 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 .pty-side-col::-webkit-scrollbar-track{background:transparent}
 .pty-side-col::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
 
-.pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow-x:auto;overflow-y:visible;width:100%;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 4px 20px -10px rgba(0,0,0,.4)}
+.pty-cs-full-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;width:100%;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 4px 20px -10px rgba(0,0,0,.4)}
 .pty-sheet-tab{padding:4px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;font-size:11px;color:var(--text-dim);cursor:pointer;transition:all .15s;white-space:nowrap}
 .pty-sheet-tab:hover{border-color:var(--fighter);color:var(--text)}
 .pty-sheet-tab.active{background:var(--fighter-pale);border-color:var(--fighter);color:var(--fighter);font-weight:700}
 /* Read-only peer sheet */
-#pty-peer-sheet{padding:18px 22px;box-sizing:border-box;min-width:700px}
+#pty-peer-sheet{padding:18px 22px;box-sizing:border-box}
 .pty-peer-hd{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .pty-peer-name{font-size:20px;font-weight:700;font-family:Georgia,serif;color:var(--text)}
 .pty-peer-sub{font-size:12px;color:var(--text-dim)}
@@ -1675,9 +1675,12 @@ body.party-mode .header,body.party-mode .tabs-inner{max-width:1400px}
 .pty-peer-inv-name{flex:1;color:var(--text);font-weight:600}
 .pty-peer-inv-equipped{font-size:9px;color:var(--cc);text-transform:uppercase;letter-spacing:.06em}
 .pty-cs-full-wrap #tab-character{padding:20px 22px !important;font-size:14px}
+.pty-cs-full-wrap .cs-body{grid-template-columns:1fr 1.3fr 1.8fr !important}
 .pty-cs-full-wrap .cs-stat-shell{width:72px}
 .pty-cs-full-wrap .cs-stat-mod{font-size:28px}
 .pty-cs-full-wrap .cs-quick-val{font-size:22px}
+/* Peer sheet stats row wraps instead of overflowing */
+.pty-peer-stats{flex-wrap:wrap}
 .vtc-pin-form{position:absolute;z-index:50;background:var(--surface2);border:1px solid var(--border-hi);border-radius:8px;padding:10px;display:none;flex-direction:column;gap:8px;min-width:170px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
 
 /* Dice roller panel */
