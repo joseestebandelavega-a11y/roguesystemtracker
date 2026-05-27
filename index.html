@@ -5568,6 +5568,24 @@ const CAT_GROUPS = {
   armor:   ['armor','magic-armor'],
 };
 
+// Per-category draw weights used when rolling loot.
+// Prevents scroll flooding: without this, scrolls (271 items) would dominate
+// every roll since pickItemOfRarity draws uniformly across all matching items.
+// Two-step draw: (1) pick category by weight, (2) pick item within category.
+const CAT_DRAW_WEIGHTS = {
+  'simple-melee':   6,
+  'simple-ranged':  4,
+  'martial-melee':  8,
+  'martial-ranged': 3,
+  'armor':          7,
+  'gear':          10,
+  'consumables':   15,
+  'scroll':        12,
+  'magic-weapons': 14,
+  'magic-armor':   12,
+  'wondrous':      14,
+};
+
 // Class proficiency map for equipment
 const CLASS_EQUIP_PROF = {
   fighter:    {armor:["light","medium","heavy","shield"],weapons:["simple-melee","simple-ranged","martial-melee","martial-ranged"]},
@@ -5745,7 +5763,24 @@ function pickItemOfRarity(rarity, exclude=[]){
     (i.rarity||'Common') === rarity && !exclude.includes(i.id)
   );
   if(!pool.length) return null;
-  return pool[Math.floor(Math.random() * pool.length)];
+
+  // Group by category then pick category by weight so one large category
+  // (e.g. 271 scrolls) can't flood every roll.
+  const byCat = {};
+  for(const item of pool){
+    if(!byCat[item.cat]) byCat[item.cat] = [];
+    byCat[item.cat].push(item);
+  }
+  const catEntries = Object.entries(byCat);
+  const totalW = catEntries.reduce((s,[cat])=>s+(CAT_DRAW_WEIGHTS[cat]||10),0);
+  let r = Math.random() * totalW;
+  let chosen = catEntries[catEntries.length-1][0];
+  for(const [cat] of catEntries){
+    r -= (CAT_DRAW_WEIGHTS[cat]||10);
+    if(r <= 0){ chosen = cat; break; }
+  }
+  const catPool = byCat[chosen];
+  return catPool[Math.floor(Math.random() * catPool.length)];
 }
 
 function rollForEquipment(){
