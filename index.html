@@ -3605,8 +3605,10 @@ function getMainPool(tier){
 }
 function getSubPool(){ return SUB_DECKS[currentSubclass]?SUB_DECKS[currentSubclass].cards.filter(c=>!acquiredSub.has(c.id)):[]; }
 function typeTag(t,spell){const m={p:['at-p','Passive'],r:['at-r','Reaction'],b:['at-b','Bonus'],c:['at-c','Combat']};const[cls,lbl]=m[t]||['at-p','—'];const spTag=spell?`<span class="atype" style="background:rgba(80,60,140,.2);color:#aa88ee">Spell ${spell}</span> `:'';return spTag+`<span class="atype ${cls}">${lbl}</span>`;}
-function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function d(n){return Math.ceil(Math.random()*n);}
+// Cryptographically random integer in [0, n) — avoids PRNG streaks.
+function _cr(n){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n;}
+function d(n){return _cr(n)+1;}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=_cr(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
 function mod(s){return Math.floor((s-10)/2);}
 function modStr(s){const m=mod(s);return(m>=0?'+':'')+m;}
 function profBonus(lv){return Math.ceil(lv/4)+1;}
@@ -4236,7 +4238,7 @@ function doWeaponRoll(wName,stat,damageStat,damageType){
 function _showWeaponDamage(){
   const {wName,stat,damageType,dmgMatch,magicBonus}=_weaponDmgRoll;
   const cnt=parseInt(dmgMatch[1]),sides=parseInt(dmgMatch[2]);
-  const rolls=Array.from({length:cnt},()=>1+Math.floor(Math.random()*sides));
+  const rolls=Array.from({length:cnt},()=>d(sides));
   const atkMod=Math.floor((statTotal(stat)-10)/2);
   const totalBonus=atkMod+magicBonus;
   const total=rolls.reduce((a,b)=>a+b,0)+totalBonus;
@@ -4625,7 +4627,7 @@ function onClassChange(cls){
 
 // ── TREASURE ROLL & TIER SYSTEM ──────────────────────────────────────────────
 function rollTreasure(){
-  const roll=Math.floor(Math.random()*20)+1;
+  const roll=d(20);
   const res=document.getElementById('treasure-roll-result');
   if(res) res.textContent=roll;
   setTier(tierFromRoll(roll));
@@ -5759,7 +5761,7 @@ function rollRarity(floor){
   const weights = FLOOR_RARITY_WEIGHTS[Math.max(0,idx)];
   const pool = Object.entries(weights);
   const total = pool.reduce((a,[,w])=>a+w, 0);
-  let r = Math.floor(Math.random() * total);
+  let r = _cr(total);
   for(const [rarity, weight] of pool){
     if(weight===0) continue;
     r -= weight;
@@ -5783,14 +5785,14 @@ function pickItemOfRarity(rarity, exclude=[]){
   }
   const catEntries = Object.entries(byCat);
   const totalW = catEntries.reduce((s,[cat])=>s+(CAT_DRAW_WEIGHTS[cat]||10),0);
-  let r = Math.random() * totalW;
+  let r = _cr(totalW);
   let chosen = catEntries[catEntries.length-1][0];
   for(const [cat] of catEntries){
     r -= (CAT_DRAW_WEIGHTS[cat]||10);
     if(r <= 0){ chosen = cat; break; }
   }
   const catPool = byCat[chosen];
-  return catPool[Math.floor(Math.random() * catPool.length)];
+  return catPool[_cr(catPool.length)];
 }
 
 function rollForEquipment(){
@@ -7734,7 +7736,7 @@ function _buildFloorQueue(N){
   const healingForced=!_lastFloorHadHealing;
   let hCount=0;
   if(healingForced){ hCount=Math.max(1,Math.round(R*0.02)); }
-  else { hCount=Math.random()<0.5?Math.max(1,Math.round(R*0.02)):0; }
+  else { hCount=_cr(2)<1?Math.max(1,Math.round(R*0.02)):0; }
   let sCount=Math.max(1,Math.round(R*0.09));
   let tCount=Math.max(1,Math.round(R*0.23));
   let cCount=R-sCount-tCount-hCount;
@@ -7750,13 +7752,13 @@ function _buildFloorQueue(N){
   for(let i=0;i<sCount;i++) arr.push('shop');
   for(let i=0;i<hCount;i++) arr.push('healing');
   // Fisher-Yates shuffle
-  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  for(let i=arr.length-1;i>0;i--){const j=_cr(i+1);[arr[i],arr[j]]=[arr[j],arr[i]];}
   return arr;
 }
 
 function _cvDmSetupFloor(){
   if(_floorRoomBudget>0) return; // already set up
-  _floorRoomBudget=15+Math.floor(Math.random()*12); // 15-26
+  _floorRoomBudget=15+_cr(12); // 15-26
   _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
   const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
   _sysMsg('Floor 1 — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
@@ -7785,7 +7787,7 @@ function _cvDmNewFloor(){
   _floorCount++; _healingCount=0; _cvDescentCell=null; _cvStairsUp=prevDescentCell;
   _cvStrokes=[]; _cvRooms=[]; _cvImages=[]; _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
   // Roll new floor plan
-  _floorRoomBudget=15+Math.floor(Math.random()*12);
+  _floorRoomBudget=15+_cr(12);
   _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
   const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
   _sysMsg('Floor '+_floorCount+' — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
@@ -7828,7 +7830,7 @@ function _cvDmRollRoom(roomId){
   if(!partyIsDM||!_floorRoomQueue.length) return;
   const room=_cvRooms.find(r=>r.id===roomId);
   if(!room||room.type) return;
-  const ri=Math.floor(Math.random()*_floorRoomQueue.length);
+  const ri=_cr(_floorRoomQueue.length);
   const typeKey=_floorRoomQueue.splice(ri,1)[0];
   const rtDef=_vttRtDef(typeKey);
   room.type=rtDef.type;room.label=rtDef.label;room.color=rtDef.color;
@@ -7849,7 +7851,7 @@ function _cvOpenShop(){
   for(let i = 0; i < 3; i++){
     let rarity = rollRarity(floor);
     // 10% chance to bump one rarity tier higher
-    if(Math.random() < 0.10){
+    if(_cr(100) < 10){
       const ri = rarities.indexOf(rarity);
       if(ri < rarities.length - 1) rarity = rarities[ri + 1];
     }
@@ -8611,7 +8613,7 @@ function rollDiceQueue(){
   const modifier=parseInt(modEl?.value)||0;
   const parts=[];let total=0;
   _diceQueue.forEach(d=>{
-    const rolls=Array.from({length:d.count},()=>1+Math.floor(Math.random()*d.sides));
+    const rolls=Array.from({length:d.count},()=>_cr(d.sides)+1);
     const sum=rolls.reduce((a,b)=>a+b,0);
     total+=sum;
     parts.push(d.count+'d'+d.sides+'('+rolls.join('+')+')');
@@ -8635,7 +8637,7 @@ function partyRollDie(sides){
   const count=Math.max(1,Math.min(20,parseInt(countEl&&countEl.value)||1));
   const mod=parseInt(modEl&&modEl.value)||0;
   const rolls=[];
-  for(let i=0;i<count;i++) rolls.push(1+Math.floor(Math.random()*sides));
+  for(let i=0;i<count;i++) rolls.push(_cr(sides)+1);
   const sum=rolls.reduce((a,b)=>a+b,0);
   const total=sum+mod;
   const modStr=mod?(mod>0?'+'+mod:String(mod)):'';
@@ -8657,7 +8659,7 @@ function partyRollDie(sides){
   clearInterval(window._pdiceCycle);
   window._pdiceCycle=setInterval(()=>{
     cycles++;
-    const fake=1+Math.floor(Math.random()*sides);
+    const fake=_cr(sides)+1;
     resEl.innerHTML='<div class="pty-dice-result-total">'+(count>1?'…':fake)+'</div>'
       +'<div class="pty-dice-result-detail">rolling '+expr+'…</div>';
     if(cycles>=8){
