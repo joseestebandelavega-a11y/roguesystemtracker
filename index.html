@@ -4222,27 +4222,33 @@ function doRoll(label,stat,isProf,skillId){
   execRoll();
   document.getElementById('cs-roll-ov').classList.add('open');
 }
+let _weaponDmgRoll=null; // set while roll overlay is showing damage-only
+
 function doWeaponRoll(wName,stat,damageStat,damageType){
-  _rl={label:wName+' Attack',stat,skillId:null};
-  execRoll();
-  // Search for the first XdY pattern anywhere in the stat string.
-  // Splitting on '/' broke magic weapons whose stat is "+1 atk/dmg, 1d8 slashing".
   const dmgMatch=(damageStat||'').match(/(\d+)d(\d+)/);
-  // Parse a leading flat magic bonus e.g. "+2 atk/dmg..." → 2
   const magicBonus=parseInt((damageStat||'').match(/^\+(\d+)/)?.[1]||'0');
-  if(dmgMatch){
-    const cnt=parseInt(dmgMatch[1]),sides=parseInt(dmgMatch[2]);
-    setTimeout(()=>{
-      const rolls=Array.from({length:cnt},()=>1+Math.floor(Math.random()*sides));
-      const atkMod=Math.floor((statTotal(stat)-10)/2);
-      const totalBonus=atkMod+magicBonus;
-      const dmgTotal=rolls.reduce((a,b)=>a+b,0)+totalBonus;
-      const bonusStr=totalBonus>=0?'+'+totalBonus:''+totalBonus;
-      const detailEl=document.getElementById('cs-roll-detail');
-      if(detailEl) detailEl.innerHTML+='<br><span style="font-size:11px;color:#a0b4e0">Damage: '+dmgMatch[0]+'('+rolls.join('+')+') '+bonusStr+' = <strong>'+dmgTotal+'</strong> '+(damageType||'')+'</span>';
-    },700);
-  }
+  if(!dmgMatch){ showToast('No damage dice found'); return; }
+  _weaponDmgRoll={wName,stat,damageType,dmgMatch,magicBonus};
+  _showWeaponDamage();
   document.getElementById('cs-roll-ov').classList.add('open');
+}
+
+function _showWeaponDamage(){
+  const {wName,stat,damageType,dmgMatch,magicBonus}=_weaponDmgRoll;
+  const cnt=parseInt(dmgMatch[1]),sides=parseInt(dmgMatch[2]);
+  const rolls=Array.from({length:cnt},()=>1+Math.floor(Math.random()*sides));
+  const atkMod=Math.floor((statTotal(stat)-10)/2);
+  const totalBonus=atkMod+magicBonus;
+  const total=rolls.reduce((a,b)=>a+b,0)+totalBonus;
+  const bonusStr=totalBonus>=0?'+'+totalBonus:''+totalBonus;
+
+  document.getElementById('cs-roll-lbl').textContent=wName+' — Damage';
+  const d20el=document.getElementById('cs-roll-d20');
+  d20el.className='cs-roll-d20 landed';
+  d20el.innerHTML=`<span style="font-size:72px;font-weight:700;color:var(--cc);font-family:var(--font-display);line-height:1">${total}</span>`;
+  document.getElementById('cs-roll-detail').textContent=
+    dmgMatch[0]+'('+rolls.join('+')+') '+bonusStr+(damageType?' · '+damageType:'');
+  document.getElementById('cs-roll-total').innerHTML='';
 }
 function dieSVG(n){
   // d20 viewed face-on: 10 visible faces matching the reference layout
@@ -4420,8 +4426,8 @@ function burstSparks(){
   }
   window._diceSparks=setTimeout(()=>{ if(layer) layer.innerHTML=''; },1200);
 }
-function reRoll(){execRoll();}
-function closeRoll(){document.getElementById('cs-roll-ov').classList.remove('open');}
+function reRoll(){ if(_weaponDmgRoll){_showWeaponDamage();return;} execRoll(); }
+function closeRoll(){_weaponDmgRoll=null;document.getElementById('cs-roll-ov').classList.remove('open');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeRoll();});
 
 
