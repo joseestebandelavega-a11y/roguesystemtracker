@@ -536,6 +536,18 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .item-prop.attune{background:rgba(140,60,200,.1);border-color:rgba(140,60,200,.3);color:#aa55dd}
 .item-prop.prof-warn{background:rgba(200,60,60,.1);border-color:rgba(200,60,60,.3);color:#c44040}
 .item-desc{font-size:11px;color:var(--text-dim);line-height:1.4;margin-top:5px}
+.inv-desc-btn{background:none;border:none;color:var(--text-muted);font-size:10px;cursor:pointer;padding:1px 0;margin-top:2px;text-align:left}
+.inv-desc-btn:hover{color:var(--text-dim)}
+.cs-stat-reroll{position:absolute;top:2px;right:2px;background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;padding:2px;line-height:1;opacity:0;transition:opacity .15s}
+.cs-stat:hover .cs-stat-reroll{opacity:1}
+.pty-dice-formula{font-size:11px;color:var(--cc);min-height:18px;margin:4px 0 2px;text-align:center;font-weight:600;letter-spacing:.03em}
+.pty-dice-roll-btn{background:var(--cc-pale);border:1px solid var(--cc);border-radius:6px;color:var(--cc);font-size:12px;font-weight:700;cursor:pointer;padding:5px 0;width:100%;margin-top:4px;letter-spacing:.04em}
+.pty-dice-roll-btn:hover{background:var(--cc-dim)}
+.pty-dice-clear{background:none;border:none;color:var(--text-muted);font-size:10px;cursor:pointer;margin-left:6px}
+.xp-gain-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.xp-gain-inp{width:70px;background:transparent;border:none;border-bottom:1px solid var(--border-hi);color:var(--text);font-size:12px;font-weight:600;text-align:center;outline:none;padding:1px 4px}
+.xp-gain-btn{background:var(--green-bg);border:1px solid var(--green);border-radius:4px;color:var(--green);font-size:11px;font-weight:700;cursor:pointer;padding:3px 8px}
+.xp-gain-btn:hover{background:var(--green)25;}
 .item-card-foot{padding:6px 11px;border-top:.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .item-cost{font-size:10px;color:var(--text-muted)}
 .item-cost strong{color:var(--text-dim)}
@@ -1729,8 +1741,8 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .pty-empty{font-size:11px;color:var(--text-muted);padding:6px 8px;font-style:italic}
 
 /* Chat panel */
-.pty-chat-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;min-height:220px;margin-top:12px}
-.pty-log{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:5px;min-height:280px}
+.pty-chat-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;height:260px;margin-top:12px}
+.pty-log{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:5px;min-height:0}
 .pty-log::-webkit-scrollbar{width:4px}
 .pty-log::-webkit-scrollbar-track{background:transparent}
 .pty-log::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px}
@@ -1922,16 +1934,21 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 </div>
 
 <!-- XP Tracker -->
-<div id="cs-xp-row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;background:var(--surface2);border:.5px solid var(--border);border-radius:6px;padding:5px 12px;flex-wrap:wrap">
+<div id="cs-xp-row" style="display:flex;align-items:center;gap:10px;margin-bottom:4px;background:var(--surface2);border:.5px solid var(--border);border-radius:6px;padding:5px 12px;flex-wrap:wrap">
   <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);white-space:nowrap">XP</div>
-  <input id="cs-xp" type="number" min="0" value="0" placeholder="0"
+  <input id="cs-xp" type="number" min="0" value="900" placeholder="0"
     style="width:90px;background:transparent;border:none;border-bottom:1px solid var(--border-hi);color:var(--text);font-size:13px;font-weight:700;text-align:center;outline:none;padding:1px 4px"
     oninput="updateXP(this.value)">
   <div style="font-size:11px;color:var(--text-dim)">/</div>
-  <div id="cs-xp-next" style="font-size:11px;font-weight:600;color:var(--fighter)">900 (next level)</div>
+  <div id="cs-xp-next" style="font-size:11px;font-weight:600;color:var(--fighter)">2700 (next level)</div>
   <div id="cs-xp-bar-wrap" style="flex:1;min-width:100px;height:4px;background:var(--border-hi);border-radius:2px;overflow:hidden">
     <div id="cs-xp-bar" style="height:100%;background:var(--fighter);border-radius:2px;width:0%;transition:width .3s"></div>
   </div>
+</div>
+<div class="xp-gain-row">
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Gain XP</div>
+  <input id="cs-xp-gain" class="xp-gain-inp" type="number" min="0" placeholder="0">
+  <button class="xp-gain-btn" onclick="addXP()">+ Add</button>
 </div>
 
 <!-- Stat badges + quick stats + HP -->
@@ -2098,15 +2115,11 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <div class="equip-filter-hd">Categories</div>
       <div class="equip-cats">
 <div class="equip-cat-btn active" id="ecat-all" data-cat="all" onclick="setEquipCat('all')"><span class="equip-cat-icon">📦</span>All Items<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-simple-melee" data-cat="simple-melee" onclick="setEquipCat('simple-melee')"><span class="equip-cat-icon">🗡</span>Simple Melee<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-simple-ranged" data-cat="simple-ranged" onclick="setEquipCat('simple-ranged')"><span class="equip-cat-icon">🏹</span>Simple Ranged<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-martial-melee" data-cat="martial-melee" onclick="setEquipCat('martial-melee')"><span class="equip-cat-icon">⚔</span>Martial Melee<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-martial-ranged" data-cat="martial-ranged" onclick="setEquipCat('martial-ranged')"><span class="equip-cat-icon">🎯</span>Martial Ranged<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-weapons" data-cat="weapons" onclick="setEquipCat('weapons')"><span class="equip-cat-icon">⚔</span>Weapons<span class="equip-cat-count">0</span></div>
 <div class="equip-cat-btn" id="ecat-armor" data-cat="armor" onclick="setEquipCat('armor')"><span class="equip-cat-icon">🛡</span>Armor & Shields<span class="equip-cat-count">0</span></div>
 <div class="equip-cat-btn" id="ecat-gear" data-cat="gear" onclick="setEquipCat('gear')"><span class="equip-cat-icon">🎒</span>Adventuring Gear<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-consumables" data-cat="consumables" onclick="setEquipCat('consumables')"><span class="equip-cat-icon">🧪</span>Potions & Scrolls<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-magic-weapons" data-cat="magic-weapons" onclick="setEquipCat('magic-weapons')"><span class="equip-cat-icon">⚔</span>Magic Weapons<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-magic-armor" data-cat="magic-armor" onclick="setEquipCat('magic-armor')"><span class="equip-cat-icon">🛡</span>Magic Armor<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-consumables" data-cat="consumables" onclick="setEquipCat('consumables')"><span class="equip-cat-icon">🧪</span>Potions & Misc<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-scroll" data-cat="scroll" onclick="setEquipCat('scroll')"><span class="equip-cat-icon">📜</span>Spell Scrolls<span class="equip-cat-count">0</span></div>
 <div class="equip-cat-btn" id="ecat-wondrous" data-cat="wondrous" onclick="setEquipCat('wondrous')"><span class="equip-cat-icon">✨</span>Wondrous Items<span class="equip-cat-count">0</span></div>
       </div>
       <div class="class-prof-filter">
@@ -2246,12 +2259,37 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
             <button class="vtc-btn" id="vtc-pin" onclick="_cvSetTool('pin')" title="Drop a named pin (enemy/NPC)">📍 Pin</button>
             <button class="vtc-btn" id="vtc-go-up" onclick="_cvDmGoUpFloor()" style="display:none" title="Go up to previous floor">⬆ Up</button>
             <button class="vtc-btn" id="vtc-go-down" onclick="_cvDmNewFloor()" title="Descend to next floor">⬇ Down</button>
+            <button class="vtc-btn" onclick="_cvExportSession()" title="Save session to file">💾 Save</button>
+            <label class="vtc-btn" title="Load a saved session from file">
+              📂 Load<input type="file" accept=".json" style="display:none" onchange="_cvImportSession(this.files[0]);this.value=''">
+            </label>
+          </div>
+          <div class="vtc-tg" id="vtc-player-tools">
+            <button class="vtc-btn" onclick="_cvOpenTokenRequest()" title="Ask DM to add another token for you">＋ Token</button>
           </div>
         </div>
         <div class="vtc-cont" id="vtc-cont">
           <canvas id="pty-canvas"></canvas>
           <div id="vtc-floor-counter" style="position:absolute;top:6px;left:8px;font-size:10px;color:rgba(255,255,255,.55);pointer-events:none;display:none"></div>
           <div style="position:absolute;bottom:6px;right:8px;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none;letter-spacing:.04em">Pan: drag · Draw: ✏ · Zoom: scroll · Right-click: delete</div>
+          <!-- Extra token request form (players) -->
+          <div id="vtc-tok-req-form" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border-hi);border-radius:10px;padding:14px;width:200px;z-index:20;box-shadow:0 4px 24px rgba(0,0,0,.6)">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:8px">Request Extra Token</div>
+            <input id="vtc-tok-req-name" class="pty-inp" placeholder="Token name…" maxlength="30" style="width:100%;padding:5px 8px;font-size:12px;margin-bottom:8px"
+              onkeydown="if(event.key==='Enter')_cvSubmitTokenRequest();if(event.key==='Escape')_cvCancelTokenRequest()">
+            <div style="display:flex;gap:6px">
+              <button class="pty-btn" onclick="_cvSubmitTokenRequest()" style="flex:1;padding:5px 0;font-size:11px">Request</button>
+              <button class="pty-btn ghost" onclick="_cvCancelTokenRequest()" style="flex:1;padding:5px 0;font-size:11px">Cancel</button>
+            </div>
+          </div>
+          <!-- DM token-request notification -->
+          <div id="vtc-tok-approve" style="display:none;position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#150a2a;border:1px solid #7c3aed;border-radius:8px;padding:10px 14px;z-index:20;min-width:220px;box-shadow:0 4px 20px rgba(0,0,0,.7)">
+            <div id="vtc-tok-approve-msg" style="font-size:12px;color:#d8b4fe;margin-bottom:8px"></div>
+            <div style="display:flex;gap:6px">
+              <button class="pty-btn" onclick="_cvGrantToken()" style="flex:1;padding:4px 0;font-size:11px;background:#1a0a2e;border-color:#7c3aed;color:#d8b4fe">Allow</button>
+              <button class="pty-btn ghost" onclick="_cvDenyToken()" style="flex:1;padding:4px 0;font-size:11px">Deny</button>
+            </div>
+          </div>
           <!-- Pin placement form -->
           <div id="vtc-pin-form" class="vtc-pin-form">
             <input id="vtc-pin-name" class="pty-inp" placeholder="Name…" maxlength="40" style="padding:5px 8px;font-size:12px"
@@ -2272,20 +2310,25 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <div class="pty-dice-panel">
         <div class="pty-panel-head">🎲 Dice Roller</div>
         <div class="pty-dice-grid">
-          <button class="pty-dice-btn" onclick="partyRollDie(4)" title="Roll d4"><span class="die-glyph">▲</span><span class="die-lbl">d4</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(6)" title="Roll d6"><span class="die-glyph">◼</span><span class="die-lbl">d6</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(8)" title="Roll d8"><span class="die-glyph">◆</span><span class="die-lbl">d8</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(10)" title="Roll d10"><span class="die-glyph">⬢</span><span class="die-lbl">d10</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(12)" title="Roll d12"><span class="die-glyph">⬟</span><span class="die-lbl">d12</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(20)" title="Roll d20"><span class="die-glyph">✦</span><span class="die-lbl">d20</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(100)" title="Roll d100"><span class="die-glyph">%</span><span class="die-lbl">d100</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(2)" title="Coin flip"><span class="die-glyph">◐</span><span class="die-lbl">d2</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(4)" title="Add d4 to roll"><span class="die-glyph">▲</span><span class="die-lbl">d4</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(6)" title="Add d6 to roll"><span class="die-glyph">◼</span><span class="die-lbl">d6</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(8)" title="Add d8 to roll"><span class="die-glyph">◆</span><span class="die-lbl">d8</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(10)" title="Add d10 to roll"><span class="die-glyph">⬢</span><span class="die-lbl">d10</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(12)" title="Add d12 to roll"><span class="die-glyph">⬟</span><span class="die-lbl">d12</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(20)" title="Add d20 to roll"><span class="die-glyph">✦</span><span class="die-lbl">d20</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(100)" title="Add d100 to roll"><span class="die-glyph">%</span><span class="die-lbl">d100</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(2)" title="Add d2 to roll"><span class="die-glyph">◐</span><span class="die-lbl">d2</span></button>
         </div>
         <div class="pty-dice-opts">
           <label>Qty<input id="pty-dice-count" type="number" min="1" max="20" value="1"></label>
           <label>Mod<input id="pty-dice-mod" type="number" value="0"></label>
         </div>
-        <div class="pty-dice-result empty" id="pty-dice-result">Click a die to roll</div>
+        <div class="pty-dice-formula" id="pty-dice-formula">Tap dice to build a roll</div>
+        <div style="display:flex;gap:4px">
+          <button class="pty-dice-roll-btn" onclick="rollDiceQueue()">Roll</button>
+          <button class="pty-dice-clear" onclick="clearDiceQueue()" title="Clear formula">✕ Clear</button>
+        </div>
+        <div class="pty-dice-result empty" id="pty-dice-result"></div>
       </div>
 
       <div class="pty-players-panel">
@@ -3545,7 +3588,7 @@ let chosenCard = null;
 function getCD(){return CLASS_DATA_MAP[currentClass]||CLASS_DATA_MAP.fighter;}
 let activeTier=0; // 0=all, 1/2/3=specific tier
 function tierFromRoll(roll){return roll<=7?1:roll<=14?2:3;}
-function getClassFeatureIds(){return new Set((CLASS_STARTING_FEATURES[currentClass]||[]).map(f=>f.id));}
+function getClassFeatureIds(){return new Set((CLASS_STARTING_FEATURES[currentClass]||[]).filter(f=>f.level<=3).map(f=>f.id));}
 function getMainPool(tier){
   const cd=getCD();
   const cfIds=getClassFeatureIds();
@@ -3562,8 +3605,10 @@ function getMainPool(tier){
 }
 function getSubPool(){ return SUB_DECKS[currentSubclass]?SUB_DECKS[currentSubclass].cards.filter(c=>!acquiredSub.has(c.id)):[]; }
 function typeTag(t,spell){const m={p:['at-p','Passive'],r:['at-r','Reaction'],b:['at-b','Bonus'],c:['at-c','Combat']};const[cls,lbl]=m[t]||['at-p','—'];const spTag=spell?`<span class="atype" style="background:rgba(80,60,140,.2);color:#aa88ee">Spell ${spell}</span> `:'';return spTag+`<span class="atype ${cls}">${lbl}</span>`;}
-function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function d(n){return Math.ceil(Math.random()*n);}
+// Cryptographically random integer in [0, n) — avoids PRNG streaks.
+function _cr(n){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n;}
+function d(n){return _cr(n)+1;}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=_cr(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
 function mod(s){return Math.floor((s-10)/2);}
 function modStr(s){const m=mod(s);return(m>=0?'+':'')+m;}
 function profBonus(lv){return Math.ceil(lv/4)+1;}
@@ -3845,10 +3890,10 @@ function renderActions(){
       const atkMod=ranged||finesse?Math.max(strMod,dexMod)+pb:strMod+pb;
       weaponRows+=`<div style="display:grid;grid-template-columns:1fr 68px 60px;gap:4px;
           padding:7px 11px;border-bottom:.5px solid var(--border);font-size:12px;cursor:pointer"
-          onclick="doRoll('${w.name} Attack','${ranged||finesse?'dex':'str'}',true)"
-          title="Click to roll attack">
+          onclick="doWeaponRoll('${w.name.replace(/'/g,"\\'")}','${ranged||finesse?'dex':'str'}','${(w.stat||'').replace(/'/g,"\\'")}','${(w.statType||'').replace(/'/g,"\\'")}')"
+          title="Click to roll attack + damage">
         <div><div style="font-weight:600;color:var(--text)">${w.name}</div>
-          <div style="font-size:10px;color:var(--text-dim)">${w.cat||''} ${w.stat||''}</div></div>
+          <div style="font-size:10px;color:var(--text-dim)">${w.cat||''} ${w.statType||''}</div></div>
         <div style="text-align:center;font-size:15px;font-weight:700;color:var(--cc)">${fmtMod(atkMod)}</div>
         <div style="text-align:center;font-size:11px;color:var(--text-dim)">${w.stat||'—'}</div>
       </div>`;
@@ -3992,13 +4037,14 @@ function renderCharSheet(){
     const racial=(_rd.statBonuses[s]||0);
     const total=base+racial;
     const rollNote=rolls.length?rolls.slice(1).join('+')+' −'+rolls[0]:'tap to roll';
-    return`<div class="cs-stat" onclick="rollStat('${s}')" title="${STAT_LABELS[s]}: ${total}${racial?' (base '+base+(racial>0?'+':'')+racial+' racial)':''} — click to reroll">
+    return`<div class="cs-stat" style="position:relative" onclick="doRoll('${STAT_LABELS[s]} Check','${s}',false)" title="Click to roll ${STAT_LABELS[s]} check">
       <div class="cs-stat-shell">
         <span class="cs-stat-name">${STAT_LABELS[s]}</span>
         <span class="cs-stat-mod">${fmtMod(mod(total))}</span>
         <span class="cs-stat-score">${total}</span>
       </div>
       <div class="cs-stat-rolled">${rollNote}</div>
+      <button class="cs-stat-reroll" onclick="event.stopPropagation();rollStat('${s}')" title="Reroll stat (4d6 drop lowest)">↻</button>
     </div>`;
   }).join('')+`<button class="cs-roll-all-btn" onclick="rollAllStats();event.stopPropagation()">⟳ Roll All</button>`;
   // saving throws — update proficiencies from class
@@ -4047,18 +4093,18 @@ function renderCharSheet(){
   const _cd=getCD(),allCards=[..._cd.generalCards,...Object.values(_cd.subclassCards).flat()];
   const abEl=document.getElementById('cs-abilities');
   if(abEl){
-    const classFeats=(CLASS_STARTING_FEATURES[currentClass]||[]).filter(f=>f.level<=currentLevel);
+    const classFeats=(CLASS_STARTING_FEATURES[currentClass]||[]).filter(f=>f.level<=Math.min(currentLevel,3));
     const classSection=classFeats.length?
       '<div class="cs-panel-hd" style="margin:0 0 6px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Class Features</div>'+
       '<div class="cs-abilities-box" style="margin-bottom:12px">'+
-      classFeats.map(f=>`<div class="cs-ability-row">${typeTag(f.type)}<div><div class="cs-ability-name">${f.name}</div><div class="cs-ability-desc">${f.desc}</div></div></div>`).join('')+
+      classFeats.map(f=>`<div class="cs-ability-row" onclick="rollAbility('${f.name.replace(/'/g,"\\'")}','${f.type}')" style="cursor:pointer" title="Click to use/announce">${typeTag(f.type)}<div><div class="cs-ability-name">${f.name}</div><div class="cs-ability-desc">${f.scaleFn?f.scaleFn(currentLevel):f.desc}</div></div></div>`).join('')+
       '</div>':'';
     const deckSection=acquiredMain.size===0?
       '<div class="cs-no-feats">No abilities yet — draw from the Ability Deck tab</div>':
       '<div class="cs-panel-hd" style="margin:0 0 6px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Acquired Abilities</div>'+
       '<div class="cs-abilities-box">'+[...acquiredMain].map(id=>{
         const c=allCards.find(x=>x.id===id);
-        return c?`<div class="cs-ability-row">${typeTag(c.type)}<div><div class="cs-ability-name">${c.name}</div><div class="cs-ability-desc">${c.desc}</div></div></div>`:'';
+        return c?`<div class="cs-ability-row" onclick="rollAbility('${c.name.replace(/'/g,"\\'")}','${c.type}')" style="cursor:pointer" title="Click to use/announce">${typeTag(c.type)}<div><div class="cs-ability-name">${c.name}</div><div class="cs-ability-desc">${c.scaleFn?c.scaleFn(currentLevel):c.desc}</div></div></div>`:'';
       }).join('')+'</div>';
     abEl.innerHTML=classSection+deckSection;
   }
@@ -4156,12 +4202,12 @@ function applyDmg(){
   document.getElementById('cs-dmg-amt').value='';
 }
 // proficiency toggles
-function toggleSaveProf(stat){saveProfs.has(stat)?saveProfs.delete(stat):saveProfs.add(stat);renderCharSheet();}
+function toggleSaveProf(stat){saveProfs.has(stat)?saveProfs.delete(stat):saveProfs.add(stat);renderCharSheet();scheduleSave();}
 function cycleSkillProf(id){
   if(skillExp.has(id)){skillExp.delete(id);skillProfs.delete(id);}
   else if(skillProfs.has(id)){skillExp.add(id);}
   else{skillProfs.add(id);}
-  renderCharSheet();
+  renderCharSheet();scheduleSave();
 }
 function toggleInsp(){inspiration=!inspiration;renderCharSheet();}
 function toggleDeath(t,idx){deathSaves[t]=deathSaves[t]>idx?idx:idx+1;renderCharSheet();}
@@ -4177,6 +4223,34 @@ function doRoll(label,stat,isProf,skillId){
   _rl={label,stat,skillId:skillId||null};
   execRoll();
   document.getElementById('cs-roll-ov').classList.add('open');
+}
+let _weaponDmgRoll=null; // set while roll overlay is showing damage-only
+
+function doWeaponRoll(wName,stat,damageStat,damageType){
+  const dmgMatch=(damageStat||'').match(/(\d+)d(\d+)/);
+  const magicBonus=parseInt((damageStat||'').match(/^\+(\d+)/)?.[1]||'0');
+  if(!dmgMatch){ showToast('No damage dice found'); return; }
+  _weaponDmgRoll={wName,stat,damageType,dmgMatch,magicBonus};
+  _showWeaponDamage();
+  document.getElementById('cs-roll-ov').classList.add('open');
+}
+
+function _showWeaponDamage(){
+  const {wName,stat,damageType,dmgMatch,magicBonus}=_weaponDmgRoll;
+  const cnt=parseInt(dmgMatch[1]),sides=parseInt(dmgMatch[2]);
+  const rolls=Array.from({length:cnt},()=>d(sides));
+  const atkMod=Math.floor((statTotal(stat)-10)/2);
+  const totalBonus=atkMod+magicBonus;
+  const total=rolls.reduce((a,b)=>a+b,0)+totalBonus;
+  const bonusStr=totalBonus>=0?'+'+totalBonus:''+totalBonus;
+
+  document.getElementById('cs-roll-lbl').textContent=wName+' — Damage';
+  const d20el=document.getElementById('cs-roll-d20');
+  d20el.className='cs-roll-d20 landed';
+  d20el.innerHTML=`<span style="font-size:72px;font-weight:700;color:var(--cc);font-family:var(--font-display);line-height:1">${total}</span>`;
+  document.getElementById('cs-roll-detail').textContent=
+    dmgMatch[0]+'('+rolls.join('+')+') '+bonusStr+(damageType?' · '+damageType:'');
+  document.getElementById('cs-roll-total').innerHTML='';
 }
 function dieSVG(n){
   // d20 viewed face-on: 10 visible faces matching the reference layout
@@ -4354,8 +4428,8 @@ function burstSparks(){
   }
   window._diceSparks=setTimeout(()=>{ if(layer) layer.innerHTML=''; },1200);
 }
-function reRoll(){execRoll();}
-function closeRoll(){document.getElementById('cs-roll-ov').classList.remove('open');}
+function reRoll(){ if(_weaponDmgRoll){_showWeaponDamage();return;} execRoll(); }
+function closeRoll(){_weaponDmgRoll=null;document.getElementById('cs-roll-ov').classList.remove('open');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeRoll();});
 
 
@@ -4553,7 +4627,7 @@ function onClassChange(cls){
 
 // ── TREASURE ROLL & TIER SYSTEM ──────────────────────────────────────────────
 function rollTreasure(){
-  const roll=Math.floor(Math.random()*20)+1;
+  const roll=d(20);
   const res=document.getElementById('treasure-roll-result');
   if(res) res.textContent=roll;
   setTier(tierFromRoll(roll));
@@ -4905,96 +4979,390 @@ const EQUIP_ITEMS = [
  cost:"50gp",wt:1,props:["Thrown 20 ft","Ongoing fire"],
  prof:[],desc:"Hurl as improvised ranged weapon. Hit: target ignites, 1d4 fire per turn until extinguished (DEX DC 10 action)."},
 // ─── POTIONS & CONSUMABLES ────────────────────────────────────────────────────
-{id:"pt01",cat:"consumables",
- rarity:"Common",name:"Potion of Healing",stat:"2d4+2 HP",statType:"Healing",
- cost:"50gp",wt:0.5,props:["Common","Action or Bonus Action"],
- prof:[],desc:"Regain 2d4+2 hit points. Standard healing item. Consuming is an action; giving to another is also an action."},
-{id:"pt02",cat:"consumables",
- rarity:"Common",name:"Potion of Greater Healing",stat:"4d4+4 HP",statType:"Healing",
- cost:"100gp",wt:0.5,props:["Uncommon"],
- prof:[],desc:"Regain 4d4+4 hit points."},
-{id:"pt03",cat:"consumables",
- rarity:"Common",name:"Potion of Superior Healing",stat:"8d4+8 HP",statType:"Healing",
- cost:"500gp",wt:0.5,props:["Rare"],
- prof:[],desc:"Regain 8d4+8 hit points."},
-{id:"pt04",cat:"consumables",
- rarity:"Common",name:"Potion of Supreme Healing",stat:"10d4+20 HP",statType:"Healing",
- cost:"5000gp",wt:0.5,props:["Very Rare"],
- prof:[],desc:"Regain 10d4+20 hit points."},
-{id:"pt05",cat:"consumables",
- rarity:"Common",name:"Potion of Fire Breath",stat:"4d6 fire",statType:"Offensive",
- cost:"150gp",wt:0.5,props:["Uncommon","3 charges"],
- prof:[],desc:"Gain ability to use a bonus action to exhale a 30-ft cone of fire (4d6, DEX save DC 13 for half). Lasts 1 hour or until 3 uses spent."},
-{id:"pt06",cat:"consumables",
- rarity:"Common",name:"Potion of Speed",stat:"+1 AC, dbl spd",statType:"Buff",
- cost:"400gp",wt:0.5,props:["Very Rare","Haste","1 minute"],
- prof:[],desc:"Gain the effects of the Haste spell for 1 minute. +2 AC, advantage on DEX saves, extra action. Lethargy on end."},
-{id:"pt07",cat:"consumables",
- rarity:"Common",name:"Potion of Invisibility",stat:"Invisible",statType:"Utility",
- cost:"180gp",wt:0.5,props:["Very Rare","1 hour"],
- prof:[],desc:"Become invisible for 1 hour. Effect ends when you attack or cast a spell."},
-{id:"pt08",cat:"consumables",
- rarity:"Common",name:"Potion of Climbing",stat:"+Climb speed",statType:"Utility",
- cost:"75gp",wt:0.5,props:["Common","1 hour"],
- prof:[],desc:"Gain a climb speed equal to walking speed for 1 hour. Advantage on STR (Athletics) checks for climbing."},
-{id:"pt09",cat:"consumables",
- rarity:"Common",name:"Potion of Water Breathing",stat:"Breathe water",statType:"Utility",
- cost:"180gp",wt:0.5,props:["Uncommon","1 hour"],
- prof:[],desc:"Breathe underwater for 1 hour."},
-{id:"pt10",cat:"consumables",
- rarity:"Common",name:"Potion of Resistance",stat:"Resistance",statType:"Defensive",
- cost:"300gp",wt:0.5,props:["Uncommon","1 hour"],
- prof:[],desc:"Gain resistance to one damage type (acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant, or thunder) for 1 hour."},
-{id:"pt11",cat:"consumables",
- rarity:"Common",name:"Potion of Hill Giant Strength",stat:"STR 21",statType:"Buff",
- cost:"200gp",wt:0.5,props:["Uncommon","1 hour"],
- prof:[],desc:"STR score becomes 21 for 1 hour (unless already higher)."},
-{id:"pt12",cat:"consumables",
- rarity:"Common",name:"Potion of Heroism",stat:"Temp HP + Brave",statType:"Buff",
- cost:"180gp",wt:0.5,props:["Uncommon","1 hour"],
- prof:[],desc:"Gain 10 temp HP and the effect of the Bless spell for 1 hour (+1d4 to attack rolls and saving throws)."},
-{id:"pt13",cat:"consumables",
- rarity:"Common",name:"Spell Scroll (Cantrip)",stat:"Cast once",statType:"Magic",
- cost:"25gp",wt:0,props:["Common","Single use"],
- prof:[],desc:"Contains one cantrip. Any class that has that spell on their list can cast it from the scroll. Destroyed after use."},
-{id:"pt14",cat:"consumables",
- rarity:"Common",name:"Spell Scroll (1st Level)",stat:"Cast once",statType:"Magic",
- cost:"75gp",wt:0,props:["Common","Single use"],
- prof:[],desc:"A 1st-level spell inscribed on parchment. DC 13 to cast if not on your list. Destroyed after use."},
-{id:"pt15",cat:"consumables",
- rarity:"Common",name:"Spell Scroll (2nd Level)",stat:"Cast once",statType:"Magic",
- cost:"150gp",wt:0,props:["Uncommon","Single use"],
- prof:[],desc:"A 2nd-level spell. DC 13 to cast if not on your list."},
-{id:"pt16",cat:"consumables",
- rarity:"Common",name:"Spell Scroll (3rd Level)",stat:"Cast once",statType:"Magic",
- cost:"300gp",wt:0,props:["Uncommon","Single use"],
- prof:[],desc:"A 3rd-level spell. DC 15 to cast if not on your list."},
-{id:"pt17",cat:"consumables",
- rarity:"Common",name:"Spell Scroll (4th Level)",stat:"Cast once",statType:"Magic",
- cost:"500gp",wt:0,props:["Rare","Single use"],
- prof:[],desc:"A 4th-level spell. DC 15 to cast if not on your list."},
-{id:"pt18",cat:"consumables",
- rarity:"Common",name:"Spell Scroll (5th Level)",stat:"Cast once",statType:"Magic",
- cost:"1000gp",wt:0,props:["Rare","Single use"],
- prof:[],desc:"A 5th-level spell. DC 17 to cast if not on your list."},
-{id:"pt19",cat:"consumables",
- rarity:"Common",name:"Arrow +1 (20)",stat:"+1 to hit and damage",statType:"Ammunition",
- cost:"25gp",wt:1,props:["Uncommon","Destroyed on use"],
- prof:[],desc:"20 magical arrows. +1 bonus to attack and damage rolls. Destroyed on a hit."},
-{id:"pt20",cat:"consumables",
- rarity:"Common",name:"Smoke Bomb",stat:"Obscure area",statType:"Tactical",
- cost:"25gp",wt:0.5,props:["Heavily obscured 10 ft","1 minute"],
- prof:[],desc:"Throw up to 20 ft. Creates a heavily obscured 10-ft radius for 1 minute (wind disperses it)."},
+{id:"pt01",cat:"consumables",rarity:"Common",name:"Potion of Healing",stat:"2d4+2 HP",statType:"Healing",cost:"50gp",wt:0.5,props:["Common","Action"],prof:[],desc:"Regain 2d4+2 hit points. Consuming is an action; giving to another is also an action."},
+{id:"pt02",cat:"consumables",rarity:"Uncommon",name:"Potion of Greater Healing",stat:"4d4+4 HP",statType:"Healing",cost:"100gp",wt:0.5,props:["Uncommon"],prof:[],desc:"Regain 4d4+4 hit points."},
+{id:"pt03",cat:"consumables",rarity:"Rare",name:"Potion of Superior Healing",stat:"8d4+8 HP",statType:"Healing",cost:"500gp",wt:0.5,props:["Rare"],prof:[],desc:"Regain 8d4+8 hit points."},
+{id:"pt04",cat:"consumables",rarity:"Very Rare",name:"Potion of Supreme Healing",stat:"10d4+20 HP",statType:"Healing",cost:"5000gp",wt:0.5,props:["Very Rare"],prof:[],desc:"Regain 10d4+20 hit points."},
+{id:"pt05",cat:"consumables",rarity:"Uncommon",name:"Potion of Fire Breath",stat:"4d6 fire",statType:"Offensive",cost:"150gp",wt:0.5,props:["Uncommon","3 charges"],prof:[],desc:"Gain ability to use a bonus action to exhale a 30-ft cone of fire (4d6, DEX save DC 13 for half). Lasts 1 hour or until 3 uses spent."},
+{id:"pt06",cat:"consumables",rarity:"Very Rare",name:"Potion of Speed",stat:"+2 AC, dbl spd",statType:"Buff",cost:"400gp",wt:0.5,props:["Very Rare","Haste","1 minute"],prof:[],desc:"Gain the effects of the Haste spell for 1 minute. +2 AC, advantage on DEX saves, extra action. Lethargy on end."},
+{id:"pt07",cat:"consumables",rarity:"Very Rare",name:"Potion of Invisibility",stat:"Invisible",statType:"Utility",cost:"180gp",wt:0.5,props:["Very Rare","1 hour"],prof:[],desc:"Become invisible for 1 hour. Effect ends when you attack or cast a spell."},
+{id:"pt08",cat:"consumables",rarity:"Common",name:"Potion of Climbing",stat:"+Climb speed",statType:"Utility",cost:"75gp",wt:0.5,props:["Common","1 hour"],prof:[],desc:"Gain a climb speed equal to walking speed for 1 hour. Advantage on STR (Athletics) checks for climbing."},
+{id:"pt09",cat:"consumables",rarity:"Uncommon",name:"Potion of Water Breathing",stat:"Breathe water",statType:"Utility",cost:"180gp",wt:0.5,props:["Uncommon","1 hour"],prof:[],desc:"Breathe underwater for 1 hour."},
+{id:"pt10",cat:"consumables",rarity:"Uncommon",name:"Potion of Resistance",stat:"Resistance",statType:"Defensive",cost:"300gp",wt:0.5,props:["Uncommon","1 hour"],prof:[],desc:"Gain resistance to one damage type (acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant, or thunder) for 1 hour."},
+{id:"pt11",cat:"consumables",rarity:"Uncommon",name:"Potion of Hill Giant Strength",stat:"STR 21",statType:"Buff",cost:"200gp",wt:0.5,props:["Uncommon","1 hour"],prof:[],desc:"STR score becomes 21 for 1 hour (unless already higher)."},
+{id:"pt12",cat:"consumables",rarity:"Uncommon",name:"Potion of Heroism",stat:"Temp HP + Bless",statType:"Buff",cost:"180gp",wt:0.5,props:["Uncommon","1 hour"],prof:[],desc:"Gain 10 temp HP and the effect of the Bless spell for 1 hour (+1d4 to attack rolls and saving throws)."},
+{id:"pt19",cat:"consumables",rarity:"Uncommon",name:"Arrow +1 (20)",stat:"+1 to hit and damage",statType:"Ammunition",cost:"25gp",wt:1,props:["Uncommon","Destroyed on use"],prof:[],desc:"20 magical arrows. +1 bonus to attack and damage rolls. Destroyed on a hit."},
+{id:"pt20",cat:"consumables",rarity:"Common",name:"Smoke Bomb",stat:"Obscure area",statType:"Tactical",cost:"25gp",wt:0.5,props:["Common","Heavily obscured 10 ft","1 minute"],prof:[],desc:"Throw up to 20 ft. Creates a heavily obscured 10-ft radius for 1 minute."},
+// ─── GIANT STRENGTH POTIONS ──────────────────────────────────────────────────
+{id:"pt21",cat:"consumables",rarity:"Rare",name:"Potion of Stone Giant Strength",stat:"STR 23",statType:"Buff",cost:"500gp",wt:0.5,props:["Rare","1 hour"],prof:[],desc:"STR score becomes 23 for 1 hour (unless already higher). Tastes faintly of granite."},
+{id:"pt22",cat:"consumables",rarity:"Rare",name:"Potion of Frost Giant Strength",stat:"STR 23",statType:"Buff",cost:"500gp",wt:0.5,props:["Rare","1 hour"],prof:[],desc:"STR score becomes 23 for 1 hour (unless already higher). The liquid is ice-cold and never warms."},
+{id:"pt23",cat:"consumables",rarity:"Rare",name:"Potion of Fire Giant Strength",stat:"STR 25",statType:"Buff",cost:"800gp",wt:0.5,props:["Rare","1 hour"],prof:[],desc:"STR score becomes 25 for 1 hour (unless already higher). Smells faintly of sulfur."},
+{id:"pt24",cat:"consumables",rarity:"Very Rare",name:"Potion of Cloud Giant Strength",stat:"STR 27",statType:"Buff",cost:"2000gp",wt:0.5,props:["Very Rare","1 hour"],prof:[],desc:"STR score becomes 27 for 1 hour (unless already higher). Wisps of cloud swirl inside the vial."},
+{id:"pt25",cat:"consumables",rarity:"Legendary",name:"Potion of Storm Giant Strength",stat:"STR 29",statType:"Buff",cost:"10000gp",wt:0.5,props:["Legendary","1 hour"],prof:[],desc:"STR score becomes 29 for 1 hour (unless already higher). Tiny lightning bolts crackle within the liquid."},
+// ─── MOVEMENT & FORM ─────────────────────────────────────────────────────────
+{id:"pt26",cat:"consumables",rarity:"Very Rare",name:"Potion of Flying",stat:"Fly 60 ft",statType:"Utility",cost:"500gp",wt:0.5,props:["Very Rare","1 hour"],prof:[],desc:"Gain a flying speed of 60 ft for 1 hour. If airborne when the effect ends, you fall."},
+{id:"pt27",cat:"consumables",rarity:"Rare",name:"Potion of Gaseous Form",stat:"Gaseous Form",statType:"Utility",cost:"500gp",wt:0.5,props:["Rare","1 hour"],prof:[],desc:"Gain the effect of Gaseous Form for 1 hour. End early as a bonus action."},
+{id:"pt28",cat:"consumables",rarity:"Uncommon",name:"Potion of Growth",stat:"Enlarge 1d4 hrs",statType:"Buff",cost:"200gp",wt:0.5,props:["Uncommon","1d4 hours"],prof:[],desc:"Gain the effect of the Enlarge spell for 1d4 hours. +1d4 to STR-based weapon damage; advantage on STR checks and saves."},
+{id:"pt29",cat:"consumables",rarity:"Rare",name:"Potion of Diminution",stat:"Reduce 1d4 hrs",statType:"Utility",cost:"500gp",wt:0.5,props:["Rare","1d4 hours"],prof:[],desc:"Gain the effect of the Reduce spell for 1d4 hours. Size shrinks; −1d4 to weapon damage."},
+// ─── DEFENSIVE ───────────────────────────────────────────────────────────────
+{id:"pt30",cat:"consumables",rarity:"Rare",name:"Potion of Invulnerability",stat:"Resist all dmg",statType:"Defensive",cost:"500gp",wt:0.5,props:["Rare","1 minute"],prof:[],desc:"Gain resistance to all damage types for 1 minute. Thick, iron-scented liquid."},
+{id:"pt31",cat:"consumables",rarity:"Rare",name:"Elixir of Health",stat:"Cure conditions + 2d4+2",statType:"Healing",cost:"500gp",wt:0.5,props:["Rare","Condition cure"],prof:[],desc:"Cures all diseases and removes the blinded, deafened, paralyzed, and poisoned conditions. Restores 2d4+2 hit points."},
+{id:"pt32",cat:"consumables",rarity:"Very Rare",name:"Potion of Vitality",stat:"Max HP 24 hrs",statType:"Buff",cost:"2000gp",wt:0.5,props:["Very Rare","24 hours"],prof:[],desc:"Remove exhaustion, cure all disease, and neutralize poison. HP becomes maximum value for 24 hours."},
+{id:"pt33",cat:"consumables",rarity:"Very Rare",name:"Potion of Longevity",stat:"Age −1d6+6 yrs",statType:"Utility",cost:"3000gp",wt:0.5,props:["Very Rare","Permanent"],prof:[],desc:"Reduces age by 1d6+6 years (min 13). Each subsequent use carries a cumulative 10% chance to increase age instead."},
+// ─── MIND & PERCEPTION ───────────────────────────────────────────────────────
+{id:"pt34",cat:"consumables",rarity:"Rare",name:"Potion of Mind Reading",stat:"Detect Thoughts",statType:"Utility",cost:"500gp",wt:0.5,props:["Rare","1 minute","DC 13"],prof:[],desc:"Gain the effect of Detect Thoughts for 1 minute (save DC 13)."},
+{id:"pt35",cat:"consumables",rarity:"Rare",name:"Potion of Clairvoyance",stat:"Remote sight/sound",statType:"Utility",cost:"500gp",wt:0.5,props:["Rare","10 minutes"],prof:[],desc:"Gain the effect of the Clairvoyance spell for 10 minutes. Create a sensor up to 1 mile away."},
+// ─── SOCIAL & TRICKERY ───────────────────────────────────────────────────────
+{id:"pt36",cat:"consumables",rarity:"Uncommon",name:"Potion of Animal Friendship",stat:"Charm beast",statType:"Utility",cost:"200gp",wt:0.5,props:["Uncommon","1 hour","DC 13"],prof:[],desc:"Cast Animal Friendship (save DC 13) affecting up to 3 beasts for 1 hour."},
+{id:"pt37",cat:"consumables",rarity:"Uncommon",name:"Philter of Love",stat:"Charm creature",statType:"Utility",cost:"175gp",wt:0.5,props:["Uncommon","1 hour"],prof:[],desc:"The first creature you see within 10 minutes is charmed as if by Charm Person for 1 hour."},
+{id:"pt38",cat:"consumables",rarity:"Uncommon",name:"Potion of Poison",stat:"3d6 poison",statType:"Offensive",cost:"100gp",wt:0.5,props:["Uncommon","Disguised","CON save DC 13"],prof:[],desc:"Appears identical to Potion of Healing. Deals 3d6 poison damage (CON save DC 13 for half) and poisons drinker for 1 hour."},
+// ─── OILS ────────────────────────────────────────────────────────────────────
+{id:"pt39",cat:"consumables",rarity:"Uncommon",name:"Oil of Slipperiness",stat:"Freedom of Movement",statType:"Defensive",cost:"200gp",wt:0.5,props:["Uncommon","8 hours"],prof:[],desc:"Apply to self or willing creature: Freedom of Movement for 8 hours. Can also coat a 10-ft surface as the Grease spell."},
+{id:"pt40",cat:"consumables",rarity:"Rare",name:"Oil of Etherealness",stat:"Ethereal Plane",statType:"Utility",cost:"500gp",wt:0.5,props:["Rare","1 hour"],prof:[],desc:"Apply to self or willing creature: gain the effect of Etherealness for 1 hour."},
+{id:"pt41",cat:"consumables",rarity:"Very Rare",name:"Oil of Sharpness",stat:"+3 atk & dmg",statType:"Buff",cost:"3000gp",wt:0.5,props:["Very Rare","1 hour"],prof:[],desc:"Apply to a weapon or 5 pieces of ammunition. The coated item becomes a +3 magic weapon for 1 hour."},
+// ─── SPECIAL COMPOUNDS ───────────────────────────────────────────────────────
+{id:"pt42",cat:"consumables",rarity:"Uncommon",name:"Keoghtom's Ointment",stat:"2d8+2 HP ×5 doses",statType:"Healing",cost:"250gp",wt:0.5,props:["Uncommon","5 doses"],prof:[],desc:"5 doses. Each use: heal 2d8+2 HP and cure one disease or the poisoned condition."},
+{id:"pt43",cat:"consumables",rarity:"Uncommon",name:"Dust of Disappearance",stat:"Invisible 2d4 min",statType:"Utility",cost:"150gp",wt:0,props:["Uncommon","2d4 minutes"],prof:[],desc:"Sprinkle on yourself and up to 5 creatures within 10 ft. All become invisible for 2d4 minutes. Effect ends early if any affected creature attacks or casts a spell."},
+{id:"pt44",cat:"consumables",rarity:"Uncommon",name:"Dust of Dryness",stat:"Absorb/release water",statType:"Utility",cost:"150gp",wt:0,props:["Uncommon","Single use"],prof:[],desc:"Sprinkle on up to 15 gallons of water to compress it into a pellet. Smash the pellet to release. If sprinkled on a water elemental: 2d10 damage (CON save DC 13 for half)."},
+{id:"pt45",cat:"consumables",rarity:"Uncommon",name:"Dust of Sneezing and Choking",stat:"Incapacitated 1 min",statType:"Offensive",cost:"150gp",wt:0,props:["Uncommon","CON save DC 15","10-ft radius"],prof:[],desc:"Throw as an action (range 10 ft). Each creature in 10-ft radius: CON save DC 15 or incapacitated and suffocating for 1 minute. Repeat save each turn."},
+{id:"pt51",cat:"consumables",rarity:"Legendary",name:"Sovereign Glue",stat:"Permanent bond",statType:"Utility",cost:"1000gp",wt:0.5,props:["Legendary","Permanent"],prof:[],desc:"Permanently bonds two surfaces together. Only Universal Solvent or a Wish spell can break the bond. Contains 1d6+1 ounces."},
+{id:"pt52",cat:"consumables",rarity:"Legendary",name:"Universal Solvent",stat:"Dissolve any bond",statType:"Utility",cost:"1000gp",wt:0.5,props:["Legendary","Single use"],prof:[],desc:"1 oz dissolves any adhesive including Sovereign Glue and monster adhesives. Also removes rust and tarnish from metal objects."},
+// ─── THROWABLES ──────────────────────────────────────────────────────────────
+{id:"pt46",cat:"consumables",rarity:"Common",name:"Alchemist's Fire",stat:"1d4 fire/turn",statType:"Offensive",cost:"50gp",wt:1,props:["Common","Thrown 20 ft","Sticky"],prof:[],desc:"Throw as an action (range 20 ft). On hit: 1d4 fire damage at start of each of target's turns. DC 10 DEX check as action to extinguish."},
+{id:"pt47",cat:"consumables",rarity:"Common",name:"Acid (vial)",stat:"2d6 acid",statType:"Offensive",cost:"25gp",wt:1,props:["Common","Thrown 20 ft"],prof:[],desc:"Throw as an action (range 20 ft). On hit: 2d6 acid damage. Miss (roll ≥10): 1d6 acid damage."},
+{id:"pt48",cat:"consumables",rarity:"Common",name:"Holy Water (flask)",stat:"2d6 radiant",statType:"Offensive",cost:"25gp",wt:1,props:["Common","Undead/Fiends only","Thrown 20 ft"],prof:[],desc:"Throw as an action (range 20 ft). On hit vs undead or fiend: 2d6 radiant damage."},
+{id:"pt49",cat:"consumables",rarity:"Common",name:"Tanglefoot Bag",stat:"Restrained 1 round",statType:"Tactical",cost:"50gp",wt:2,props:["Common","Thrown 20 ft","STR save DC 13"],prof:[],desc:"Throw as an action (range 20 ft). Target: STR save DC 13 or restrained for 1 round. 5-ft area becomes difficult terrain for 1 minute."},
+{id:"pt50",cat:"consumables",rarity:"Common",name:"Thunderstone",stat:"Deafened + stunned",statType:"Tactical",cost:"20gp",wt:0.5,props:["Common","Thrown 20 ft","CON save DC 13","10-ft radius"],prof:[],desc:"Throw as an action (range 20 ft). Each creature within 10 ft: CON save DC 13 or deafened for 1 round and stunned until end of next turn."},
+// ─── MAGIC AMMUNITION ────────────────────────────────────────────────────────
+{id:"pt53",cat:"consumables",rarity:"Rare",name:"Arrow +2 (20)",stat:"+2 to hit and damage",statType:"Ammunition",cost:"100gp",wt:1,props:["Rare","Destroyed on use"],prof:[],desc:"20 magical arrows. +2 bonus to attack and damage rolls. Destroyed on a hit."},
+{id:"pt54",cat:"consumables",rarity:"Very Rare",name:"Arrow +3 (20)",stat:"+3 to hit and damage",statType:"Ammunition",cost:"250gp",wt:1,props:["Very Rare","Destroyed on use"],prof:[],desc:"20 magical arrows. +3 bonus to attack and damage rolls. Destroyed on a hit."},
+{id:"pt55",cat:"consumables",rarity:"Uncommon",name:"Crossbow Bolt +1 (20)",stat:"+1 to hit and damage",statType:"Ammunition",cost:"25gp",wt:1,props:["Uncommon","Destroyed on use"],prof:[],desc:"20 magical bolts. +1 bonus to attack and damage rolls. Destroyed on a hit."},
+{id:"pt56",cat:"consumables",rarity:"Rare",name:"Crossbow Bolt +2 (20)",stat:"+2 to hit and damage",statType:"Ammunition",cost:"100gp",wt:1,props:["Rare","Destroyed on use"],prof:[],desc:"20 magical bolts. +2 bonus to attack and damage rolls. Destroyed on a hit."},
+{id:"pt57",cat:"consumables",rarity:"Very Rare",name:"Crossbow Bolt +3 (20)",stat:"+3 to hit and damage",statType:"Ammunition",cost:"250gp",wt:1,props:["Very Rare","Destroyed on use"],prof:[],desc:"20 magical bolts. +3 bonus to attack and damage rolls. Destroyed on a hit."},
+// ─── SPELL SCROLLS ────────────────────────────────────────────────────────────
+// Level 1 — Common (75gp)
+{id:"scl1_01",cat:"scroll",rarity:"Common",name:"Scroll of Mage Armor",stat:"Level 1",statType:"Abjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"Touch willing creature: AC = 13+DEX for 8 hours. Ends if target dons armor. DC 10 to cast if not on class list. Destroyed after use."},
+{id:"scl1_02",cat:"scroll",rarity:"Common",name:"Scroll of Shield",stat:"Level 1",statType:"Abjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"Reaction when hit: +5 AC until start of your next turn, blocking the triggering hit. Destroyed after use."},
+{id:"scl1_03",cat:"scroll",rarity:"Common",name:"Scroll of Magic Missile",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"Three 1d4+1 force darts, auto-hitting any targets within 120 ft. Destroyed after use."},
+{id:"scl1_04",cat:"scroll",rarity:"Common",name:"Scroll of Burning Hands",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"15-ft cone: 3d6 fire (DEX save for half). Destroyed after use."},
+{id:"scl1_05",cat:"scroll",rarity:"Common",name:"Scroll of Sleep",stat:"Level 1",statType:"Enchantment",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"5d8 HP worth of creatures fall unconscious 1 min, starting lowest HP. Destroyed after use."},
+{id:"scl1_06",cat:"scroll",rarity:"Common",name:"Scroll of Detect Magic",stat:"Level 1",statType:"Divination",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","cleric","druid","paladin"],desc:"Concentration 10 min: sense magic within 30 ft and see magical auras. Destroyed after use."},
+{id:"scl1_07",cat:"scroll",rarity:"Common",name:"Scroll of Thunderwave",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","druid"],desc:"15-ft cube: 2d8 thunder and push 10 ft (CON save for half, no push). Destroyed after use."},
+{id:"scl1_08",cat:"scroll",rarity:"Common",name:"Scroll of Charm Person",stat:"Level 1",statType:"Enchantment",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","warlock"],desc:"One humanoid within 30 ft: WIS save or charmed for 1 hour. Ends if harmed. Destroyed after use."},
+{id:"scl1_09",cat:"scroll",rarity:"Common",name:"Scroll of False Life",stat:"Level 1",statType:"Necromancy",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"Gain 1d4+4 temporary hit points for 1 hour. Destroyed after use."},
+{id:"scl1_10",cat:"scroll",rarity:"Common",name:"Scroll of Feather Fall",stat:"Level 1",statType:"Transmutation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"Reaction: up to five falling creatures descend safely at 60 ft/round for 1 min. Destroyed after use."},
+{id:"scl1_11",cat:"scroll",rarity:"Common",name:"Scroll of Fog Cloud",stat:"Level 1",statType:"Conjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","druid"],desc:"Concentration 1 hour: 20-ft radius heavily obscuring fog sphere within 120 ft. Destroyed after use."},
+{id:"scl1_12",cat:"scroll",rarity:"Common",name:"Scroll of Grease",stat:"Level 1",statType:"Conjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"10-ft square becomes slippery for 1 min; creatures DEX save or fall prone. Destroyed after use."},
+{id:"scl1_13",cat:"scroll",rarity:"Common",name:"Scroll of Hideous Laughter",stat:"Level 1",statType:"Enchantment",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"Concentration 1 min: one creature WIS save or prone and incapacitated with laughter. Destroyed after use."},
+{id:"scl1_14",cat:"scroll",rarity:"Common",name:"Scroll of Color Spray",stat:"Level 1",statType:"Illusion",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"6d10 HP of creatures in 15-ft cone blinded until end of your next turn. Destroyed after use."},
+{id:"scl1_15",cat:"scroll",rarity:"Common",name:"Scroll of Expeditious Retreat",stat:"Level 1",statType:"Transmutation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","warlock"],desc:"Concentration 10 min: bonus action to Dash on each of your turns. Destroyed after use."},
+{id:"scl1_16",cat:"scroll",rarity:"Common",name:"Scroll of Jump",stat:"Level 1",statType:"Transmutation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","druid"],desc:"Touch a creature: jump distance tripled for 1 minute. Destroyed after use."},
+{id:"scl1_17",cat:"scroll",rarity:"Common",name:"Scroll of Longstrider",stat:"Level 1",statType:"Transmutation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","druid"],desc:"Touch a creature: speed +10 ft for 1 hour. Destroyed after use."},
+{id:"scl1_18",cat:"scroll",rarity:"Common",name:"Scroll of Comprehend Languages",stat:"Level 1",statType:"Divination",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","warlock"],desc:"Ritual 1 hour: understand literal meaning of any spoken or written language. Destroyed after use."},
+{id:"scl1_19",cat:"scroll",rarity:"Common",name:"Scroll of Identify",stat:"Level 1",statType:"Divination",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"Ritual 1 min: learn all magical properties of a touched magic item or active spell. Destroyed after use."},
+{id:"scl1_20",cat:"scroll",rarity:"Common",name:"Scroll of Silent Image",stat:"Level 1",statType:"Illusion",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard"],desc:"Concentration 10 min: visual-only illusion up to 15-ft cube within 60 ft. Destroyed after use."},
+{id:"scl1_21",cat:"scroll",rarity:"Common",name:"Scroll of Protection from Evil and Good",stat:"Level 1",statType:"Abjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","paladin","cleric"],desc:"Concentration 10 min: six creature types have disadvantage on attacks vs target; can't charm/possess. Destroyed after use."},
+{id:"scl1_22",cat:"scroll",rarity:"Common",name:"Scroll of Unseen Servant",stat:"Level 1",statType:"Conjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["wizard","warlock"],desc:"Ritual 1 hour: invisible force (AC 10, 1 HP, STR 2) performs simple tasks within 60 ft. Destroyed after use."},
+{id:"scl1_23",cat:"scroll",rarity:"Common",name:"Scroll of Bless",stat:"Level 1",statType:"Enchantment",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin","cleric"],desc:"Concentration 1 min: up to three creatures add 1d4 to attack rolls and saving throws. Destroyed after use."},
+{id:"scl1_24",cat:"scroll",rarity:"Common",name:"Scroll of Divine Favor",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin"],desc:"Concentration 1 min: your weapon attacks deal extra 1d4 radiant damage on each hit. Destroyed after use."},
+{id:"scl1_25",cat:"scroll",rarity:"Common",name:"Scroll of Shield of Faith",stat:"Level 1",statType:"Abjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin","cleric"],desc:"Concentration 10 min: bonus action — target creature gains +2 AC for duration. Destroyed after use."},
+{id:"scl1_26",cat:"scroll",rarity:"Common",name:"Scroll of Cure Wounds",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin","cleric","druid"],desc:"Touch: restore 1d8 + spellcasting modifier HP. No effect on undead or constructs. Destroyed after use."},
+{id:"scl1_27",cat:"scroll",rarity:"Common",name:"Scroll of Command",stat:"Level 1",statType:"Enchantment",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin","cleric"],desc:"One creature within 60 ft: WIS save or obeys one-word command on its next turn. Destroyed after use."},
+{id:"scl1_28",cat:"scroll",rarity:"Common",name:"Scroll of Thunderous Smite",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin"],desc:"Concentration 1 min: first hit +2d6 thunder; STR save or pushed 10 ft and knocked prone. Destroyed after use."},
+{id:"scl1_29",cat:"scroll",rarity:"Common",name:"Scroll of Wrathful Smite",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin"],desc:"Concentration 1 min: first hit +1d6 psychic; WIS save or frightened for duration. Destroyed after use."},
+{id:"scl1_30",cat:"scroll",rarity:"Common",name:"Scroll of Heroism",stat:"Level 1",statType:"Enchantment",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin"],desc:"Concentration 1 min: creature immune to frightened, gains temp HP equal to your spellcasting mod each turn. Destroyed after use."},
+{id:"scl1_31",cat:"scroll",rarity:"Common",name:"Scroll of Detect Evil and Good",stat:"Level 1",statType:"Divination",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin"],desc:"Concentration 10 min: sense aberrations, celestials, fey, fiends, and undead within 30 ft. Destroyed after use."},
+{id:"scl1_32",cat:"scroll",rarity:"Common",name:"Scroll of Searing Smite",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["paladin"],desc:"Concentration 1 min: first hit +1d6 fire; CON save or target catches fire (1d6/turn until doused). Destroyed after use."},
+{id:"scl1_33",cat:"scroll",rarity:"Common",name:"Scroll of Hex",stat:"Level 1",statType:"Enchantment",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["warlock"],desc:"Concentration 1 hour: curse one creature within 90 ft — extra 1d6 necrotic on each hit. Destroyed after use."},
+{id:"scl1_34",cat:"scroll",rarity:"Common",name:"Scroll of Armor of Agathys",stat:"Level 1",statType:"Abjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["warlock"],desc:"Gain 5 temp HP; any melee attacker takes 5 cold damage while you have those temp HP. Destroyed after use."},
+{id:"scl1_35",cat:"scroll",rarity:"Common",name:"Scroll of Arms of Hadar",stat:"Level 1",statType:"Conjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["warlock"],desc:"10-ft radius tendrils: STR save or 2d6 necrotic and no reactions until start of next turn. Destroyed after use."},
+{id:"scl1_36",cat:"scroll",rarity:"Common",name:"Scroll of Hellish Rebuke",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["warlock"],desc:"Reaction when damaged: creature that hit you takes 2d10 fire (DEX save for half). Destroyed after use."},
+{id:"scl1_37",cat:"scroll",rarity:"Common",name:"Scroll of Witch Bolt",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["warlock"],desc:"Concentration 1 min: ranged attack, 1d12 lightning; bonus action each turn to deal 1d12 again automatically. Destroyed after use."},
+{id:"scl1_38",cat:"scroll",rarity:"Common",name:"Scroll of Healing Word",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["cleric","druid"],desc:"Bonus action: creature within 60 ft regains 1d4 + spellcasting modifier HP. Destroyed after use."},
+{id:"scl1_39",cat:"scroll",rarity:"Common",name:"Scroll of Bane",stat:"Level 1",statType:"Enchantment",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["cleric"],desc:"Concentration 1 min: up to three creatures subtract 1d4 from attacks and saves (CHA save to resist). Destroyed after use."},
+{id:"scl1_40",cat:"scroll",rarity:"Common",name:"Scroll of Inflict Wounds",stat:"Level 1",statType:"Necromancy",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["cleric"],desc:"Melee spell attack: 3d10 necrotic damage. Destroyed after use."},
+{id:"scl1_41",cat:"scroll",rarity:"Common",name:"Scroll of Sanctuary",stat:"Level 1",statType:"Abjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["cleric"],desc:"Bonus action 1 min: warded creature forces attackers to WIS save or choose new target. Destroyed after use."},
+{id:"scl1_42",cat:"scroll",rarity:"Common",name:"Scroll of Ceremony",stat:"Level 1",statType:"Abjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["cleric"],desc:"Ritual: perform one divine rite — Atonement, Bless Water, Coming of Age, Wedding, Funeral Rite, etc. Destroyed after use."},
+{id:"scl1_43",cat:"scroll",rarity:"Common",name:"Scroll of Create or Destroy Water",stat:"Level 1",statType:"Transmutation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["cleric","druid"],desc:"Create 10 gallons of clean water in a container, or destroy 10 gallons of water. Destroyed after use."},
+{id:"scl1_44",cat:"scroll",rarity:"Common",name:"Scroll of Detect Poison and Disease",stat:"Level 1",statType:"Divination",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["cleric","druid"],desc:"Ritual 10 min: sense presence and identify poisons and diseases within 30 ft. Destroyed after use."},
+{id:"scl1_45",cat:"scroll",rarity:"Common",name:"Scroll of Guiding Bolt",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["cleric"],desc:"Ranged spell attack 120 ft: 4d6 radiant; next attack roll vs target has advantage. Destroyed after use."},
+{id:"scl1_46",cat:"scroll",rarity:"Common",name:"Scroll of Entangle",stat:"Level 1",statType:"Conjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["druid"],desc:"Concentration 1 min: 20-ft square of restraining plants; STR save or restrained. Repeat each turn. Destroyed after use."},
+{id:"scl1_47",cat:"scroll",rarity:"Common",name:"Scroll of Faerie Fire",stat:"Level 1",statType:"Evocation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["druid"],desc:"Concentration 1 min: DEX save or outlined in light; attacks vs outlined creatures have advantage. Destroyed after use."},
+{id:"scl1_48",cat:"scroll",rarity:"Common",name:"Scroll of Speak with Animals",stat:"Level 1",statType:"Divination",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["druid"],desc:"Ritual 10 min: verbally communicate with beasts for 10 minutes. Destroyed after use."},
+{id:"scl1_49",cat:"scroll",rarity:"Common",name:"Scroll of Animal Friendship",stat:"Level 1",statType:"Enchantment",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["druid"],desc:"One beast within 30 ft: WIS save or charmed by you for 24 hours. Destroyed after use."},
+{id:"scl1_50",cat:"scroll",rarity:"Common",name:"Scroll of Absorb Elements",stat:"Level 1",statType:"Abjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["druid","paladin","wizard"],desc:"Reaction: resistance to triggering damage; next melee attack adds 1d6 of that type. Destroyed after use."},
+{id:"scl1_51",cat:"scroll",rarity:"Common",name:"Scroll of Goodberry",stat:"Level 1",statType:"Transmutation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["druid"],desc:"Create up to ten berries — each restores 1 HP and provides nourishment for a day. Destroyed after use."},
+{id:"scl1_52",cat:"scroll",rarity:"Common",name:"Scroll of Ice Knife",stat:"Level 1",statType:"Conjuration",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["druid","wizard"],desc:"Ranged attack 60 ft: 1d10 piercing on hit; then 2d6 cold explosion hits creatures within 5 ft (DEX save). Destroyed after use."},
+{id:"scl1_53",cat:"scroll",rarity:"Common",name:"Scroll of Purify Food and Drink",stat:"Level 1",statType:"Transmutation",cost:"75gp",wt:0,props:["Level 1","Common","Single use"],prof:["druid","cleric"],desc:"Ritual: remove all poison and disease from food and drink in a 5-ft radius within 10 ft. Destroyed after use."},
+// Level 2 — Uncommon (150gp)
+{id:"scl2_01",cat:"scroll",rarity:"Uncommon",name:"Scroll of Misty Step",stat:"Level 2",statType:"Conjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard","paladin","warlock"],desc:"Bonus action: teleport up to 30 ft to an unoccupied space you can see. Destroyed after use."},
+{id:"scl2_02",cat:"scroll",rarity:"Uncommon",name:"Scroll of Mirror Image",stat:"Level 2",statType:"Illusion",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Three illusory duplicates for 1 min deflect attacks on a 6+ roll (d20). Destroyed after use."},
+{id:"scl2_03",cat:"scroll",rarity:"Uncommon",name:"Scroll of Invisibility",stat:"Level 2",statType:"Illusion",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 hour: touch a creature — invisible until it attacks or casts a spell. Destroyed after use."},
+{id:"scl2_04",cat:"scroll",rarity:"Uncommon",name:"Scroll of Scorching Ray",stat:"Level 2",statType:"Evocation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Three ranged spell attack rays, each dealing 2d6 fire on a hit, 120 ft range. Destroyed after use."},
+{id:"scl2_05",cat:"scroll",rarity:"Uncommon",name:"Scroll of Web",stat:"Level 2",statType:"Conjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 hour: 20-ft cube of webs (difficult terrain, heavily obscured). DEX save or restrained. Destroyed after use."},
+{id:"scl2_06",cat:"scroll",rarity:"Uncommon",name:"Scroll of Hold Person",stat:"Level 2",statType:"Enchantment",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard","warlock","cleric"],desc:"Concentration 1 min: one humanoid WIS save or paralyzed; repeats save each turn. Destroyed after use."},
+{id:"scl2_07",cat:"scroll",rarity:"Uncommon",name:"Scroll of Alter Self",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 hour: Aquatic Adaptation, Change Appearance, or Natural Weapons (1d6 unarmed). Destroyed after use."},
+{id:"scl2_08",cat:"scroll",rarity:"Uncommon",name:"Scroll of Arcane Lock",stat:"Level 2",statType:"Abjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Permanently magically lock a door, window, or chest; DC to open +10. Destroyed after use."},
+{id:"scl2_09",cat:"scroll",rarity:"Uncommon",name:"Scroll of Cloud of Daggers",stat:"Level 2",statType:"Conjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 min: 5-ft cube of spinning daggers; 4d4 slashing to creatures inside. Destroyed after use."},
+{id:"scl2_10",cat:"scroll",rarity:"Uncommon",name:"Scroll of Darkvision",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard","druid"],desc:"Touch a willing creature: gains darkvision 60 ft for 8 hours. Destroyed after use."},
+{id:"scl2_11",cat:"scroll",rarity:"Uncommon",name:"Scroll of Enlarge/Reduce",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 min: double or halve a creature's size, affecting damage and STR checks. CON save to resist. Destroyed after use."},
+{id:"scl2_12",cat:"scroll",rarity:"Uncommon",name:"Scroll of Knock",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Loud knock: open one locked/barred/stuck object within 60 ft; suppresses arcane lock 10 min. Destroyed after use."},
+{id:"scl2_13",cat:"scroll",rarity:"Uncommon",name:"Scroll of Levitate",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 10 min: one creature or object (≤500 lbs) rises up to 20 ft/round. STR save to resist. Destroyed after use."},
+{id:"scl2_14",cat:"scroll",rarity:"Uncommon",name:"Scroll of Phantasmal Force",stat:"Level 2",statType:"Illusion",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 min: one creature INT save or perceives illusory object and takes 1d6 psychic/turn. Destroyed after use."},
+{id:"scl2_15",cat:"scroll",rarity:"Uncommon",name:"Scroll of See Invisibility",stat:"Level 2",statType:"Divination",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard"],desc:"1 hour: see invisible creatures and objects as if visible; perceive Ethereal Plane 60 ft. Destroyed after use."},
+{id:"scl2_16",cat:"scroll",rarity:"Uncommon",name:"Scroll of Spider Climb",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["wizard","warlock"],desc:"Concentration 1 hour: touch creature gains climb speed equal to walking speed, including ceilings. Destroyed after use."},
+{id:"scl2_17",cat:"scroll",rarity:"Uncommon",name:"Scroll of Aid",stat:"Level 2",statType:"Abjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["paladin","cleric"],desc:"Three targets within 30 ft gain +5 HP maximum and current HP for 8 hours. Destroyed after use."},
+{id:"scl2_18",cat:"scroll",rarity:"Uncommon",name:"Scroll of Lesser Restoration",stat:"Level 2",statType:"Abjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["paladin","druid"],desc:"Touch: end one disease or condition (blinded, deafened, paralyzed, or poisoned). Destroyed after use."},
+{id:"scl2_19",cat:"scroll",rarity:"Uncommon",name:"Scroll of Magic Weapon",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["paladin"],desc:"Concentration 1 hour: nonmagical weapon becomes magical, +1 to attack and damage (+2 at 4th slot, +3 at 6th). Destroyed after use."},
+{id:"scl2_20",cat:"scroll",rarity:"Uncommon",name:"Scroll of Branding Smite",stat:"Level 2",statType:"Evocation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["paladin"],desc:"Concentration 1 min: next hit +2d6 radiant; target becomes visible and sheds light. Destroyed after use."},
+{id:"scl2_21",cat:"scroll",rarity:"Uncommon",name:"Scroll of Find Steed",stat:"Level 2",statType:"Conjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["paladin"],desc:"Summon a spirit steed (warhorse, pony, elk, etc.) bonded to you; share spells while mounted. Destroyed after use."},
+{id:"scl2_22",cat:"scroll",rarity:"Uncommon",name:"Scroll of Protection from Poison",stat:"Level 2",statType:"Abjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["paladin","druid"],desc:"8 hours: neutralize one active poison; advantage on saves vs poison; resistance to poison damage. Destroyed after use."},
+{id:"scl2_23",cat:"scroll",rarity:"Uncommon",name:"Scroll of Warding Bond",stat:"Level 2",statType:"Abjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["paladin","cleric"],desc:"1 hour: touched creature +1 AC, +1 saves, resistance all damage; you take same damage it takes. Destroyed after use."},
+{id:"scl2_24",cat:"scroll",rarity:"Uncommon",name:"Scroll of Zone of Truth",stat:"Level 2",statType:"Enchantment",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["paladin","cleric"],desc:"10 min: 15-ft sphere within 60 ft; CHA save or creatures cannot speak deliberate lies. Destroyed after use."},
+{id:"scl2_25",cat:"scroll",rarity:"Uncommon",name:"Scroll of Darkness",stat:"Level 2",statType:"Evocation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["warlock"],desc:"Concentration 10 min: 15-ft radius magical darkness; darkvision cannot pierce it. Destroyed after use."},
+{id:"scl2_26",cat:"scroll",rarity:"Uncommon",name:"Scroll of Shatter",stat:"Level 2",statType:"Evocation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["warlock"],desc:"20-ft radius explosion: 3d8 thunder (CON save for half). Nonmagical objects auto-fail. Destroyed after use."},
+{id:"scl2_27",cat:"scroll",rarity:"Uncommon",name:"Scroll of Blur",stat:"Level 2",statType:"Illusion",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["warlock"],desc:"Concentration 1 min: attackers have disadvantage on rolls against you (unless using other senses). Destroyed after use."},
+{id:"scl2_28",cat:"scroll",rarity:"Uncommon",name:"Scroll of Crown of Madness",stat:"Level 2",statType:"Enchantment",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["warlock"],desc:"Concentration 1 min: one humanoid WIS save or charmed; must use action to attack another creature. Destroyed after use."},
+{id:"scl2_29",cat:"scroll",rarity:"Uncommon",name:"Scroll of Detect Thoughts",stat:"Level 2",statType:"Divination",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["warlock"],desc:"Concentration 1 min: read surface thoughts of creatures within 30 ft; WIS save to block probing. Destroyed after use."},
+{id:"scl2_30",cat:"scroll",rarity:"Uncommon",name:"Scroll of Enthrall",stat:"Level 2",statType:"Enchantment",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["warlock"],desc:"1 min: creatures that see/hear you have disadvantage on Perception vs others while you speak. Destroyed after use."},
+{id:"scl2_31",cat:"scroll",rarity:"Uncommon",name:"Scroll of Shadow Blade",stat:"Level 2",statType:"Illusion",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["warlock"],desc:"Concentration 1 min: create blade of shadow (finesse, light, thrown, 2d8 psychic); advantage in dim light. Destroyed after use."},
+{id:"scl2_32",cat:"scroll",rarity:"Uncommon",name:"Scroll of Spiritual Weapon",stat:"Level 2",statType:"Evocation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric"],desc:"1 min: floating weapon bonus action attacks (melee spell attack, 1d8+mod force) and moves 20 ft. Destroyed after use."},
+{id:"scl2_33",cat:"scroll",rarity:"Uncommon",name:"Scroll of Prayer of Healing",stat:"Level 2",statType:"Evocation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric"],desc:"10-min cast: up to six visible creatures within 30 ft each regain 2d8+mod HP. Destroyed after use."},
+{id:"scl2_34",cat:"scroll",rarity:"Uncommon",name:"Scroll of Silence",stat:"Level 2",statType:"Illusion",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric"],desc:"Concentration 10 min: 20-ft radius sphere of silence; deafened inside; no verbal spells within. Destroyed after use."},
+{id:"scl2_35",cat:"scroll",rarity:"Uncommon",name:"Scroll of Augury",stat:"Level 2",statType:"Divination",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric"],desc:"Ritual: get omen (Weal, Woe, both, or Nothing) about a course of action in the next 30 minutes. Destroyed after use."},
+{id:"scl2_36",cat:"scroll",rarity:"Uncommon",name:"Scroll of Blindness/Deafness",stat:"Level 2",statType:"Necromancy",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric"],desc:"One creature within 30 ft: CON save or blinded or deafened for 1 min; repeats save each turn. Destroyed after use."},
+{id:"scl2_37",cat:"scroll",rarity:"Uncommon",name:"Scroll of Calm Emotions",stat:"Level 2",statType:"Enchantment",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric"],desc:"Concentration 1 min: 20-ft radius — suppress charm/frightened or make hostiles indifferent. CHA save. Destroyed after use."},
+{id:"scl2_38",cat:"scroll",rarity:"Uncommon",name:"Scroll of Enhance Ability",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric","druid"],desc:"Concentration 1 hour: grant advantage on checks for one ability score and a bonus effect. Destroyed after use."},
+{id:"scl2_39",cat:"scroll",rarity:"Uncommon",name:"Scroll of Find Traps",stat:"Level 2",statType:"Divination",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric"],desc:"Sense presence (not location or type) of traps within line of sight within 120 ft. Destroyed after use."},
+{id:"scl2_40",cat:"scroll",rarity:"Uncommon",name:"Scroll of Gentle Repose",stat:"Level 2",statType:"Necromancy",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric"],desc:"Ritual 10 days: touched corpse protected from decay and cannot become undead. Destroyed after use."},
+{id:"scl2_41",cat:"scroll",rarity:"Uncommon",name:"Scroll of Locate Object",stat:"Level 2",statType:"Divination",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["cleric"],desc:"Concentration 10 min: sense direction to a familiar object within 1,000 ft. Blocked by lead. Destroyed after use."},
+{id:"scl2_42",cat:"scroll",rarity:"Uncommon",name:"Scroll of Moonbeam",stat:"Level 2",statType:"Evocation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Concentration 1 min: 5-ft radius cylinder of pale light; 2d10 radiant to creatures inside (CON save). Destroyed after use."},
+{id:"scl2_43",cat:"scroll",rarity:"Uncommon",name:"Scroll of Pass Without Trace",stat:"Level 2",statType:"Abjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Concentration 1 hour: you and companions within 30 ft gain +10 Stealth; cannot be tracked magically. Destroyed after use."},
+{id:"scl2_44",cat:"scroll",rarity:"Uncommon",name:"Scroll of Heat Metal",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Concentration 1 min: metal object glows red-hot; holder takes 2d8 fire/turn; disadvantage on attacks while held. Destroyed after use."},
+{id:"scl2_45",cat:"scroll",rarity:"Uncommon",name:"Scroll of Spike Growth",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Concentration 10 min: 20-ft radius of spikes — 2d4 piercing per 5 ft moved through. Camouflaged. Destroyed after use."},
+{id:"scl2_46",cat:"scroll",rarity:"Uncommon",name:"Scroll of Flaming Sphere",stat:"Level 2",statType:"Conjuration",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Concentration 1 min: 5-ft sphere of fire; 2d6 fire (DEX save) to nearby creatures; move 30 ft bonus action. Destroyed after use."},
+{id:"scl2_47",cat:"scroll",rarity:"Uncommon",name:"Scroll of Animal Messenger",stat:"Level 2",statType:"Enchantment",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Ritual 24 hours: charm a Tiny beast to deliver a message to a described target within 25 miles. Destroyed after use."},
+{id:"scl2_48",cat:"scroll",rarity:"Uncommon",name:"Scroll of Barkskin",stat:"Level 2",statType:"Transmutation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Concentration 1 hour: touch willing creature — AC cannot be lower than 16 regardless of armor. Destroyed after use."},
+{id:"scl2_49",cat:"scroll",rarity:"Uncommon",name:"Scroll of Beast Sense",stat:"Level 2",statType:"Divination",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Ritual concentration 1 hour: touch willing beast — perceive through its senses using your action. Destroyed after use."},
+{id:"scl2_50",cat:"scroll",rarity:"Uncommon",name:"Scroll of Gust of Wind",stat:"Level 2",statType:"Evocation",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Concentration 1 min: 60-ft long wind: costs +1 ft/ft to move against; DEX save or pushed 15 ft. Destroyed after use."},
+{id:"scl2_51",cat:"scroll",rarity:"Uncommon",name:"Scroll of Locate Animals or Plants",stat:"Level 2",statType:"Divination",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Ritual: learn direction and distance to nearest creature or plant of a named kind within 5 miles. Destroyed after use."},
+{id:"scl2_52",cat:"scroll",rarity:"Uncommon",name:"Scroll of Warp Sense",stat:"Level 2",statType:"Divination",cost:"150gp",wt:0,props:["Level 2","Uncommon","Single use"],prof:["druid"],desc:"Concentration 1 min: sense aberrations, celestials, elementals, fey, fiends, or undead within 30 ft. Destroyed after use."},
+// Level 3 — Uncommon (300gp)
+{id:"scl3_01",cat:"scroll",rarity:"Uncommon",name:"Scroll of Counterspell",stat:"Level 3",statType:"Abjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"Reaction when creature within 60 ft casts: automatically negate spells of 3rd level or lower; ability check for higher. Destroyed after use."},
+{id:"scl3_02",cat:"scroll",rarity:"Uncommon",name:"Scroll of Fireball",stat:"Level 3",statType:"Evocation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"20-ft radius explosion within 150 ft: 8d6 fire (DEX save for half). Sets fires. Destroyed after use."},
+{id:"scl3_03",cat:"scroll",rarity:"Uncommon",name:"Scroll of Lightning Bolt",stat:"Level 3",statType:"Evocation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"100-ft long, 5-ft wide bolt: 8d6 lightning (DEX save for half). Ignites flammables. Destroyed after use."},
+{id:"scl3_04",cat:"scroll",rarity:"Uncommon",name:"Scroll of Fly",stat:"Level 3",statType:"Transmutation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 10 min: touch creature gains flying speed 60 ft. Destroyed after use."},
+{id:"scl3_05",cat:"scroll",rarity:"Uncommon",name:"Scroll of Haste",stat:"Level 3",statType:"Transmutation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 min: one willing creature — double speed, +2 AC, DEX save advantage, extra action. Lethargy on end. Destroyed after use."},
+{id:"scl3_06",cat:"scroll",rarity:"Uncommon",name:"Scroll of Slow",stat:"Level 3",statType:"Transmutation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 min: up to 6 creatures WIS save or half speed, -2 AC, no reactions, limited actions. Destroyed after use."},
+{id:"scl3_07",cat:"scroll",rarity:"Uncommon",name:"Scroll of Hypnotic Pattern",stat:"Level 3",statType:"Illusion",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard","warlock"],desc:"Concentration 1 min: 30-ft cube of swirling patterns; WIS save or incapacitated and speed 0. Destroyed after use."},
+{id:"scl3_08",cat:"scroll",rarity:"Uncommon",name:"Scroll of Dispel Magic",stat:"Level 3",statType:"Abjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard","cleric","druid"],desc:"End one spell of 3rd level or lower on target within 120 ft. Ability check for higher-level spells. Destroyed after use."},
+{id:"scl3_09",cat:"scroll",rarity:"Uncommon",name:"Scroll of Animate Dead",stat:"Level 3",statType:"Necromancy",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard","cleric"],desc:"Create skeleton or zombie from remains within 10 ft; controls for 24 hours. Destroyed after use."},
+{id:"scl3_10",cat:"scroll",rarity:"Uncommon",name:"Scroll of Bestow Curse",stat:"Level 3",statType:"Necromancy",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard","cleric"],desc:"Concentration 1 min: touch creature WIS save or cursed (disadvantage, wasted actions, or extra damage). Destroyed after use."},
+{id:"scl3_11",cat:"scroll",rarity:"Uncommon",name:"Scroll of Clairvoyance",stat:"Level 3",statType:"Divination",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard","cleric"],desc:"Concentration 10 min: invisible sensor at familiar location within 1 mile; see or hear through it. Destroyed after use."},
+{id:"scl3_12",cat:"scroll",rarity:"Uncommon",name:"Scroll of Nondetection",stat:"Level 3",statType:"Abjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"8 hours: touched creature/object cannot be targeted by divination magic or scrying sensors. Destroyed after use."},
+{id:"scl3_13",cat:"scroll",rarity:"Uncommon",name:"Scroll of Sleet Storm",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 min: 40-ft radius heavily obscuring sleet; extinguishes flames; difficult terrain. Destroyed after use."},
+{id:"scl3_14",cat:"scroll",rarity:"Uncommon",name:"Scroll of Stinking Cloud",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"Concentration 1 min: 20-ft nauseating gas sphere; CON save or waste action retching. Destroyed after use."},
+{id:"scl3_15",cat:"scroll",rarity:"Uncommon",name:"Scroll of Tongues",stat:"Level 3",statType:"Divination",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard"],desc:"1 hour: touch creature — understands any language and is understood by any creature with a language. Destroyed after use."},
+{id:"scl3_16",cat:"scroll",rarity:"Uncommon",name:"Scroll of Vampiric Touch",stat:"Level 3",statType:"Necromancy",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard","warlock"],desc:"Concentration 1 min: melee spell attack each turn — 3d6 necrotic, regain HP equal to half damage. Destroyed after use."},
+{id:"scl3_17",cat:"scroll",rarity:"Uncommon",name:"Scroll of Water Breathing",stat:"Level 3",statType:"Transmutation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["wizard","druid"],desc:"Ritual 24 hours: up to ten creatures can breathe underwater and retain normal breathing. Destroyed after use."},
+{id:"scl3_18",cat:"scroll",rarity:"Uncommon",name:"Scroll of Crusader's Mantle",stat:"Level 3",statType:"Evocation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["paladin"],desc:"Concentration 1 min: friendly creatures within 30 ft add 1d4 radiant to weapon damage. Destroyed after use."},
+{id:"scl3_19",cat:"scroll",rarity:"Uncommon",name:"Scroll of Revivify",stat:"Level 3",statType:"Necromancy",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["paladin","cleric"],desc:"Touch a creature that died within 1 minute — it returns with 1 HP. Requires 300gp diamond. Destroyed after use."},
+{id:"scl3_20",cat:"scroll",rarity:"Uncommon",name:"Scroll of Blinding Smite",stat:"Level 3",statType:"Evocation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["paladin"],desc:"Concentration 1 min: next hit +3d8 radiant; CON save or blinded for duration; repeats save each turn. Destroyed after use."},
+{id:"scl3_21",cat:"scroll",rarity:"Uncommon",name:"Scroll of Aura of Vitality",stat:"Level 3",statType:"Evocation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["paladin"],desc:"Concentration 1 min: bonus action each turn — restore 2d6 HP to one creature within 30 ft. Destroyed after use."},
+{id:"scl3_22",cat:"scroll",rarity:"Uncommon",name:"Scroll of Hunger of Hadar",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["warlock"],desc:"Concentration 1 min: 20-ft sphere of blackness and tentacles; 2d6 cold start of turn, 2d6 acid end of turn. Destroyed after use."},
+{id:"scl3_23",cat:"scroll",rarity:"Uncommon",name:"Scroll of Fear",stat:"Level 3",statType:"Illusion",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["warlock"],desc:"Concentration 1 min: 30-ft cone; WIS save or drop items, frightened, must Dash away. Destroyed after use."},
+{id:"scl3_24",cat:"scroll",rarity:"Uncommon",name:"Scroll of Summon Shadowspawn",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["warlock"],desc:"Concentration 1 hour: summon shadow spirit that obeys your commands; attacks and resistances. Destroyed after use."},
+{id:"scl3_25",cat:"scroll",rarity:"Uncommon",name:"Scroll of Magic Circle",stat:"Level 3",statType:"Abjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["warlock"],desc:"1 hour: 10-ft radius cylinder blocks chosen creature type (aberrations, fiends, undead, etc.). Destroyed after use."},
+{id:"scl3_26",cat:"scroll",rarity:"Uncommon",name:"Scroll of Summon Lesser Demons",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["warlock"],desc:"Concentration 1 hour: summon uncontrolled demons; attack nearest non-demons. Sacred symbols banish them. Destroyed after use."},
+{id:"scl3_27",cat:"scroll",rarity:"Uncommon",name:"Scroll of Spirit Guardians",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric"],desc:"Concentration 10 min: 15-ft radius of spirits; hostile creatures half speed and 3d8 radiant on entry/turn start. Destroyed after use."},
+{id:"scl3_28",cat:"scroll",rarity:"Uncommon",name:"Scroll of Mass Healing Word",stat:"Level 3",statType:"Evocation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric"],desc:"Bonus action: up to six visible creatures within 60 ft each regain 1d4 + spellcasting modifier HP. Destroyed after use."},
+{id:"scl3_29",cat:"scroll",rarity:"Uncommon",name:"Scroll of Beacon of Hope",stat:"Level 3",statType:"Abjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric"],desc:"Concentration 1 min: chosen creatures advantage on WIS saves and death saves; maximum HP from healing. Destroyed after use."},
+{id:"scl3_30",cat:"scroll",rarity:"Uncommon",name:"Scroll of Create Food and Water",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric"],desc:"Create 45 lbs food and 30 gallons water within 30 ft; sustains 15 humanoids for 24 hours. Destroyed after use."},
+{id:"scl3_31",cat:"scroll",rarity:"Uncommon",name:"Scroll of Daylight",stat:"Level 3",statType:"Evocation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric","druid"],desc:"1 hour: 60-ft radius bright light from a point within 60 ft; dispels magical darkness 3rd level or lower. Destroyed after use."},
+{id:"scl3_32",cat:"scroll",rarity:"Uncommon",name:"Scroll of Feign Death",stat:"Level 3",statType:"Necromancy",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric"],desc:"Ritual 1 hour: touch willing creature — appears dead; blinded, incapacitated; resistance all damage except psychic. Destroyed after use."},
+{id:"scl3_33",cat:"scroll",rarity:"Uncommon",name:"Scroll of Glyph of Warding",stat:"Level 3",statType:"Abjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric"],desc:"Inscribe triggered glyph on surface (200gp, consumed); 5d8 damage in 20-ft radius or stored spell on trigger. Destroyed after use."},
+{id:"scl3_34",cat:"scroll",rarity:"Uncommon",name:"Scroll of Protection from Energy",stat:"Level 3",statType:"Abjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric"],desc:"Concentration 1 hour: touch willing creature — resistance to one energy damage type of your choice. Destroyed after use."},
+{id:"scl3_35",cat:"scroll",rarity:"Uncommon",name:"Scroll of Remove Curse",stat:"Level 3",statType:"Abjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric"],desc:"Touch a creature or object: all curses end. Cursed items remain cursed but can be removed. Destroyed after use."},
+{id:"scl3_36",cat:"scroll",rarity:"Uncommon",name:"Scroll of Speak with Dead",stat:"Level 3",statType:"Necromancy",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric"],desc:"10 min: ask a corpse up to five questions; it answers from its knowledge in life. Destroyed after use."},
+{id:"scl3_37",cat:"scroll",rarity:"Uncommon",name:"Scroll of Water Walk",stat:"Level 3",statType:"Transmutation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["cleric","druid"],desc:"Ritual 1 hour: up to ten creatures walk on liquid surfaces as if solid ground. Destroyed after use."},
+{id:"scl3_38",cat:"scroll",rarity:"Uncommon",name:"Scroll of Call Lightning",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["druid"],desc:"Concentration 10 min: action each turn — bolt strikes 5-ft cylinder within 120 ft for 3d10 lightning (DEX save). Destroyed after use."},
+{id:"scl3_39",cat:"scroll",rarity:"Uncommon",name:"Scroll of Plant Growth",stat:"Level 3",statType:"Transmutation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["druid"],desc:"Instant 100-ft radius overgrowth (difficult terrain), or 8-hr cast doubles crop yields within half a mile. Destroyed after use."},
+{id:"scl3_40",cat:"scroll",rarity:"Uncommon",name:"Scroll of Conjure Animals",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["druid"],desc:"Concentration 1 hour: summon 1 CR2, 2 CR1, 4 CR½, or 8 CR¼ beasts; they obey your commands. Destroyed after use."},
+{id:"scl3_41",cat:"scroll",rarity:"Uncommon",name:"Scroll of Erupting Earth",stat:"Level 3",statType:"Transmutation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["druid"],desc:"20-ft cube of rubble within 120 ft: DEX save or 3d12 bludgeoning; area becomes difficult terrain. Destroyed after use."},
+{id:"scl3_42",cat:"scroll",rarity:"Uncommon",name:"Scroll of Meld into Stone",stat:"Level 3",statType:"Transmutation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["druid"],desc:"Ritual 8 hours: merge yourself and equipment into a stone within reach; emerge as an action. Destroyed after use."},
+{id:"scl3_43",cat:"scroll",rarity:"Uncommon",name:"Scroll of Tidal Wave",stat:"Level 3",statType:"Conjuration",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["druid"],desc:"30×10×10-ft wave within 120 ft: DEX save or 4d8 bludgeoning and knocked prone. Extinguishes fires. Destroyed after use."},
+{id:"scl3_44",cat:"scroll",rarity:"Uncommon",name:"Scroll of Wind Wall",stat:"Level 3",statType:"Evocation",cost:"300gp",wt:0,props:["Level 3","Uncommon","Single use"],prof:["druid"],desc:"Concentration 1 min: 50-ft long wind wall; 3d8 bludgeoning to pass through; deflects nonmagical missiles. Destroyed after use."},
+// Level 4 — Rare (500gp)
+{id:"scl4_01",cat:"scroll",rarity:"Rare",name:"Scroll of Polymorph",stat:"Level 4",statType:"Transmutation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 hour: transform a creature into a beast of CR ≤ level; WIS save if unwilling. Destroyed after use."},
+{id:"scl4_02",cat:"scroll",rarity:"Rare",name:"Scroll of Greater Invisibility",stat:"Level 4",statType:"Illusion",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 min: target creature invisible even when attacking or casting spells. Destroyed after use."},
+{id:"scl4_03",cat:"scroll",rarity:"Rare",name:"Scroll of Arcane Eye",stat:"Level 4",statType:"Divination",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 hour: invisible magical eye — move 30 ft/action; darkvision 30 ft; fits through 1-inch gaps. Destroyed after use."},
+{id:"scl4_04",cat:"scroll",rarity:"Rare",name:"Scroll of Banishment",stat:"Level 4",statType:"Abjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard","warlock","cleric"],desc:"Concentration 1 min: one creature CHA save or banished; extraplanar creatures permanently if maintained. Destroyed after use."},
+{id:"scl4_05",cat:"scroll",rarity:"Rare",name:"Scroll of Black Tentacles",stat:"Level 4",statType:"Conjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 min: 20-ft square writhing tentacles; DEX save or restrained, 3d6 bludgeoning/turn. Destroyed after use."},
+{id:"scl4_06",cat:"scroll",rarity:"Rare",name:"Scroll of Confusion",stat:"Level 4",statType:"Enchantment",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 min: 10-ft radius WIS save or random actions each turn. Destroyed after use."},
+{id:"scl4_07",cat:"scroll",rarity:"Rare",name:"Scroll of Dimension Door",stat:"Level 4",statType:"Conjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard","warlock"],desc:"Teleport up to 500 ft; bring one willing creature. If destination occupied: 4d6 force and spell fails. Destroyed after use."},
+{id:"scl4_08",cat:"scroll",rarity:"Rare",name:"Scroll of Fabricate",stat:"Level 4",statType:"Transmutation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard"],desc:"10-min cast: transform raw materials into finished items up to 10-ft cube. No magic items. Destroyed after use."},
+{id:"scl4_09",cat:"scroll",rarity:"Rare",name:"Scroll of Fire Shield",stat:"Level 4",statType:"Evocation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard"],desc:"10 min: warm shield (cold resistance, 2d8 fire to melee attackers) or chill shield (fire resistance, 2d8 cold). Destroyed after use."},
+{id:"scl4_10",cat:"scroll",rarity:"Rare",name:"Scroll of Ice Storm",stat:"Level 4",statType:"Evocation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard","druid"],desc:"20-ft radius, 40-ft cylinder within 300 ft: 2d8 bludgeoning + 4d6 cold (DEX save); difficult terrain. Destroyed after use."},
+{id:"scl4_11",cat:"scroll",rarity:"Rare",name:"Scroll of Hallucinatory Terrain",stat:"Level 4",statType:"Illusion",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard","druid"],desc:"24 hours: natural terrain in 150-ft cube mimics another terrain type; INT save to disbelieve on touch. Destroyed after use."},
+{id:"scl4_12",cat:"scroll",rarity:"Rare",name:"Scroll of Otiluke's Resilient Sphere",stat:"Level 4",statType:"Evocation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 min: DEX save or enclose creature in weightless sphere — immune to damage, can't affect outside. Destroyed after use."},
+{id:"scl4_13",cat:"scroll",rarity:"Rare",name:"Scroll of Stoneskin",stat:"Level 4",statType:"Abjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["wizard","druid"],desc:"Concentration 1 hour: touch creature — resistance to nonmagical bludgeoning, piercing, slashing. 100gp onyx consumed. Destroyed after use."},
+{id:"scl4_14",cat:"scroll",rarity:"Rare",name:"Scroll of Death Ward",stat:"Level 4",statType:"Abjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["paladin","cleric"],desc:"8 hours: next time target drops to 0 HP from damage it instead drops to 1 HP; spell then ends. Destroyed after use."},
+{id:"scl4_15",cat:"scroll",rarity:"Rare",name:"Scroll of Guardian of Faith",stat:"Level 4",statType:"Conjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["paladin","cleric"],desc:"Large spectral guardian: hostiles within 10 ft take 20 radiant (DEX save for half); 60 total damage then gone. Destroyed after use."},
+{id:"scl4_16",cat:"scroll",rarity:"Rare",name:"Scroll of Staggering Smite",stat:"Level 4",statType:"Evocation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["paladin"],desc:"Concentration 1 min: next hit +4d6 psychic; WIS save or disadvantage on attacks/checks, no reactions until its turn end. Destroyed after use."},
+{id:"scl4_17",cat:"scroll",rarity:"Rare",name:"Scroll of Aura of Life",stat:"Level 4",statType:"Abjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["paladin"],desc:"Concentration 10 min: 30-ft aura — immune to disease, max HP not reduced, regain 1 HP/turn at 0 HP. Destroyed after use."},
+{id:"scl4_18",cat:"scroll",rarity:"Rare",name:"Scroll of Aura of Purity",stat:"Level 4",statType:"Abjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["paladin"],desc:"Concentration 10 min: 30-ft aura — immune to disease, resist poison, advantage on many condition saves. Destroyed after use."},
+{id:"scl4_19",cat:"scroll",rarity:"Rare",name:"Scroll of Locate Creature",stat:"Level 4",statType:"Divination",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["paladin","cleric"],desc:"Concentration 1 hour: sense direction to familiar creature or species within 1,000 ft. Blocked by running water. Destroyed after use."},
+{id:"scl4_20",cat:"scroll",rarity:"Rare",name:"Scroll of Blight",stat:"Level 4",statType:"Necromancy",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["warlock","druid"],desc:"Creature or plant within 30 ft: CON save or 8d8 necrotic (half on success). Plants auto-fail and take max. Destroyed after use."},
+{id:"scl4_21",cat:"scroll",rarity:"Rare",name:"Scroll of Elemental Bane",stat:"Level 4",statType:"Transmutation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["warlock"],desc:"Concentration 1 min: one creature (CON save) loses resistance to chosen damage type; you deal +2d6 of that type on hits. Destroyed after use."},
+{id:"scl4_22",cat:"scroll",rarity:"Rare",name:"Scroll of Phantasmal Killer",stat:"Level 4",statType:"Illusion",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["warlock"],desc:"Concentration 1 min: WIS save or frightened, 4d10 psychic/turn (WIS save for half each turn). Destroyed after use."},
+{id:"scl4_23",cat:"scroll",rarity:"Rare",name:"Scroll of Shadow of Moil",stat:"Level 4",statType:"Necromancy",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["warlock"],desc:"Concentration 1 min: shadows surround you — heavily obscured from others; resist radiant; melee attackers take 2d8 necrotic. Destroyed after use."},
+{id:"scl4_24",cat:"scroll",rarity:"Rare",name:"Scroll of Summon Aberration",stat:"Level 4",statType:"Conjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["warlock"],desc:"Concentration 1 hour: summon an aberrant spirit (Beholderkin, Slaad, or Star Spawn) that obeys commands. Destroyed after use."},
+{id:"scl4_25",cat:"scroll",rarity:"Rare",name:"Scroll of Control Water",stat:"Level 4",statType:"Transmutation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["cleric","druid"],desc:"Concentration 10 min: Flood, Part, Redirect, or Whirlpool a 100-ft cube of water within 300 ft. Destroyed after use."},
+{id:"scl4_26",cat:"scroll",rarity:"Rare",name:"Scroll of Divination",stat:"Level 4",statType:"Divination",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["cleric"],desc:"Ritual: ask one question about events within 7 days; receive truthful omen (phrase, riddle, or portent). Destroyed after use."},
+{id:"scl4_27",cat:"scroll",rarity:"Rare",name:"Scroll of Stone Shape",stat:"Level 4",statType:"Transmutation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["cleric","druid"],desc:"Touch a Medium or smaller piece of stone: reshape it into crude forms (door, seal, statue, crude weapon). Destroyed after use."},
+{id:"scl4_28",cat:"scroll",rarity:"Rare",name:"Scroll of Freedom of Movement",stat:"Level 4",statType:"Abjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["druid"],desc:"1 hour: ignore difficult terrain; spells can't reduce speed or paralyze/restrain; 5 ft to escape restraints. Destroyed after use."},
+{id:"scl4_29",cat:"scroll",rarity:"Rare",name:"Scroll of Conjure Woodland Beings",stat:"Level 4",statType:"Conjuration",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["druid"],desc:"Concentration 1 hour: summon fey — 8 CR¼, 4 CR½, 2 CR1, or 1 CR2; hostile to your enemies. Destroyed after use."},
+{id:"scl4_30",cat:"scroll",rarity:"Rare",name:"Scroll of Dominate Beast",stat:"Level 4",statType:"Enchantment",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["druid"],desc:"Concentration 1 min: one beast WIS save or charmed; issue mental commands; repeats save when damaged. Destroyed after use."},
+{id:"scl4_31",cat:"scroll",rarity:"Rare",name:"Scroll of Giant Insect",stat:"Level 4",statType:"Transmutation",cost:"500gp",wt:0,props:["Level 4","Rare","Single use"],prof:["druid"],desc:"Concentration 10 min: up to ten centipedes, three spiders, five wasps, or one scorpion become Giants under your control. Destroyed after use."},
+// Level 5 — Rare (1,000gp)
+{id:"scl5_01",cat:"scroll",rarity:"Rare",name:"Scroll of Cone of Cold",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard"],desc:"60-ft cone: 8d8 cold (CON save for half). Creatures killed become frozen statues that shatter if disturbed. Destroyed after use."},
+{id:"scl5_02",cat:"scroll",rarity:"Rare",name:"Scroll of Hold Monster",stat:"Level 5",statType:"Enchantment",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 min: any creature (not just humanoid) WIS save or paralyzed; repeats save each turn. Destroyed after use."},
+{id:"scl5_03",cat:"scroll",rarity:"Rare",name:"Scroll of Wall of Force",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard"],desc:"Concentration 10 min: invisible wall of magical force (up to ten 10×10-ft panels); immune to all damage. Destroyed after use."},
+{id:"scl5_04",cat:"scroll",rarity:"Rare",name:"Scroll of Teleportation Circle",stat:"Level 5",statType:"Conjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard"],desc:"1-min cast: 10-ft portal to a permanent circle you know; all creatures passing through teleport instantly. Destroyed after use."},
+{id:"scl5_05",cat:"scroll",rarity:"Rare",name:"Scroll of Bigby's Hand",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 min: Large spectral hand — Clenched Fist (4d8 force), Forceful Hand, Grasping Hand, or Interposing. Destroyed after use."},
+{id:"scl5_06",cat:"scroll",rarity:"Rare",name:"Scroll of Dream",stat:"Level 5",statType:"Illusion",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard","warlock"],desc:"8-hr cast: messenger enters sleeper's dream, or send nightmare (WIS save or 3d6 psychic, no rest benefit). Destroyed after use."},
+{id:"scl5_07",cat:"scroll",rarity:"Rare",name:"Scroll of Mislead",stat:"Level 5",statType:"Illusion",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 hour: you become invisible; illusory double appears — it can speak and gesture. Destroyed after use."},
+{id:"scl5_08",cat:"scroll",rarity:"Rare",name:"Scroll of Modify Memory",stat:"Level 5",statType:"Enchantment",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard"],desc:"Concentration 1 min: WIS save or charmed; modify up to 10 min of memory from last 24 hours. Destroyed after use."},
+{id:"scl5_09",cat:"scroll",rarity:"Rare",name:"Scroll of Passwall",stat:"Level 5",statType:"Transmutation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard"],desc:"1 hour: create a passage up to 20 ft deep, 5 ft wide, 8 ft tall through wood, plaster, or stone (not metal). Destroyed after use."},
+{id:"scl5_10",cat:"scroll",rarity:"Rare",name:"Scroll of Scrying",stat:"Level 5",statType:"Divination",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard","warlock"],desc:"Concentration 10 min: spy on creature on same plane (WIS save modified by familiarity). Destroyed after use."},
+{id:"scl5_11",cat:"scroll",rarity:"Rare",name:"Scroll of Telekinesis",stat:"Level 5",statType:"Transmutation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["wizard"],desc:"Concentration 10 min: move creature (STR contest) or object ≤1,000 lbs up to 30 ft/action within 60 ft. Destroyed after use."},
+{id:"scl5_12",cat:"scroll",rarity:"Rare",name:"Scroll of Holy Weapon",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["paladin"],desc:"Concentration 1 hour: weapon +2d8 radiant on each hit; end it to emit 4d8 radiant burst 30 ft (CON save, blinded 1 min). Destroyed after use."},
+{id:"scl5_13",cat:"scroll",rarity:"Rare",name:"Scroll of Destructive Wave",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["paladin"],desc:"30-ft radius burst: CON save or 5d6 thunder + 5d6 radiant/necrotic and knocked prone (half on success). Destroyed after use."},
+{id:"scl5_14",cat:"scroll",rarity:"Rare",name:"Scroll of Greater Restoration",stat:"Level 5",statType:"Abjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["paladin","cleric"],desc:"Touch creature: end charmed, exhaustion level, petrified, cursed, or ability score reduction. 100gp diamond dust consumed. Destroyed after use."},
+{id:"scl5_15",cat:"scroll",rarity:"Rare",name:"Scroll of Banishing Smite",stat:"Level 5",statType:"Abjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["paladin"],desc:"Concentration 1 min: next hit +5d10 force; if target drops to ≤50 HP it is banished to a harmless demiplane. Destroyed after use."},
+{id:"scl5_16",cat:"scroll",rarity:"Rare",name:"Scroll of Circle of Power",stat:"Level 5",statType:"Abjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["paladin"],desc:"Concentration 10 min: 30-ft aura — friendly creatures advantage on saves vs magic; half damage on success = no damage. Destroyed after use."},
+{id:"scl5_17",cat:"scroll",rarity:"Rare",name:"Scroll of Geas",stat:"Level 5",statType:"Enchantment",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["paladin","druid"],desc:"1-min cast, 30 days: one creature WIS save or compelled to obey/avoid a course; 5d10 psychic/day if violated. Destroyed after use."},
+{id:"scl5_18",cat:"scroll",rarity:"Rare",name:"Scroll of Raise Dead",stat:"Level 5",statType:"Necromancy",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["paladin","cleric"],desc:"Dead creature (within 10 days) returns with 1 HP; -4 to d20 rolls (recovers 1/long rest). 500gp diamond consumed. Destroyed after use."},
+{id:"scl5_19",cat:"scroll",rarity:"Rare",name:"Scroll of Summon Celestial",stat:"Level 5",statType:"Conjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["paladin"],desc:"Concentration 1 hour: summon celestial spirit (Avenger or Defender) that obeys your commands; deals radiant. Destroyed after use."},
+{id:"scl5_20",cat:"scroll",rarity:"Rare",name:"Scroll of Contact Other Plane",stat:"Level 5",statType:"Divination",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["warlock"],desc:"Ritual: contact planar entity for up to 5 yes/no questions; INT save DC 15 or insane 1d10 days. Destroyed after use."},
+{id:"scl5_21",cat:"scroll",rarity:"Rare",name:"Scroll of Enervation",stat:"Level 5",statType:"Necromancy",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["warlock"],desc:"Concentration 1 min: 4d8 necrotic/turn (CON save for half); regain HP equal to half damage. Destroyed after use."},
+{id:"scl5_22",cat:"scroll",rarity:"Rare",name:"Scroll of Far Step",stat:"Level 5",statType:"Conjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["warlock"],desc:"Concentration 1 min: teleport up to 60 ft as a bonus action on each of your turns. Destroyed after use."},
+{id:"scl5_23",cat:"scroll",rarity:"Rare",name:"Scroll of Negative Energy Flood",stat:"Level 5",statType:"Necromancy",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["warlock"],desc:"One creature within 60 ft: CON save or 5d12 necrotic (half on success). If killed, rises as zombie at your next turn. Destroyed after use."},
+{id:"scl5_24",cat:"scroll",rarity:"Rare",name:"Scroll of Flame Strike",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["cleric"],desc:"10-ft radius, 40-ft column of divine fire within 60 ft: 4d6 fire + 4d6 radiant (DEX save for half). Destroyed after use."},
+{id:"scl5_25",cat:"scroll",rarity:"Rare",name:"Scroll of Commune",stat:"Level 5",statType:"Divination",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["cleric"],desc:"Ritual 1-min cast: contact divine entity for 3 yes/no questions. Once per long rest. Destroyed after use."},
+{id:"scl5_26",cat:"scroll",rarity:"Rare",name:"Scroll of Contagion",stat:"Level 5",statType:"Necromancy",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["cleric"],desc:"Melee spell attack on hit: subject to a disease (Blinding Sickness, Flesh Rot, Slimy Doom, etc.) after 3 failed CON saves. Destroyed after use."},
+{id:"scl5_27",cat:"scroll",rarity:"Rare",name:"Scroll of Dawn",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["cleric"],desc:"Concentration 1 min: 30-ft radius sunlight cylinder; undead CON save or 4d10 radiant (half on success). Destroyed after use."},
+{id:"scl5_28",cat:"scroll",rarity:"Rare",name:"Scroll of Hallow",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["cleric"],desc:"24-hr cast, permanent: designate 60-ft radius as hallowed; one extra effect; bar chosen creature types. Destroyed after use."},
+{id:"scl5_29",cat:"scroll",rarity:"Rare",name:"Scroll of Mass Cure Wounds",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["cleric"],desc:"Six creatures within 30 ft of a point within 60 ft each regain 3d8 + spellcasting modifier HP. Destroyed after use."},
+{id:"scl5_30",cat:"scroll",rarity:"Rare",name:"Scroll of Insect Plague",stat:"Level 5",statType:"Conjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["druid"],desc:"Concentration 10 min: 20-ft sphere of biting locusts within 300 ft; 4d10 piercing/turn (CON save for half). Destroyed after use."},
+{id:"scl5_31",cat:"scroll",rarity:"Rare",name:"Scroll of Wall of Stone",stat:"Level 5",statType:"Evocation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["druid"],desc:"Concentration 10 min: ten 10×10-ft stone panels; if maintained becomes permanent stone. Destroyed after use."},
+{id:"scl5_32",cat:"scroll",rarity:"Rare",name:"Scroll of Antilife Shell",stat:"Level 5",statType:"Abjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["druid"],desc:"Concentration 1 hour: 10-ft aura; animated creatures cannot enter (WIS save or pushed back). Destroyed after use."},
+{id:"scl5_33",cat:"scroll",rarity:"Rare",name:"Scroll of Awaken",stat:"Level 5",statType:"Transmutation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["druid"],desc:"8-hr cast: Large or smaller beast or plant (INT ≤3) gains INT 10, language, soul, charmed 30 days. 1,000gp agate consumed. Destroyed after use."},
+{id:"scl5_34",cat:"scroll",rarity:"Rare",name:"Scroll of Commune with Nature",stat:"Level 5",statType:"Divination",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["druid"],desc:"Ritual 1-min cast: know up to 3 natural facts within 3 miles outdoors or 300 ft underground. Destroyed after use."},
+{id:"scl5_35",cat:"scroll",rarity:"Rare",name:"Scroll of Conjure Elemental",stat:"Level 5",statType:"Conjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["druid"],desc:"Concentration 1 hour: summon an elemental of CR equal to slot level (max 5). If concentration breaks, it turns hostile. Destroyed after use."},
+{id:"scl5_36",cat:"scroll",rarity:"Rare",name:"Scroll of Reincarnate",stat:"Level 5",statType:"Transmutation",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["druid"],desc:"Touch dead humanoid (within 10 days): soul enters new randomly determined body with all memories. 1,000gp oils consumed. Destroyed after use."},
+{id:"scl5_37",cat:"scroll",rarity:"Rare",name:"Scroll of Tree Stride",stat:"Level 5",statType:"Conjuration",cost:"1000gp",wt:0,props:["Level 5","Rare","Single use"],prof:["druid"],desc:"Concentration 1 min: enter a tree and exit another of same species within 500 ft each action. Destroyed after use."},
+// Level 6 — Very Rare (3,000gp)
+{id:"scl6_01",cat:"scroll",rarity:"Very Rare",name:"Scroll of Disintegrate",stat:"Level 6",statType:"Transmutation",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["wizard"],desc:"One creature or object DEX save or 10d6+40 force; reduced to 0 HP = turned to dust. Destroyed after use."},
+{id:"scl6_02",cat:"scroll",rarity:"Very Rare",name:"Scroll of Chain Lightning",stat:"Level 6",statType:"Evocation",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["wizard"],desc:"Primary target 10d8 lightning (DEX save); three secondary targets within 30 ft each 10d8 (DEX save). Destroyed after use."},
+{id:"scl6_03",cat:"scroll",rarity:"Very Rare",name:"Scroll of Arcane Gate",stat:"Level 6",statType:"Conjuration",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["wizard"],desc:"Concentration 10 min: two shimmering 10-ft portals up to 500 ft apart; move through one exits the other. Destroyed after use."},
+{id:"scl6_04",cat:"scroll",rarity:"Very Rare",name:"Scroll of Flesh to Stone",stat:"Level 6",statType:"Transmutation",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["wizard"],desc:"Concentration 1 min: CON save or restrained; three failures = permanently petrified; three successes = immune 24 hr. Destroyed after use."},
+{id:"scl6_05",cat:"scroll",rarity:"Very Rare",name:"Scroll of Globe of Invulnerability",stat:"Level 6",statType:"Abjuration",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["wizard"],desc:"Concentration 1 min: 10-ft sphere; spells of 5th level or lower cannot penetrate it from either direction. Destroyed after use."},
+{id:"scl6_06",cat:"scroll",rarity:"Very Rare",name:"Scroll of Mass Suggestion",stat:"Level 6",statType:"Enchantment",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["wizard"],desc:"Concentration 24 hours: suggest reasonable course of action to up to twelve creatures within 60 ft (WIS save). Destroyed after use."},
+{id:"scl6_07",cat:"scroll",rarity:"Very Rare",name:"Scroll of True Seeing",stat:"Level 6",statType:"Divination",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["wizard","cleric"],desc:"8 hours: touch creature — truesight 120 ft (magical darkness, invisible, ethereal, illusions, true forms). Destroyed after use."},
+{id:"scl6_08",cat:"scroll",rarity:"Very Rare",name:"Scroll of Eyebite",stat:"Level 6",statType:"Necromancy",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["warlock"],desc:"Concentration 1 min: each turn target one creature — Asleep, Panicked, or Sickened (WIS save each). Destroyed after use."},
+{id:"scl6_09",cat:"scroll",rarity:"Very Rare",name:"Scroll of Create Undead",stat:"Level 6",statType:"Necromancy",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["warlock","cleric"],desc:"Night only: animate three corpses as ghouls under your control (up to 30 days). Destroyed after use."},
+{id:"scl6_10",cat:"scroll",rarity:"Very Rare",name:"Scroll of Soul Cage",stat:"Level 6",statType:"Necromancy",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["warlock"],desc:"Reaction when humanoid within 60 ft dies: trap soul for 6 uses (questions, advantage, or resurrection). Destroyed after use."},
+{id:"scl6_11",cat:"scroll",rarity:"Very Rare",name:"Scroll of Heal",stat:"Level 6",statType:"Evocation",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["cleric","druid"],desc:"Touch creature: restore 70 HP and end blindness, deafness, and all diseases on it. Destroyed after use."},
+{id:"scl6_12",cat:"scroll",rarity:"Very Rare",name:"Scroll of Blade Barrier",stat:"Level 6",statType:"Evocation",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["cleric"],desc:"Concentration 10 min: wall of spinning blades (100 ft long); 6d10 slashing to pass through (DEX save). Destroyed after use."},
+{id:"scl6_13",cat:"scroll",rarity:"Very Rare",name:"Scroll of Heroes' Feast",stat:"Level 6",statType:"Conjuration",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["cleric"],desc:"1-hr cast: feast for 12 — immune to disease/poison/frightened, WIS advantage, +2d10 max HP for 24 hours. 1,000gp bowl consumed. Destroyed after use."},
+{id:"scl6_14",cat:"scroll",rarity:"Very Rare",name:"Scroll of Word of Recall",stat:"Level 6",statType:"Conjuration",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["cleric"],desc:"You and up to five willing creatures within 5 ft teleport to previously designated sanctuary (same plane). Destroyed after use."},
+{id:"scl6_15",cat:"scroll",rarity:"Very Rare",name:"Scroll of Wall of Thorns",stat:"Level 6",statType:"Conjuration",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["druid"],desc:"Concentration 10 min: 60-ft long wall of thorns (difficult terrain); 7d8 slashing to push through (DEX save). Destroyed after use."},
+{id:"scl6_16",cat:"scroll",rarity:"Very Rare",name:"Scroll of Wind Walk",stat:"Level 6",statType:"Transmutation",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["druid"],desc:"8 hours: you and up to ten willing creatures transform into mist — fly 300 ft/min, resist nonmagical damage. Destroyed after use."},
+{id:"scl6_17",cat:"scroll",rarity:"Very Rare",name:"Scroll of Transport via Plants",stat:"Level 6",statType:"Conjuration",cost:"3000gp",wt:0,props:["Level 6","Very Rare","Single use"],prof:["druid"],desc:"Link a Large plant within 10 ft to another plant on same plane; up to eight creatures pass through in 1 round. Destroyed after use."},
+// Level 7 — Very Rare (5,000gp)
+{id:"scl7_01",cat:"scroll",rarity:"Very Rare",name:"Scroll of Forcecage",stat:"Level 7",statType:"Evocation",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["wizard","warlock"],desc:"1 hour: 20-ft cagework or 10-ft windowless box; teleportation requires CHA save (DC = spell save) to escape. Destroyed after use."},
+{id:"scl7_02",cat:"scroll",rarity:"Very Rare",name:"Scroll of Mirage Arcane",stat:"Level 7",statType:"Illusion",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["wizard","druid"],desc:"10-day duration: 1-mile terrain looks, sounds, smells, and feels like different terrain; creatures interact physically. Destroyed after use."},
+{id:"scl7_03",cat:"scroll",rarity:"Very Rare",name:"Scroll of Prismatic Spray",stat:"Level 7",statType:"Evocation",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["wizard"],desc:"60-ft cone: each creature DEX save or hit by random colored ray (fire, acid, lightning, poison, cold, web, petrify, or all). Destroyed after use."},
+{id:"scl7_04",cat:"scroll",rarity:"Very Rare",name:"Scroll of Reverse Gravity",stat:"Level 7",statType:"Transmutation",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["wizard","druid"],desc:"Concentration 1 min: 100-ft radius, 100-ft cylinder reverses gravity; unsecured creatures fall upward. Destroyed after use."},
+{id:"scl7_05",cat:"scroll",rarity:"Very Rare",name:"Scroll of Simulacrum",stat:"Level 7",statType:"Illusion",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["wizard"],desc:"12-hr cast: duplicate a creature with half HP; no spell slots; cannot gain levels. Only one at a time. Destroyed after use."},
+{id:"scl7_06",cat:"scroll",rarity:"Very Rare",name:"Scroll of Teleport",stat:"Level 7",statType:"Conjuration",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["wizard"],desc:"Instantly transport up to eight willing creatures to a destination on same plane; accuracy based on familiarity. Destroyed after use."},
+{id:"scl7_07",cat:"scroll",rarity:"Very Rare",name:"Scroll of Finger of Death",stat:"Level 7",statType:"Necromancy",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["warlock"],desc:"One creature within 60 ft: 7d8+30 necrotic (CON save for half). Humanoid killed rises as zombie permanently under your control. Destroyed after use."},
+{id:"scl7_08",cat:"scroll",rarity:"Very Rare",name:"Scroll of Crown of Stars",stat:"Level 7",statType:"Evocation",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["warlock"],desc:"1 hour: seven motes orbit you; bonus action to hurl one (30 ft, 4d12 radiant on hit, ranged spell attack). Destroyed after use."},
+{id:"scl7_09",cat:"scroll",rarity:"Very Rare",name:"Scroll of Etherealness",stat:"Level 7",statType:"Transmutation",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["warlock"],desc:"8 hours: enter Ethereal Plane — fly freely, see/hear Material Plane; affected only by Ethereal creatures. Destroyed after use."},
+{id:"scl7_10",cat:"scroll",rarity:"Very Rare",name:"Scroll of Plane Shift",stat:"Level 7",statType:"Conjuration",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["warlock","druid"],desc:"Transport up to eight willing creatures to another plane, or melee attack to banish one (CHA save). 250gp rod consumed. Destroyed after use."},
+{id:"scl7_11",cat:"scroll",rarity:"Very Rare",name:"Scroll of Divine Word",stat:"Level 7",statType:"Evocation",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["cleric"],desc:"Enemies within 30 ft that can hear you: CHA save by HP threshold — killed ≤20, blinded ≤30, deafened ≤40, stunned ≤50. Destroyed after use."},
+{id:"scl7_12",cat:"scroll",rarity:"Very Rare",name:"Scroll of Fire Storm",stat:"Level 7",statType:"Evocation",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["cleric","druid"],desc:"Ten 10-ft cubes of roaring fire within 150 ft: 7d10 fire (DEX save for half); plant creatures have disadvantage. Destroyed after use."},
+{id:"scl7_13",cat:"scroll",rarity:"Very Rare",name:"Scroll of Regenerate",stat:"Level 7",statType:"Transmutation",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["cleric","druid"],desc:"Touch: restore 4d8+15 HP; for 1 hour regain 1 HP/turn; severed limbs reattach or regrow in 2 minutes. Destroyed after use."},
+{id:"scl7_14",cat:"scroll",rarity:"Very Rare",name:"Scroll of Resurrection",stat:"Level 7",statType:"Necromancy",cost:"5000gp",wt:0,props:["Level 7","Very Rare","Single use"],prof:["cleric"],desc:"Dead creature (within 100 years) returns with full HP; no body needed. 1,000gp diamond consumed. Destroyed after use."},
+// Level 8 — Very Rare (8,000gp)
+{id:"scl8_01",cat:"scroll",rarity:"Very Rare",name:"Scroll of Power Word Stun",stat:"Level 8",statType:"Enchantment",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["wizard"],desc:"One creature within 60 ft with ≤150 HP is stunned; repeats CON save at end of each turn to recover. Destroyed after use."},
+{id:"scl8_02",cat:"scroll",rarity:"Very Rare",name:"Scroll of Dominate Monster",stat:"Level 8",statType:"Enchantment",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["wizard","warlock"],desc:"Concentration 1 hour: any creature WIS save or charmed; issue mental commands; repeats save when damaged. Destroyed after use."},
+{id:"scl8_03",cat:"scroll",rarity:"Very Rare",name:"Scroll of Feeblemind",stat:"Level 8",statType:"Enchantment",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["wizard","warlock"],desc:"One creature within 150 ft: INT save or INT and CHA drop to 1; cannot cast spells or communicate. Repeats save every 30 days. Destroyed after use."},
+{id:"scl8_04",cat:"scroll",rarity:"Very Rare",name:"Scroll of Maze",stat:"Level 8",statType:"Conjuration",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["wizard"],desc:"Concentration 10 min: one creature banished into maze demiplane; DC 20 INT check as action to escape. Minotaurs auto-escape. Destroyed after use."},
+{id:"scl8_05",cat:"scroll",rarity:"Very Rare",name:"Scroll of Mind Blank",stat:"Level 8",statType:"Abjuration",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["wizard"],desc:"24 hours: touch creature — immunity to psychic damage, mind-reading, charm, divination, and frightened. Destroyed after use."},
+{id:"scl8_06",cat:"scroll",rarity:"Very Rare",name:"Scroll of Sunburst",stat:"Level 8",statType:"Evocation",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["wizard","druid"],desc:"60-ft radius from point within 150 ft: CON save or 12d6 radiant + blinded 1 min (half, not blinded on success). Destroyed after use."},
+{id:"scl8_07",cat:"scroll",rarity:"Very Rare",name:"Scroll of Glibness",stat:"Level 8",statType:"Transmutation",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["warlock"],desc:"1 hour: CHA checks treat any roll of 7 or lower as 8; magic that detects lies reads you as truthful. Destroyed after use."},
+{id:"scl8_08",cat:"scroll",rarity:"Very Rare",name:"Scroll of Earthquake",stat:"Level 8",statType:"Evocation",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["cleric","druid"],desc:"Concentration 1 min: 100-ft radius tremors within 500 ft — difficult terrain, prone (DEX save), structures damaged. Destroyed after use."},
+{id:"scl8_09",cat:"scroll",rarity:"Very Rare",name:"Scroll of Holy Aura",stat:"Level 8",statType:"Abjuration",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["cleric"],desc:"Concentration 1 min: 30-ft aura — advantage on saves, enemies disadvantage on attacks; fiends/undead attackers blinded (CON save). Destroyed after use."},
+{id:"scl8_10",cat:"scroll",rarity:"Very Rare",name:"Scroll of Animal Shapes",stat:"Level 8",statType:"Transmutation",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["druid"],desc:"Concentration 24 hours: any willing creatures within 30 ft transform into beasts of CR 4 or lower (Large max). Destroyed after use."},
+{id:"scl8_11",cat:"scroll",rarity:"Very Rare",name:"Scroll of Control Weather",stat:"Level 8",statType:"Transmutation",cost:"8000gp",wt:0,props:["Level 8","Very Rare","Single use"],prof:["druid"],desc:"10-min cast, concentration 8 hours: control weather in 5-mile radius; change precipitation, temperature, and wind. Destroyed after use."},
+// Level 9 — Legendary (20,000gp)
+{id:"scl9_01",cat:"scroll",rarity:"Legendary",name:"Scroll of Time Stop",stat:"Level 9",statType:"Transmutation",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["wizard"],desc:"Stop time for everyone else for 1d4+1 turns; act freely; ends if you affect another creature. Destroyed after use."},
+{id:"scl9_02",cat:"scroll",rarity:"Legendary",name:"Scroll of Wish",stat:"Level 9",statType:"Conjuration",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["wizard"],desc:"Most powerful spell. Replicate any spell of 8th level or lower, or describe an effect (DM adjudicates). 33% chance to lose Wish forever after a unique use. Destroyed after use."},
+{id:"scl9_03",cat:"scroll",rarity:"Legendary",name:"Scroll of Power Word Kill",stat:"Level 9",statType:"Enchantment",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["warlock"],desc:"One creature within 60 ft with ≤100 HP dies instantly. No save. No roll. Destroyed after use."},
+{id:"scl9_04",cat:"scroll",rarity:"Legendary",name:"Scroll of True Polymorph",stat:"Level 9",statType:"Transmutation",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["warlock"],desc:"Concentration 1 hour: transform creature or object into any other creature or object; if sustained 1 hour, becomes permanent. Destroyed after use."},
+{id:"scl9_05",cat:"scroll",rarity:"Legendary",name:"Scroll of Astral Projection",stat:"Level 9",statType:"Necromancy",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["warlock","cleric"],desc:"1-hr cast: you and up to eight willing creatures project into Astral Plane, leaving physical bodies comatose. Destroyed after use."},
+{id:"scl9_06",cat:"scroll",rarity:"Legendary",name:"Scroll of Foresight",stat:"Level 9",statType:"Divination",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["warlock","druid"],desc:"8 hours, no concentration: cannot be surprised; advantage on attacks, checks, saves; enemies disadvantage vs you. Destroyed after use."},
+{id:"scl9_07",cat:"scroll",rarity:"Legendary",name:"Scroll of Gate",stat:"Level 9",statType:"Conjuration",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["warlock","cleric"],desc:"Concentration 1 min: open 10-ft portal to a named plane within 60 ft; can compel specific beings to pass through. Destroyed after use."},
+{id:"scl9_08",cat:"scroll",rarity:"Legendary",name:"Scroll of Imprisonment",stat:"Level 9",statType:"Abjuration",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["warlock"],desc:"1-min cast: one creature WIS save or imprisoned (buried, chained, hedged, miniaturized, or asleep) until specific release. Destroyed after use."},
+{id:"scl9_09",cat:"scroll",rarity:"Legendary",name:"Scroll of Weird",stat:"Level 9",statType:"Illusion",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["warlock"],desc:"Concentration 1 min: 30-ft radius within 120 ft; WIS save or frightened; 4d10 psychic at end of each turn (WIS save for half). Destroyed after use."},
+{id:"scl9_10",cat:"scroll",rarity:"Legendary",name:"Scroll of Mass Heal",stat:"Level 9",statType:"Evocation",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["cleric"],desc:"Flood creatures within 60 ft with up to 700 HP distributed as you choose; cures all diseases, blindness, deafness. Destroyed after use."},
+{id:"scl9_11",cat:"scroll",rarity:"Legendary",name:"Scroll of True Resurrection",stat:"Level 9",statType:"Necromancy",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["cleric","druid"],desc:"Touch dead creature (within 200 years): restores to full HP with new body if original destroyed. 25,000gp diamond consumed. Destroyed after use."},
+{id:"scl9_12",cat:"scroll",rarity:"Legendary",name:"Scroll of Storm of Vengeance",stat:"Level 9",statType:"Conjuration",cost:"20000gp",wt:0,props:["Level 9","Legendary","Single use"],prof:["druid"],desc:"Concentration 1 min: 360-ft radius storm — thunder, lightning (10d6), acid, freezing rain, and hail assault all in area each turn. Destroyed after use."},
 // ─── MAGIC WEAPONS ────────────────────────────────────────────────────────────
-{id:"mw01",cat:"magic-weapons",name:"+1 Weapon",stat:"+1 attack & damage",statType:"Magic",
- cost:"500gp",wt:3,props:["Uncommon","Magical"],rarity:"Uncommon",
- desc:"Any weapon type. +1 bonus to attack and damage rolls. Counts as magical for overcoming resistance."},
-{id:"mw02",cat:"magic-weapons",name:"+2 Weapon",stat:"+2 attack & damage",statType:"Magic",
- cost:"4000gp",wt:3,props:["Rare","Magical"],rarity:"Rare",
- desc:"+2 bonus to attack and damage rolls. Reliable upgrade for any martial class."},
-{id:"mw03",cat:"magic-weapons",name:"+3 Weapon",stat:"+3 attack & damage",statType:"Magic",
- cost:"16000gp",wt:3,props:["Very Rare","Magical"],rarity:"Very Rare",
- desc:"+3 bonus to attack and damage rolls. Top-tier martial enhancement."},
+// +1 Weapons — Uncommon
+{id:"mw_p1_01",cat:"magic-weapons",rarity:"Uncommon",name:"Longsword +1",stat:"+1 atk/dmg, 1d8 slashing",statType:"Martial Melee",cost:"500gp",wt:3,props:["Uncommon","Magical","Versatile 1d10"],prof:["fighter","paladin","cleric","warlock"],desc:"Longsword with a +1 bonus to attack and damage rolls. Versatile (1d10). Counts as magical."},
+{id:"mw_p1_02",cat:"magic-weapons",rarity:"Uncommon",name:"Shortsword +1",stat:"+1 atk/dmg, 1d6 piercing",statType:"Martial Melee",cost:"500gp",wt:2,props:["Uncommon","Magical","Finesse, Light"],prof:["fighter","rogue","paladin"],desc:"Shortsword with a +1 bonus to attack and damage rolls. Finesse, light. Counts as magical."},
+{id:"mw_p1_03",cat:"magic-weapons",rarity:"Uncommon",name:"Rapier +1",stat:"+1 atk/dmg, 1d8 piercing",statType:"Martial Melee",cost:"500gp",wt:2,props:["Uncommon","Magical","Finesse"],prof:["fighter","rogue","paladin"],desc:"Rapier with a +1 bonus to attack and damage rolls. Finesse property. Counts as magical."},
+{id:"mw_p1_04",cat:"magic-weapons",rarity:"Uncommon",name:"Dagger +1",stat:"+1 atk/dmg, 1d4 piercing",statType:"Simple Melee",cost:"500gp",wt:1,props:["Uncommon","Magical","Finesse, Thrown 20/60"],prof:["all"],desc:"Dagger with a +1 bonus to attack and damage rolls. Finesse, light, thrown 20/60 ft. Counts as magical."},
+{id:"mw_p1_05",cat:"magic-weapons",rarity:"Uncommon",name:"Handaxe +1",stat:"+1 atk/dmg, 1d6 slashing",statType:"Simple Melee",cost:"500gp",wt:2,props:["Uncommon","Magical","Light, Thrown 20/60"],prof:["all"],desc:"Handaxe with a +1 bonus to attack and damage rolls. Light, thrown 20/60 ft. Counts as magical."},
+{id:"mw_p1_06",cat:"magic-weapons",rarity:"Uncommon",name:"Greataxe +1",stat:"+1 atk/dmg, 1d12 slashing",statType:"Martial Melee",cost:"500gp",wt:7,props:["Uncommon","Magical","Heavy, Two-handed"],prof:["fighter","barbarian","paladin"],desc:"Greataxe with a +1 bonus to attack and damage rolls. Heavy, two-handed. Counts as magical."},
+{id:"mw_p1_07",cat:"magic-weapons",rarity:"Uncommon",name:"Greatsword +1",stat:"+1 atk/dmg, 2d6 slashing",statType:"Martial Melee",cost:"500gp",wt:6,props:["Uncommon","Magical","Heavy, Two-handed"],prof:["fighter","barbarian","paladin"],desc:"Greatsword with a +1 bonus to attack and damage rolls. Heavy, two-handed. Counts as magical."},
+{id:"mw_p1_08",cat:"magic-weapons",rarity:"Uncommon",name:"Battleaxe +1",stat:"+1 atk/dmg, 1d8 slashing",statType:"Martial Melee",cost:"500gp",wt:4,props:["Uncommon","Magical","Versatile 1d10"],prof:["fighter","barbarian","paladin","cleric"],desc:"Battleaxe with a +1 bonus to attack and damage rolls. Versatile (1d10). Counts as magical."},
+{id:"mw_p1_09",cat:"magic-weapons",rarity:"Uncommon",name:"Warhammer +1",stat:"+1 atk/dmg, 1d8 bludgeoning",statType:"Martial Melee",cost:"500gp",wt:2,props:["Uncommon","Magical","Versatile 1d10"],prof:["fighter","barbarian","paladin","cleric"],desc:"Warhammer with a +1 bonus to attack and damage rolls. Versatile (1d10). Counts as magical."},
+{id:"mw_p1_10",cat:"magic-weapons",rarity:"Uncommon",name:"Mace +1",stat:"+1 atk/dmg, 1d6 bludgeoning",statType:"Simple Melee",cost:"500gp",wt:4,props:["Uncommon","Magical"],prof:["all"],desc:"Mace with a +1 bonus to attack and damage rolls. Counts as magical."},
+{id:"mw_p1_11",cat:"magic-weapons",rarity:"Uncommon",name:"Longbow +1",stat:"+1 atk/dmg, 1d8 piercing",statType:"Martial Ranged",cost:"500gp",wt:2,props:["Uncommon","Magical","Range 150/600"],prof:["fighter","rogue"],desc:"Longbow with a +1 bonus to attack and damage rolls. Heavy, two-handed, range 150/600 ft. Counts as magical."},
+{id:"mw_p1_12",cat:"magic-weapons",rarity:"Uncommon",name:"Heavy Crossbow +1",stat:"+1 atk/dmg, 1d10 piercing",statType:"Martial Ranged",cost:"500gp",wt:18,props:["Uncommon","Magical","Range 100/400"],prof:["fighter","rogue"],desc:"Heavy crossbow with a +1 bonus to attack and damage rolls. Range 100/400 ft. Counts as magical."},
+{id:"mw_p1_13",cat:"magic-weapons",rarity:"Uncommon",name:"Quarterstaff +1",stat:"+1 atk/dmg, 1d6 bludgeoning",statType:"Simple Melee",cost:"500gp",wt:4,props:["Uncommon","Magical","Versatile 1d8"],prof:["all"],desc:"Quarterstaff with a +1 bonus to attack and damage rolls. Versatile (1d8). Counts as magical."},
+// +2 Weapons — Rare
+{id:"mw_p2_01",cat:"magic-weapons",rarity:"Rare",name:"Longsword +2",stat:"+2 atk/dmg, 1d8 slashing",statType:"Martial Melee",cost:"4000gp",wt:3,props:["Rare","Magical","Versatile 1d10"],prof:["fighter","paladin","cleric","warlock"],desc:"Longsword with a +2 bonus to attack and damage rolls. Versatile (1d10). Counts as magical."},
+{id:"mw_p2_02",cat:"magic-weapons",rarity:"Rare",name:"Shortsword +2",stat:"+2 atk/dmg, 1d6 piercing",statType:"Martial Melee",cost:"4000gp",wt:2,props:["Rare","Magical","Finesse, Light"],prof:["fighter","rogue","paladin"],desc:"Shortsword with a +2 bonus to attack and damage rolls. Finesse, light. Counts as magical."},
+{id:"mw_p2_03",cat:"magic-weapons",rarity:"Rare",name:"Rapier +2",stat:"+2 atk/dmg, 1d8 piercing",statType:"Martial Melee",cost:"4000gp",wt:2,props:["Rare","Magical","Finesse"],prof:["fighter","rogue","paladin"],desc:"Rapier with a +2 bonus to attack and damage rolls. Finesse property. Counts as magical."},
+{id:"mw_p2_04",cat:"magic-weapons",rarity:"Rare",name:"Dagger +2",stat:"+2 atk/dmg, 1d4 piercing",statType:"Simple Melee",cost:"4000gp",wt:1,props:["Rare","Magical","Finesse, Thrown 20/60"],prof:["all"],desc:"Dagger with a +2 bonus to attack and damage rolls. Finesse, light, thrown 20/60 ft. Counts as magical."},
+{id:"mw_p2_05",cat:"magic-weapons",rarity:"Rare",name:"Handaxe +2",stat:"+2 atk/dmg, 1d6 slashing",statType:"Simple Melee",cost:"4000gp",wt:2,props:["Rare","Magical","Light, Thrown 20/60"],prof:["all"],desc:"Handaxe with a +2 bonus to attack and damage rolls. Light, thrown 20/60 ft. Counts as magical."},
+{id:"mw_p2_06",cat:"magic-weapons",rarity:"Rare",name:"Greataxe +2",stat:"+2 atk/dmg, 1d12 slashing",statType:"Martial Melee",cost:"4000gp",wt:7,props:["Rare","Magical","Heavy, Two-handed"],prof:["fighter","barbarian","paladin"],desc:"Greataxe with a +2 bonus to attack and damage rolls. Heavy, two-handed. Counts as magical."},
+{id:"mw_p2_07",cat:"magic-weapons",rarity:"Rare",name:"Greatsword +2",stat:"+2 atk/dmg, 2d6 slashing",statType:"Martial Melee",cost:"4000gp",wt:6,props:["Rare","Magical","Heavy, Two-handed"],prof:["fighter","barbarian","paladin"],desc:"Greatsword with a +2 bonus to attack and damage rolls. Heavy, two-handed. Counts as magical."},
+{id:"mw_p2_08",cat:"magic-weapons",rarity:"Rare",name:"Battleaxe +2",stat:"+2 atk/dmg, 1d8 slashing",statType:"Martial Melee",cost:"4000gp",wt:4,props:["Rare","Magical","Versatile 1d10"],prof:["fighter","barbarian","paladin","cleric"],desc:"Battleaxe with a +2 bonus to attack and damage rolls. Versatile (1d10). Counts as magical."},
+{id:"mw_p2_09",cat:"magic-weapons",rarity:"Rare",name:"Warhammer +2",stat:"+2 atk/dmg, 1d8 bludgeoning",statType:"Martial Melee",cost:"4000gp",wt:2,props:["Rare","Magical","Versatile 1d10"],prof:["fighter","barbarian","paladin","cleric"],desc:"Warhammer with a +2 bonus to attack and damage rolls. Versatile (1d10). Counts as magical."},
+{id:"mw_p2_10",cat:"magic-weapons",rarity:"Rare",name:"Mace +2",stat:"+2 atk/dmg, 1d6 bludgeoning",statType:"Simple Melee",cost:"4000gp",wt:4,props:["Rare","Magical"],prof:["all"],desc:"Mace with a +2 bonus to attack and damage rolls. Counts as magical."},
+{id:"mw_p2_11",cat:"magic-weapons",rarity:"Rare",name:"Longbow +2",stat:"+2 atk/dmg, 1d8 piercing",statType:"Martial Ranged",cost:"4000gp",wt:2,props:["Rare","Magical","Range 150/600"],prof:["fighter","rogue"],desc:"Longbow with a +2 bonus to attack and damage rolls. Heavy, two-handed, range 150/600 ft. Counts as magical."},
+{id:"mw_p2_12",cat:"magic-weapons",rarity:"Rare",name:"Heavy Crossbow +2",stat:"+2 atk/dmg, 1d10 piercing",statType:"Martial Ranged",cost:"4000gp",wt:18,props:["Rare","Magical","Range 100/400"],prof:["fighter","rogue"],desc:"Heavy crossbow with a +2 bonus to attack and damage rolls. Range 100/400 ft. Counts as magical."},
+{id:"mw_p2_13",cat:"magic-weapons",rarity:"Rare",name:"Quarterstaff +2",stat:"+2 atk/dmg, 1d6 bludgeoning",statType:"Simple Melee",cost:"4000gp",wt:4,props:["Rare","Magical","Versatile 1d8"],prof:["all"],desc:"Quarterstaff with a +2 bonus to attack and damage rolls. Versatile (1d8). Counts as magical."},
+// +3 Weapons — Very Rare
+{id:"mw_p3_01",cat:"magic-weapons",rarity:"Very Rare",name:"Longsword +3",stat:"+3 atk/dmg, 1d8 slashing",statType:"Martial Melee",cost:"16000gp",wt:3,props:["Very Rare","Magical","Versatile 1d10"],prof:["fighter","paladin","cleric","warlock"],desc:"Longsword with a +3 bonus to attack and damage rolls. Versatile (1d10). Counts as magical."},
+{id:"mw_p3_02",cat:"magic-weapons",rarity:"Very Rare",name:"Shortsword +3",stat:"+3 atk/dmg, 1d6 piercing",statType:"Martial Melee",cost:"16000gp",wt:2,props:["Very Rare","Magical","Finesse, Light"],prof:["fighter","rogue","paladin"],desc:"Shortsword with a +3 bonus to attack and damage rolls. Finesse, light. Counts as magical."},
+{id:"mw_p3_03",cat:"magic-weapons",rarity:"Very Rare",name:"Rapier +3",stat:"+3 atk/dmg, 1d8 piercing",statType:"Martial Melee",cost:"16000gp",wt:2,props:["Very Rare","Magical","Finesse"],prof:["fighter","rogue","paladin"],desc:"Rapier with a +3 bonus to attack and damage rolls. Finesse property. Counts as magical."},
+{id:"mw_p3_04",cat:"magic-weapons",rarity:"Very Rare",name:"Dagger +3",stat:"+3 atk/dmg, 1d4 piercing",statType:"Simple Melee",cost:"16000gp",wt:1,props:["Very Rare","Magical","Finesse, Thrown 20/60"],prof:["all"],desc:"Dagger with a +3 bonus to attack and damage rolls. Finesse, light, thrown 20/60 ft. Counts as magical."},
+{id:"mw_p3_05",cat:"magic-weapons",rarity:"Very Rare",name:"Handaxe +3",stat:"+3 atk/dmg, 1d6 slashing",statType:"Simple Melee",cost:"16000gp",wt:2,props:["Very Rare","Magical","Light, Thrown 20/60"],prof:["all"],desc:"Handaxe with a +3 bonus to attack and damage rolls. Light, thrown 20/60 ft. Counts as magical."},
+{id:"mw_p3_06",cat:"magic-weapons",rarity:"Very Rare",name:"Greataxe +3",stat:"+3 atk/dmg, 1d12 slashing",statType:"Martial Melee",cost:"16000gp",wt:7,props:["Very Rare","Magical","Heavy, Two-handed"],prof:["fighter","barbarian","paladin"],desc:"Greataxe with a +3 bonus to attack and damage rolls. Heavy, two-handed. Counts as magical."},
+{id:"mw_p3_07",cat:"magic-weapons",rarity:"Very Rare",name:"Greatsword +3",stat:"+3 atk/dmg, 2d6 slashing",statType:"Martial Melee",cost:"16000gp",wt:6,props:["Very Rare","Magical","Heavy, Two-handed"],prof:["fighter","barbarian","paladin"],desc:"Greatsword with a +3 bonus to attack and damage rolls. Heavy, two-handed. Counts as magical."},
+{id:"mw_p3_08",cat:"magic-weapons",rarity:"Very Rare",name:"Battleaxe +3",stat:"+3 atk/dmg, 1d8 slashing",statType:"Martial Melee",cost:"16000gp",wt:4,props:["Very Rare","Magical","Versatile 1d10"],prof:["fighter","barbarian","paladin","cleric"],desc:"Battleaxe with a +3 bonus to attack and damage rolls. Versatile (1d10). Counts as magical."},
+{id:"mw_p3_09",cat:"magic-weapons",rarity:"Very Rare",name:"Warhammer +3",stat:"+3 atk/dmg, 1d8 bludgeoning",statType:"Martial Melee",cost:"16000gp",wt:2,props:["Very Rare","Magical","Versatile 1d10"],prof:["fighter","barbarian","paladin","cleric"],desc:"Warhammer with a +3 bonus to attack and damage rolls. Versatile (1d10). Counts as magical."},
+{id:"mw_p3_10",cat:"magic-weapons",rarity:"Very Rare",name:"Mace +3",stat:"+3 atk/dmg, 1d6 bludgeoning",statType:"Simple Melee",cost:"16000gp",wt:4,props:["Very Rare","Magical"],prof:["all"],desc:"Mace with a +3 bonus to attack and damage rolls. Counts as magical."},
+{id:"mw_p3_11",cat:"magic-weapons",rarity:"Very Rare",name:"Longbow +3",stat:"+3 atk/dmg, 1d8 piercing",statType:"Martial Ranged",cost:"16000gp",wt:2,props:["Very Rare","Magical","Range 150/600"],prof:["fighter","rogue"],desc:"Longbow with a +3 bonus to attack and damage rolls. Heavy, two-handed, range 150/600 ft. Counts as magical."},
+{id:"mw_p3_12",cat:"magic-weapons",rarity:"Very Rare",name:"Heavy Crossbow +3",stat:"+3 atk/dmg, 1d10 piercing",statType:"Martial Ranged",cost:"16000gp",wt:18,props:["Very Rare","Magical","Range 100/400"],prof:["fighter","rogue"],desc:"Heavy crossbow with a +3 bonus to attack and damage rolls. Range 100/400 ft. Counts as magical."},
+{id:"mw_p3_13",cat:"magic-weapons",rarity:"Very Rare",name:"Quarterstaff +3",stat:"+3 atk/dmg, 1d6 bludgeoning",statType:"Simple Melee",cost:"16000gp",wt:4,props:["Very Rare","Magical","Versatile 1d8"],prof:["all"],desc:"Quarterstaff with a +3 bonus to attack and damage rolls. Versatile (1d8). Counts as magical."},
 {id:"mw04",cat:"magic-weapons",name:"Flame Tongue",stat:"+1 + 2d6 fire",statType:"Magic",
  cost:"5000gp",wt:3,props:["Rare","Longsword","Concentration"],rarity:"Rare",
  desc:"Longsword. Command word: burst into flames (+2d6 fire, bright light 40 ft). Concentration not needed to maintain."},
@@ -5023,15 +5391,33 @@ const EQUIP_ITEMS = [
  cost:"95000gp",wt:4,props:["Very Rare","Staff","Spellcaster"],rarity:"Very Rare",
  desc:"+2 to attack, damage, AC, saves, and spell attacks. 20 charges. Cast cone of cold, fireball (5th), globe of invulnerability, hold monster, levitate, lightning bolt (5th), magic missile (5th), ray of enfeeblement, wall of force."},
 // ─── MAGIC ARMOR ──────────────────────────────────────────────────────────────
-{id:"ma01",cat:"magic-armor",name:"+1 Armor",stat:"+1 AC",statType:"Magic",
- cost:"1500gp",wt:0,props:["Uncommon","Any armor type"],rarity:"Rare",
- desc:"Any armor type. Grants a +1 bonus to AC on top of the armor's normal value."},
-{id:"ma02",cat:"magic-armor",name:"+2 Armor",stat:"+2 AC",statType:"Magic",
- cost:"8000gp",wt:0,props:["Rare"],rarity:"Rare",
- desc:"+2 bonus to AC. Significant defensive upgrade."},
-{id:"ma03",cat:"magic-armor",name:"+3 Armor",stat:"+3 AC",statType:"Magic",
- cost:"24000gp",wt:0,props:["Very Rare"],rarity:"Legendary",
- desc:"+3 bonus to AC. Top-tier defensive enhancement."},
+// +1 Armors — Uncommon
+{id:"ma_p1_01",cat:"magic-armor",rarity:"Uncommon",name:"Leather Armor +1",stat:"+1 AC (12+DEX)",statType:"Light Armor",cost:"1500gp",wt:10,props:["Uncommon","Magical","Light Armor"],prof:["all"],desc:"Leather armor with a +1 bonus to AC (base 11 + DEX + 1). No Stealth disadvantage."},
+{id:"ma_p1_02",cat:"magic-armor",rarity:"Uncommon",name:"Chain Shirt +1",stat:"+1 AC (14+DEX)",statType:"Medium Armor",cost:"1500gp",wt:20,props:["Uncommon","Magical","Medium Armor"],prof:["fighter","barbarian","paladin","cleric","druid"],desc:"Chain shirt with a +1 bonus to AC (base 13 + DEX mod max 2 + 1). No Stealth disadvantage."},
+{id:"ma_p1_03",cat:"magic-armor",rarity:"Uncommon",name:"Scale Mail +1",stat:"+1 AC (15+DEX)",statType:"Medium Armor",cost:"1500gp",wt:45,props:["Uncommon","Magical","Medium Armor","Stealth disadvantage"],prof:["fighter","barbarian","paladin","cleric"],desc:"Scale mail with a +1 bonus to AC (base 14 + DEX mod max 2 + 1). Stealth disadvantage."},
+{id:"ma_p1_04",cat:"magic-armor",rarity:"Uncommon",name:"Breastplate +1",stat:"+1 AC (15+DEX)",statType:"Medium Armor",cost:"1500gp",wt:20,props:["Uncommon","Magical","Medium Armor"],prof:["fighter","barbarian","paladin","cleric"],desc:"Breastplate with a +1 bonus to AC (base 14 + DEX mod max 2 + 1). No Stealth disadvantage."},
+{id:"ma_p1_05",cat:"magic-armor",rarity:"Uncommon",name:"Half Plate +1",stat:"+1 AC (16+DEX)",statType:"Medium Armor",cost:"1500gp",wt:40,props:["Uncommon","Magical","Medium Armor","Stealth disadvantage"],prof:["fighter","barbarian","paladin","cleric"],desc:"Half plate with a +1 bonus to AC (base 15 + DEX mod max 2 + 1). Stealth disadvantage."},
+{id:"ma_p1_06",cat:"magic-armor",rarity:"Uncommon",name:"Chain Mail +1",stat:"+1 AC (17)",statType:"Heavy Armor",cost:"1500gp",wt:55,props:["Uncommon","Magical","Heavy Armor","STR 13","Stealth disadvantage"],prof:["fighter","barbarian","paladin","cleric"],desc:"Chain mail with a +1 bonus to AC (base 16 + 1). STR 13 required. Stealth disadvantage."},
+{id:"ma_p1_07",cat:"magic-armor",rarity:"Uncommon",name:"Plate Armor +1",stat:"+1 AC (19)",statType:"Heavy Armor",cost:"1500gp",wt:65,props:["Uncommon","Magical","Heavy Armor","STR 15","Stealth disadvantage"],prof:["fighter","paladin"],desc:"Plate armor with a +1 bonus to AC (base 18 + 1). STR 15 required. Stealth disadvantage."},
+{id:"ma_p1_08",cat:"magic-armor",rarity:"Uncommon",name:"Shield +1",stat:"+3 AC",statType:"Shield",cost:"1500gp",wt:6,props:["Uncommon","Magical","Shield"],prof:["fighter","barbarian","paladin","cleric"],desc:"A shield with a +1 magical bonus — grants +3 AC total (+2 standard + 1 magical). One-hand required."},
+// +2 Armors — Rare
+{id:"ma_p2_01",cat:"magic-armor",rarity:"Rare",name:"Leather Armor +2",stat:"+2 AC (13+DEX)",statType:"Light Armor",cost:"8000gp",wt:10,props:["Rare","Magical","Light Armor"],prof:["all"],desc:"Leather armor with a +2 bonus to AC (base 11 + DEX + 2). No Stealth disadvantage."},
+{id:"ma_p2_02",cat:"magic-armor",rarity:"Rare",name:"Chain Shirt +2",stat:"+2 AC (15+DEX)",statType:"Medium Armor",cost:"8000gp",wt:20,props:["Rare","Magical","Medium Armor"],prof:["fighter","barbarian","paladin","cleric","druid"],desc:"Chain shirt with a +2 bonus to AC (base 13 + DEX mod max 2 + 2). No Stealth disadvantage."},
+{id:"ma_p2_03",cat:"magic-armor",rarity:"Rare",name:"Scale Mail +2",stat:"+2 AC (16+DEX)",statType:"Medium Armor",cost:"8000gp",wt:45,props:["Rare","Magical","Medium Armor","Stealth disadvantage"],prof:["fighter","barbarian","paladin","cleric"],desc:"Scale mail with a +2 bonus to AC (base 14 + DEX mod max 2 + 2). Stealth disadvantage."},
+{id:"ma_p2_04",cat:"magic-armor",rarity:"Rare",name:"Breastplate +2",stat:"+2 AC (16+DEX)",statType:"Medium Armor",cost:"8000gp",wt:20,props:["Rare","Magical","Medium Armor"],prof:["fighter","barbarian","paladin","cleric"],desc:"Breastplate with a +2 bonus to AC (base 14 + DEX mod max 2 + 2). No Stealth disadvantage."},
+{id:"ma_p2_05",cat:"magic-armor",rarity:"Rare",name:"Half Plate +2",stat:"+2 AC (17+DEX)",statType:"Medium Armor",cost:"8000gp",wt:40,props:["Rare","Magical","Medium Armor","Stealth disadvantage"],prof:["fighter","barbarian","paladin","cleric"],desc:"Half plate with a +2 bonus to AC (base 15 + DEX mod max 2 + 2). Stealth disadvantage."},
+{id:"ma_p2_06",cat:"magic-armor",rarity:"Rare",name:"Chain Mail +2",stat:"+2 AC (18)",statType:"Heavy Armor",cost:"8000gp",wt:55,props:["Rare","Magical","Heavy Armor","STR 13","Stealth disadvantage"],prof:["fighter","barbarian","paladin","cleric"],desc:"Chain mail with a +2 bonus to AC (base 16 + 2). STR 13 required. Stealth disadvantage."},
+{id:"ma_p2_07",cat:"magic-armor",rarity:"Rare",name:"Plate Armor +2",stat:"+2 AC (20)",statType:"Heavy Armor",cost:"8000gp",wt:65,props:["Rare","Magical","Heavy Armor","STR 15","Stealth disadvantage"],prof:["fighter","paladin"],desc:"Plate armor with a +2 bonus to AC (base 18 + 2). STR 15 required. Stealth disadvantage."},
+{id:"ma_p2_08",cat:"magic-armor",rarity:"Rare",name:"Shield +2",stat:"+4 AC",statType:"Shield",cost:"8000gp",wt:6,props:["Rare","Magical","Shield"],prof:["fighter","barbarian","paladin","cleric"],desc:"A shield with a +2 magical bonus — grants +4 AC total (+2 standard + 2 magical). One-hand required."},
+// +3 Armors — Very Rare
+{id:"ma_p3_01",cat:"magic-armor",rarity:"Very Rare",name:"Leather Armor +3",stat:"+3 AC (14+DEX)",statType:"Light Armor",cost:"24000gp",wt:10,props:["Very Rare","Magical","Light Armor"],prof:["all"],desc:"Leather armor with a +3 bonus to AC (base 11 + DEX + 3). No Stealth disadvantage."},
+{id:"ma_p3_02",cat:"magic-armor",rarity:"Very Rare",name:"Chain Shirt +3",stat:"+3 AC (16+DEX)",statType:"Medium Armor",cost:"24000gp",wt:20,props:["Very Rare","Magical","Medium Armor"],prof:["fighter","barbarian","paladin","cleric","druid"],desc:"Chain shirt with a +3 bonus to AC (base 13 + DEX mod max 2 + 3). No Stealth disadvantage."},
+{id:"ma_p3_03",cat:"magic-armor",rarity:"Very Rare",name:"Scale Mail +3",stat:"+3 AC (17+DEX)",statType:"Medium Armor",cost:"24000gp",wt:45,props:["Very Rare","Magical","Medium Armor","Stealth disadvantage"],prof:["fighter","barbarian","paladin","cleric"],desc:"Scale mail with a +3 bonus to AC (base 14 + DEX mod max 2 + 3). Stealth disadvantage."},
+{id:"ma_p3_04",cat:"magic-armor",rarity:"Very Rare",name:"Breastplate +3",stat:"+3 AC (17+DEX)",statType:"Medium Armor",cost:"24000gp",wt:20,props:["Very Rare","Magical","Medium Armor"],prof:["fighter","barbarian","paladin","cleric"],desc:"Breastplate with a +3 bonus to AC (base 14 + DEX mod max 2 + 3). No Stealth disadvantage."},
+{id:"ma_p3_05",cat:"magic-armor",rarity:"Very Rare",name:"Half Plate +3",stat:"+3 AC (18+DEX)",statType:"Medium Armor",cost:"24000gp",wt:40,props:["Very Rare","Magical","Medium Armor","Stealth disadvantage"],prof:["fighter","barbarian","paladin","cleric"],desc:"Half plate with a +3 bonus to AC (base 15 + DEX mod max 2 + 3). Stealth disadvantage."},
+{id:"ma_p3_06",cat:"magic-armor",rarity:"Very Rare",name:"Chain Mail +3",stat:"+3 AC (19)",statType:"Heavy Armor",cost:"24000gp",wt:55,props:["Very Rare","Magical","Heavy Armor","STR 13","Stealth disadvantage"],prof:["fighter","barbarian","paladin","cleric"],desc:"Chain mail with a +3 bonus to AC (base 16 + 3). STR 13 required. Stealth disadvantage."},
+{id:"ma_p3_07",cat:"magic-armor",rarity:"Very Rare",name:"Plate Armor +3",stat:"+3 AC (21)",statType:"Heavy Armor",cost:"24000gp",wt:65,props:["Very Rare","Magical","Heavy Armor","STR 15","Stealth disadvantage"],prof:["fighter","paladin"],desc:"Plate armor with a +3 bonus to AC (base 18 + 3). STR 15 required. Stealth disadvantage."},
+{id:"ma_p3_08",cat:"magic-armor",rarity:"Very Rare",name:"Shield +3",stat:"+5 AC",statType:"Shield",cost:"24000gp",wt:6,props:["Very Rare","Magical","Shield"],prof:["fighter","barbarian","paladin","cleric"],desc:"A shield with a +3 magical bonus — grants +5 AC total (+2 standard + 3 magical). One-hand required."},
 {id:"ma04",cat:"magic-armor",name:"Mithral Armor",stat:"No disadv., no STR req.",statType:"Magic",
  cost:"5000gp",wt:0,props:["Uncommon","Medium or Heavy"],rarity:"Uncommon",
  desc:"While worn: no Stealth disadvantage from armor, no STR requirement. Chain mail or plate without the drawbacks."},
@@ -5135,18 +5521,12 @@ const EQUIP_ITEMS = [
  props:["No attunement"],prof:["all"],
  desc:"This fine black cloth, soft as silk, is folded up to the dimensions of a handkerchief. It unfolds into a circular sheet 6 feet in diameter. You can use an action to unfold a portable hole and place it on or against a solid surface, whereupon the hole creates an extradimensional hole 10 feet deep."},
 // ─── VERY RARE MAGIC ITEMS ───────────────────────────────────────────────────
-{id:"mvr01",cat:"magic-weapons",name:"Weapon +3",stat:"+3 atk/dmg",statType:"Any weapon",cost:"16,000 gp",wt:0,rarity:"Very Rare",
- props:["Counts as magical"],prof:["fighter","barbarian","paladin","rogue","cleric","druid"],
- desc:"A magic weapon. You have a +3 bonus to attack and damage rolls made with this magic weapon."},
 {id:"mvr02",cat:"magic-weapons",name:"Sword of Sharpness",stat:"+14 dmg on max roll",statType:"Slashing sword",cost:"16,000 gp",wt:3,rarity:"Very Rare",
  props:["Attunement"],prof:["fighter","barbarian","paladin","rogue"],
  desc:"When you attack an object with this magic sword and hit, maximize your weapon damage dice against the target. When you attack a creature with this weapon and roll a 20 on the attack roll, that creature takes an extra 14 slashing damage. Then roll another d20; on a 20, you lop off one of the target's limbs."},
 {id:"mvr03",cat:"magic-weapons",name:"Staff of Striking",stat:"+3, +3d6 force (3 charges)",statType:"Quarterstaff",cost:"5,000 gp",wt:4,rarity:"Very Rare",
  props:["Attunement","10 charges"],prof:["wizard","druid","cleric"],
  desc:"This staff can be wielded as a magic quarterstaff that grants a +3 bonus to attack and damage rolls made with it. The staff has 10 charges. When you hit with a melee attack using it, you can expend up to 3 of its charges. For each charge expended, the target takes an extra 1d6 force damage."},
-{id:"mvr04",cat:"magic-armor",name:"Armor +3",stat:"+3 AC",statType:"Any armor",cost:"35,000 gp",wt:0,rarity:"Legendary",
- props:["Counts as magical"],prof:["fighter","barbarian","paladin","cleric"],
- desc:"You have a +3 bonus to AC while wearing this armor."},
 {id:"mvr05",cat:"magic-armor",name:"Studded Leather of Elvenkind",stat:"+1 AC & Stealth adv.",statType:"Light armor",cost:"2,000 gp",wt:13,rarity:"Uncommon",
  props:["Attunement"],prof:["fighter","rogue","barbarian","warlock","druid"],
  desc:"You have a +1 bonus to AC while wearing this armor, and Dexterity (Stealth) checks made while wearing it have advantage if you are proficient with the armor."},
@@ -5185,18 +5565,38 @@ const EQUIP_ITEMS = [
 ];
 
 const EQUIP_CATEGORIES = [
-  {id:"all",           label:"All Items"},
-  {id:"simple-melee",  label:"Simple Melee"},
-  {id:"simple-ranged", label:"Simple Ranged"},
-  {id:"martial-melee", label:"Martial Melee"},
-  {id:"martial-ranged",label:"Martial Ranged"},
-  {id:"armor",         label:"Armor & Shields"},
-  {id:"gear",          label:"Adventuring Gear"},
-  {id:"consumables",   label:"Potions & Scrolls"},
-  {id:"magic-weapons", label:"Magic Weapons"},
-  {id:"magic-armor",   label:"Magic Armor"},
-  {id:"wondrous",      label:"Wondrous Items"},
+  {id:"all",        label:"All Items"},
+  {id:"weapons",    label:"Weapons"},
+  {id:"armor",      label:"Armor & Shields"},
+  {id:"gear",       label:"Adventuring Gear"},
+  {id:"consumables",label:"Potions & Misc"},
+  {id:"scroll",     label:"Spell Scrolls"},
+  {id:"wondrous",   label:"Wondrous Items"},
 ];
+
+// Maps combined tab IDs to their underlying item cat values
+const CAT_GROUPS = {
+  weapons: ['simple-melee','simple-ranged','martial-melee','martial-ranged','magic-weapons'],
+  armor:   ['armor','magic-armor'],
+};
+
+// Per-category draw weights used when rolling loot.
+// Prevents scroll flooding: without this, scrolls (271 items) would dominate
+// every roll since pickItemOfRarity draws uniformly across all matching items.
+// Two-step draw: (1) pick category by weight, (2) pick item within category.
+const CAT_DRAW_WEIGHTS = {
+  'simple-melee':   6,
+  'simple-ranged':  4,
+  'martial-melee':  8,
+  'martial-ranged': 3,
+  'armor':          7,
+  'gear':          10,
+  'consumables':   15,
+  'scroll':        12,
+  'magic-weapons': 14,
+  'magic-armor':   12,
+  'wondrous':      14,
+};
 
 // Class proficiency map for equipment
 const CLASS_EQUIP_PROF = {
@@ -5317,9 +5717,11 @@ const invEl=document.getElementById('inv-list');
   if(invEl){
     invEl.innerHTML=inventory.map(item=>
       `<div class="inv-item${item.equipped?' equipped':''}">
-        <div style="flex:1">
+        <div style="flex:1;min-width:0">
           <div class="inv-item-name" onclick="toggleEquipped('${item.id}')" title="Click to toggle equipped">${item.name}</div>
           <div class="inv-item-stat">${item.stat} · ${item.wt} lb${item.equipped?' · <span style="color:var(--cc)">Equipped</span>':''}</div>
+          ${item.desc?`<div class="item-desc" id="idesc-${item.id}" style="display:none">${item.desc}</div>
+          <button class="inv-desc-btn" id="idbtn-${item.id}" onclick="toggleItemDesc('${item.id}')">▾ Info</button>`:''}
         </div>
         <div class="inv-qty-row">
           <button class="inv-qty-btn" onclick="changeQty('${item.id}',-1)">−</button>
@@ -5338,21 +5740,30 @@ const invEl=document.getElementById('inv-list');
 // ── ITEM ROLL MODAL ───────────────────────────────────────────────────────────
 let _irmChosen = false;
 
-// Weighted rarity table — 100,000 unit pool for precise control
-// Common: 60% | Uncommon: 25% | Rare: 10% | Very Rare: 4% | Legendary: 1%
-const RARITY_WEIGHTS = {
-  'Common':   6000,
-  'Uncommon': 2500,
-  'Rare':     1000,
-  'Very Rare': 400,
-  'Legendary':  100
-};
+// Floor-based rarity weights — deeper floors unlock rarer items.
+// Legendary items not available until floor 11.
+const FLOOR_RARITY_WEIGHTS = [
+  {Common:7000,Uncommon:2900,Rare:100,'Very Rare':0,Legendary:0},   // floor 1
+  {Common:7000,Uncommon:2900,Rare:100,'Very Rare':0,Legendary:0},   // floor 2
+  {Common:4000,Uncommon:4000,Rare:1800,'Very Rare':200,Legendary:0}, // floor 3
+  {Common:4000,Uncommon:4000,Rare:1800,'Very Rare':200,Legendary:0}, // floor 4
+  {Common:1500,Uncommon:3000,Rare:4000,'Very Rare':1400,Legendary:100}, // floor 5
+  {Common:1500,Uncommon:3000,Rare:4000,'Very Rare':1400,Legendary:100}, // floor 6
+  {Common:500,Uncommon:1500,Rare:4000,'Very Rare':3500,Legendary:500},  // floor 7
+  {Common:500,Uncommon:1500,Rare:4000,'Very Rare':3500,Legendary:500},  // floor 8
+  {Common:200,Uncommon:800,Rare:2500,'Very Rare':5500,Legendary:1000},  // floor 9
+  {Common:200,Uncommon:800,Rare:2500,'Very Rare':5500,Legendary:1000},  // floor 10
+  {Common:100,Uncommon:400,Rare:1500,'Very Rare':4500,Legendary:3500},  // floor 11+
+];
 
-function rollRarity(){
-  const pool = Object.entries(RARITY_WEIGHTS);
+function rollRarity(floor){
+  const idx = Math.min((floor||1)-1, FLOOR_RARITY_WEIGHTS.length-1);
+  const weights = FLOOR_RARITY_WEIGHTS[Math.max(0,idx)];
+  const pool = Object.entries(weights);
   const total = pool.reduce((a,[,w])=>a+w, 0);
-  let r = Math.floor(Math.random() * total);
+  let r = _cr(total);
   for(const [rarity, weight] of pool){
+    if(weight===0) continue;
     r -= weight;
     if(r < 0) return rarity;
   }
@@ -5364,21 +5775,36 @@ function pickItemOfRarity(rarity, exclude=[]){
     (i.rarity||'Common') === rarity && !exclude.includes(i.id)
   );
   if(!pool.length) return null;
-  return pool[Math.floor(Math.random() * pool.length)];
+
+  // Group by category then pick category by weight so one large category
+  // (e.g. 271 scrolls) can't flood every roll.
+  const byCat = {};
+  for(const item of pool){
+    if(!byCat[item.cat]) byCat[item.cat] = [];
+    byCat[item.cat].push(item);
+  }
+  const catEntries = Object.entries(byCat);
+  const totalW = catEntries.reduce((s,[cat])=>s+(CAT_DRAW_WEIGHTS[cat]||10),0);
+  let r = _cr(totalW);
+  let chosen = catEntries[catEntries.length-1][0];
+  for(const [cat] of catEntries){
+    r -= (CAT_DRAW_WEIGHTS[cat]||10);
+    if(r <= 0){ chosen = cat; break; }
+  }
+  const catPool = byCat[chosen];
+  return catPool[_cr(catPool.length)];
 }
 
 function rollForEquipment(){
-  // Roll three separate items, each with its own rarity roll
+  const floor = _floorCount || 1;
   const chosen = [];
   const usedIds = [];
   for(let attempt = 0; attempt < 3; attempt++){
     let item = null;
-    // Try up to 6 times to find a non-duplicate
     for(let tries = 0; tries < 6; tries++){
-      const rarity = rollRarity();
+      const rarity = rollRarity(floor);
       item = pickItemOfRarity(rarity, usedIds);
       if(item) break;
-      // If that rarity has no items (or all used), try adjacent rarity
       const fallbacks = ['Common','Uncommon','Rare','Very Rare','Legendary'];
       for(const fb of fallbacks){
         item = pickItemOfRarity(fb, usedIds);
@@ -5402,15 +5828,21 @@ function openItemRoll(items){
   if(!ov||!cards) return;
   
   sub.textContent = 'Three items appear before you. Choose one to take.';
-  // Show rarity odds
+  // Show floor-based rarity odds
   const oddsEl = document.getElementById('irm-odds');
   if(oddsEl){
-    const total=Object.values(RARITY_WEIGHTS).reduce((a,b)=>a+b,0);
-    oddsEl.innerHTML=Object.entries(RARITY_WEIGHTS).map(([r,w])=>{
-      const pct=((w/total)*100).toFixed(1);
-      const col={'Common':'#aaa','Uncommon':'#5ab85a','Rare':'#5577cc','Very Rare':'#aa55dd','Legendary':'#ddaa22'}[r]||'#aaa';
-      return`<span style="color:${col};font-size:10px">${r}: <strong>${pct}%</strong></span>`;
-    }).join(' &nbsp;·&nbsp; ');
+    const floor = _floorCount || 1;
+    const idx = Math.min(floor-1, FLOOR_RARITY_WEIGHTS.length-1);
+    const weights = FLOOR_RARITY_WEIGHTS[Math.max(0,idx)];
+    const total = Object.values(weights).reduce((a,b)=>a+b,0);
+    const cols={'Common':'#aaa','Uncommon':'#5ab85a','Rare':'#5577cc','Very Rare':'#aa55dd','Legendary':'#ddaa22'};
+    oddsEl.innerHTML = Object.entries(weights)
+      .filter(([,w])=>w>0)
+      .map(([r,w])=>{
+        const pct=((w/total)*100).toFixed(1);
+        return`<span style="color:${cols[r]||'#aaa'};font-size:10px">${r}: <strong>${pct}%</strong></span>`;
+      }).join(' &nbsp;·&nbsp; ');
+    oddsEl.innerHTML += `<span style="font-size:10px;color:#888"> (Floor ${floor})</span>`;
   }
   hint.textContent = 'Click an item to add it to your inventory';
   doneBtn.className = 'irm-done-btn';
@@ -5572,7 +6004,8 @@ const CLASS_STARTING_FEATURES = {
     {id:'cf_ftr_ea2', level:11, name:'Extra Attack (3)',  type:'p', desc:'When you take the Attack action, you can attack three times (LV 20: four times).'},
   ],
   barbarian:[
-    {id:'cf_bar_rage',level:1,  name:'Rage',              type:'c', desc:'Bonus action: enter rage for 1 minute. +2 melee damage, resistance to B/P/S damage, advantage on STR checks and saves. Uses scale with level: 2 at LV1, up to unlimited at LV 20.'},
+    {id:'cf_bar_rage',level:1,  name:'Rage',              type:'c', desc:'Bonus action: enter rage for 1 minute. +2 melee damage, resistance to B/P/S damage, advantage on STR checks and saves. Uses scale with level: 2 at LV1, up to unlimited at LV 20.',
+     scaleFn:lv=>{const dmg=lv>=16?4:lv>=9?3:2;const uses=lv>=20?'Unlimited':lv>=17?6:lv>=15?5:lv>=12?4:lv>=9?3:lv>=6?4:lv>=3?3:2;return`Bonus action: enter rage (1 min). +${dmg} melee damage, resistance to B/P/S damage, advantage on STR checks/saves. Uses at LV${lv}: ${uses}.`;}},
     {id:'cf_bar_ud',  level:1,  name:'Unarmored Defense', type:'p', desc:'While not wearing armor, your AC = 10 + DEX modifier + CON modifier.'},
     {id:'cf_bar_ra',  level:2,  name:'Reckless Attack',   type:'c', desc:'When you make your first attack on your turn, choose to attack recklessly. Advantage on all STR attacks this turn; attackers have advantage against you until next turn.'},
     {id:'cf_bar_ds',  level:2,  name:'Danger Sense',      type:'p', desc:'Advantage on DEX saving throws against effects you can see (not blind/deaf/incapacitated).'},
@@ -5602,7 +6035,8 @@ const CLASS_STARTING_FEATURES = {
   ],
   rogue:[
     {id:'cf_rog_exp', level:1,  name:'Expertise',         type:'p', desc:'Choose 2 proficiencies (skills or thieves\' tools): double your proficiency bonus for those checks. Two more at LV 6.'},
-    {id:'rg01',       level:1,  name:'Sneak Attack',      type:'c', desc:'Once per turn, deal extra damage when you hit with a finesse or ranged weapon and have advantage, or an ally is adjacent to target. 1d6 at LV 1, scaling to 10d6 at LV 19.'},
+    {id:'rg01',       level:1,  name:'Sneak Attack',      type:'c', desc:'Once per turn, deal extra damage when you hit with a finesse or ranged weapon and have advantage, or an ally is adjacent to target. 1d6 at LV 1, scaling to 10d6 at LV 19.',
+     scaleFn:lv=>`Once per turn, deal extra damage when you hit with a finesse or ranged weapon and have advantage, or an ally is adjacent to target. Current extra damage at LV${lv}: ${Math.ceil(lv/2)}d6.`},
     {id:'cf_rog_tc',  level:1,  name:"Thieves' Cant",     type:'p', desc:'You know a secret mix of dialect, jargon, and code for passing messages to other rogues. Takes 4× longer to convey messages.'},
     {id:'cf_rog_ca',  level:2,  name:'Cunning Action',    type:'b', desc:'Bonus action on each turn: Dash, Disengage, or Hide.'},
     {id:'cf_rog_ud',  level:5,  name:'Uncanny Dodge',     type:'r', desc:'When an attacker you can see hits you, use your reaction to halve the attack\'s damage.'},
@@ -5871,7 +6305,6 @@ function onLevelChange(v){
 const XP_THRESHOLDS=[0,0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
 function updateXP(val){
   const xp=Math.max(0,parseInt(val)||0);
-  // find current level from XP
   let lvFromXP=1;
   for(let i=1;i<=20;i++){if(xp>=XP_THRESHOLDS[i])lvFromXP=i;}
   const nextLvl=Math.min(20,lvFromXP+1);
@@ -5882,6 +6315,44 @@ function updateXP(val){
   const barEl=document.getElementById('cs-xp-bar');
   if(nextEl) nextEl.textContent=nextLvl<=20?nextThresh+' (Lv '+nextLvl+')':`Max (Lv 20)`;
   if(barEl) barEl.style.width=pct+'%';
+}
+function addXP(){
+  const gainEl=document.getElementById('cs-xp-gain');
+  const gain=Math.max(0,parseInt(gainEl?.value)||0);
+  if(!gain){gainEl&&(gainEl.style.borderColor='var(--red)');setTimeout(()=>{if(gainEl)gainEl.style.borderColor='';},800);return;}
+  const xpEl=document.getElementById('cs-xp');
+  const current=Math.max(0,parseInt(xpEl?.value)||0);
+  const newXP=current+gain;
+  if(xpEl) xpEl.value=newXP;
+  updateXP(newXP);
+  if(gainEl) gainEl.value='';
+  scheduleSave();
+  showToast('+'+gain+' XP gained!','rest-short');
+}
+function toggleItemDesc(id){
+  const d=document.getElementById('idesc-'+id);
+  const b=document.getElementById('idbtn-'+id);
+  if(!d) return;
+  const shown=d.style.display!=='none';
+  d.style.display=shown?'none':'block';
+  if(b) b.textContent=shown?'▾ Info':'▴ Hide';
+}
+function rollAbility(name,type){
+  const passive=['p'].includes(type);
+  if(passive){
+    if(partyPeer&&partyPeer.open!==false){
+      const text='['+name+'] (passive ability)';
+      const msg={type:'chat',user:partyMyName,text,ts:Date.now(),isDM:partyIsDM};
+      _broadcast(msg);_appendMsg({user:partyMyName,text,ts:msg.ts,isDM:partyIsDM,announce:false});
+    }
+    return;
+  }
+  // Active ability: announce to party and show a d20 check prompt
+  if(partyPeer&&partyPeer.open!==false){
+    const text='['+name+'] used!';
+    const msg={type:'chat',user:partyMyName,text,ts:Date.now(),isDM:partyIsDM};
+    _broadcast(msg);_appendMsg({user:partyMyName,text,ts:msg.ts,isDM:partyIsDM,announce:false});
+  }
 }
 
 function switchTab(id,el){
@@ -6053,7 +6524,10 @@ function setEquipClassFilter(cls){
 }
 function getEquipPool(){
   let items=EQUIP_ITEMS||[];
-  if(equipFilter&&equipFilter!=='all') items=items.filter(i=>i.cat===equipFilter);
+  if(equipFilter&&equipFilter!=='all'){
+    const cats=CAT_GROUPS[equipFilter]||[equipFilter];
+    items=items.filter(i=>cats.includes(i.cat));
+  }
   if(equipRarityFilter&&equipRarityFilter!=='all'){
     // Map button keys to display values (case-insensitive match)
     const rm={common:'common',uncommon:'uncommon',rare:'rare',veryrare:'very rare',legendary:'legendary'};
@@ -6075,7 +6549,8 @@ function renderEquipFiltered(){
   EQUIP_CATEGORIES&&EQUIP_CATEGORIES.forEach(c=>{
     const btn=document.getElementById('ecat-'+c.id);
     if(!btn)return;
-    const n=c.id==='all'?(EQUIP_ITEMS||[]).length:(EQUIP_ITEMS||[]).filter(x=>x.cat===c.id).length;
+    const cats=CAT_GROUPS[c.id]||[c.id];
+    const n=c.id==='all'?(EQUIP_ITEMS||[]).length:(EQUIP_ITEMS||[]).filter(x=>cats.includes(x.cat)).length;
     const cnt=btn.querySelector('.equip-cat-count');
     if(cnt)cnt.textContent=n;
   });
@@ -6295,7 +6770,7 @@ function loadState(){
         'cs-name':         s.charName||'',
         'cs-background':   s.csBackground||'',
         'cs-align':        s.csAlign||'',
-        'cs-xp':           s.csXP||'',
+        'cs-xp':           s.csXP!=null?s.csXP:'900',
         'cs-ac':           s.csAC||'10',
         'cs-speed':        s.csSpeed||'30',
         'cs-hp-cur':       s.csHPCur||'0',
@@ -6508,6 +6983,7 @@ let _cvTokTimer=null;
 let _cvStrokeCvs=null,_cvStrokeCtx=null;
 // Named pins
 let _cvPins=[],_cvPinPending=null;
+let _cvMapPings=[];
 // Image resize state
 let _cvResizingImg=null; // {id,corner,origWW,origWH,origWX,origWY,startSX,startSY}
 // Floor system
@@ -6631,6 +7107,26 @@ function _cvRender(){
     ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';
     ctx.textBaseline='top';
     ctx.fillText(p.name,0,11);
+    ctx.restore();
+  });
+
+  // Map pings (shift+click beacons)
+  const _now=Date.now();
+  _cvMapPings=_cvMapPings.filter(p=>_now-p.t<2800);
+  _cvMapPings.forEach(p=>{
+    const age=_now-p.t, prog=age/2800;
+    const sp=_w2s(p.wx,p.wy); const t=TILE*_cvZoom;
+    ctx.save();
+    for(let i=0;i<3;i++){
+      const rp=Math.min(1,(prog+i*0.12));
+      ctx.globalAlpha=Math.max(0,(1-rp)*0.85);
+      ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.arc(sp.x,sp.y,t*(0.35+rp*2),0,Math.PI*2); ctx.stroke();
+    }
+    ctx.globalAlpha=Math.max(0,1-prog*1.4);
+    ctx.fillStyle='#fbbf24'; ctx.font='bold 11px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText(p.name||'',sp.x,sp.y-t*0.5);
     ctx.restore();
   });
 
@@ -6778,14 +7274,18 @@ function _cvDrawStroke(ctx,s){
 function _cvDrawToken(ctx,pid,tok){
   const p=_w2s(tok.wx,tok.wy);
   const pl=partyPlayers[pid];
-  const color=pl?.color||'#d4891a';
-  const name=pl?.name||'?';
+  // Extra tokens carry label/color directly; player tokens look up partyPlayers
+  const color=tok.color||pl?.color||'#d4891a';
+  const name=tok.label||pl?.name||'?';
   const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
   ctx.save();
   ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=7;
   ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
   ctx.fillStyle=color; ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=2; ctx.stroke();
+  // Extra tokens: dashed outline to distinguish from main player token
+  if(tok.isExtra){ctx.setLineDash([3,2]);ctx.strokeStyle='rgba(255,255,255,.9)';}
+  else {ctx.strokeStyle='rgba(255,255,255,.75)';}
+  ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
   ctx.shadowBlur=0;
   ctx.fillStyle='#fff';
   ctx.font='bold '+Math.floor(r*0.85)+'px sans-serif';
@@ -6804,8 +7304,22 @@ function _cvAttachEvents(){
   c.addEventListener('wheel',_cvWheel,{passive:false});
   c.addEventListener('contextmenu',e=>{
     e.preventDefault();
-    if(!partyIsDM||_cvTool==='cursor') return;
+    if(!partyIsDM) return;
     const sx=e.offsetX,sy=e.offsetY;
+    // Right-click on a player/enemy token: DM can delete it
+    const myId=partyPeer?.id;
+    for(const [pid,tok] of Object.entries(_cvTokens)){
+      if(pid===myId) continue;
+      const tp=_w2s(tok.wx,tok.wy);
+      const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
+      if(Math.hypot(sx-tp.x,sy-tp.y)<r+8){
+        delete _cvTokens[pid];
+        _broadcast({type:'cv-token-delete',peerId:pid});
+        return;
+      }
+    }
+    if(_cvTool==='cursor') return;
+    // Right-click on a pin: delete it
     for(let i=_cvPins.length-1;i>=0;i--){
       const p=_cvPins[i];
       const ps=_w2s(p.wx,p.wy);
@@ -6831,6 +7345,15 @@ function _cvPDown(e){
     _cvCvs.style.cursor='grabbing'; return;
   }
 
+  // Shift+click: map ping visible to all players
+  if(e.button===0&&e.shiftKey){
+    const w=_s2w(sx,sy);
+    const pingData={type:'cv-ping',wx:w.x,wy:w.y,name:partyMyName||'?'};
+    _cvMapPings.push({wx:w.x,wy:w.y,name:partyMyName||'?',t:Date.now()});
+    _broadcast(pingData);
+    return;
+  }
+
   const myId=partyPeer?.id;
 
   // Cursor & Pan tools: try interactive targets (tokens, rooms, images) first,
@@ -6842,13 +7365,13 @@ function _cvPDown(e){
       const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
       if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=myId; return; }
     }
-    if(partyIsDM){
-      for(const [pid,tok] of Object.entries(_cvTokens)){
-        if(pid===myId) continue;
-        const tp=_w2s(tok.wx,tok.wy);
-        const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
-        if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
-      }
+    // Own extra tokens (player can drag tokens they own)
+    for(const [pid,tok] of Object.entries(_cvTokens)){
+      if(pid===myId) continue;
+      if(tok.ownerId!==myId&&!partyIsDM) continue;
+      const tp=_w2s(tok.wx,tok.wy);
+      const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
+      if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
     }
 
     if(partyIsDM){
@@ -7117,6 +7640,70 @@ function _cvCancelPin(){
   if(form) form.style.display='none';
 }
 
+// ── Session save / load ───────────────────────────────────────────────────────
+function _cvExportSession(){
+  const payload=_cvSyncPayload();
+  const data=JSON.stringify({version:1,exportedAt:new Date().toISOString(),
+    roomCode:partyRoomCode||'offline',...payload},null,2);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download='session-'+(partyRoomCode||'map')+'-floor'+_floorCount+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('Session saved to file','rest-long');
+}
+function _cvImportSession(file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      _cvApplySync(d);
+      _broadcast({type:'cv-sync',..._cvSyncPayload()});
+      _sysMsg('Session loaded — Floor '+_floorCount+' restored for all players.');
+    }catch(err){ _sysMsg('Import failed: '+err.message); }
+  };
+  reader.readAsText(file);
+}
+
+// ── Extra token request ───────────────────────────────────────────────────────
+function _cvOpenTokenRequest(){
+  const form=document.getElementById('vtc-tok-req-form');
+  if(form){ form.style.display='block'; setTimeout(()=>document.getElementById('vtc-tok-req-name')?.focus(),50); }
+}
+function _cvCancelTokenRequest(){
+  const form=document.getElementById('vtc-tok-req-form');
+  if(form) form.style.display='none';
+}
+function _cvSubmitTokenRequest(){
+  const nameEl=document.getElementById('vtc-tok-req-name');
+  const tokenName=(nameEl?.value||'').trim();
+  if(!tokenName) return;
+  _cvCancelTokenRequest();
+  const ctr=_s2w(_cvW/2,_cvH/2);
+  _broadcast({type:'cv-token-request',requesterId:partyPeer?.id,requesterName:partyMyName,
+    tokenName,wx:ctr.x,wy:ctr.y});
+  _sysMsg('Token request "'+tokenName+'" sent to DM…');
+  if(nameEl) nameEl.value='';
+}
+function _cvGrantToken(){
+  const req=window._pendingTokenReq; if(!req) return;
+  window._pendingTokenReq=null;
+  const apDiv=document.getElementById('vtc-tok-approve'); if(apDiv) apDiv.style.display='none';
+  const tokenId=req.requesterId+'_'+req.tokenName.replace(/\s+/g,'_').toLowerCase();
+  const color=partyPlayers[req.requesterId]?.color||_colorForPeer(req.requesterId);
+  const tok={wx:req.wx,wy:req.wy,label:req.tokenName,color,ownerId:req.requesterId,isExtra:true};
+  _cvTokens[tokenId]=tok;
+  _broadcast({type:'cv-token-granted',tokenId,tokenName:req.tokenName,
+    wx:req.wx,wy:req.wy,color,ownerId:req.requesterId,ownerName:req.requesterName});
+}
+function _cvDenyToken(){
+  const req=window._pendingTokenReq; if(!req) return;
+  window._pendingTokenReq=null;
+  const apDiv=document.getElementById('vtc-tok-approve'); if(apDiv) apDiv.style.display='none';
+  _broadcast({type:'cv-token-denied',requesterId:req.requesterId});
+  _sysMsg('Token request from '+req.requesterName+' denied.');
+}
+
 function _cvSetBrush(v){ _cvBrush=v; }
 
 function _cvZoomBy(delta){
@@ -7149,7 +7736,7 @@ function _buildFloorQueue(N){
   const healingForced=!_lastFloorHadHealing;
   let hCount=0;
   if(healingForced){ hCount=Math.max(1,Math.round(R*0.02)); }
-  else { hCount=Math.random()<0.5?Math.max(1,Math.round(R*0.02)):0; }
+  else { hCount=_cr(2)<1?Math.max(1,Math.round(R*0.02)):0; }
   let sCount=Math.max(1,Math.round(R*0.09));
   let tCount=Math.max(1,Math.round(R*0.23));
   let cCount=R-sCount-tCount-hCount;
@@ -7165,13 +7752,13 @@ function _buildFloorQueue(N){
   for(let i=0;i<sCount;i++) arr.push('shop');
   for(let i=0;i<hCount;i++) arr.push('healing');
   // Fisher-Yates shuffle
-  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  for(let i=arr.length-1;i>0;i--){const j=_cr(i+1);[arr[i],arr[j]]=[arr[j],arr[i]];}
   return arr;
 }
 
 function _cvDmSetupFloor(){
   if(_floorRoomBudget>0) return; // already set up
-  _floorRoomBudget=15+Math.floor(Math.random()*12); // 15-26
+  _floorRoomBudget=15+_cr(12); // 15-26
   _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
   const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
   _sysMsg('Floor 1 — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
@@ -7200,7 +7787,7 @@ function _cvDmNewFloor(){
   _floorCount++; _healingCount=0; _cvDescentCell=null; _cvStairsUp=prevDescentCell;
   _cvStrokes=[]; _cvRooms=[]; _cvImages=[]; _cvPartials={}; _cvCur=null; _cvDraft=null; _cvSelImgId=null;
   // Roll new floor plan
-  _floorRoomBudget=15+Math.floor(Math.random()*12);
+  _floorRoomBudget=15+_cr(12);
   _floorRoomQueue=_buildFloorQueue(_floorRoomBudget);
   const hCount=_floorRoomQueue.filter(t=>t==='healing').length;
   _sysMsg('Floor '+_floorCount+' — '+_floorRoomBudget+' rooms planned ('+hCount+' healing, 1 descent).');
@@ -7243,7 +7830,7 @@ function _cvDmRollRoom(roomId){
   if(!partyIsDM||!_floorRoomQueue.length) return;
   const room=_cvRooms.find(r=>r.id===roomId);
   if(!room||room.type) return;
-  const ri=Math.floor(Math.random()*_floorRoomQueue.length);
+  const ri=_cr(_floorRoomQueue.length);
   const typeKey=_floorRoomQueue.splice(ri,1)[0];
   const rtDef=_vttRtDef(typeKey);
   room.type=rtDef.type;room.label=rtDef.label;room.color=rtDef.color;
@@ -7253,6 +7840,39 @@ function _cvDmRollRoom(roomId){
   _broadcast({type:'cv-queue-update',queue:_floorRoomQueue});
   _renderFloorCounter();
   _sysMsg('Room revealed: '+room.label);
+  if(room.type==='shop') setTimeout(_cvOpenShop, 300);
+}
+
+function _cvOpenShop(){
+  const floor = _floorCount || 1;
+  const rarities = ['Common','Uncommon','Rare','Very Rare','Legendary'];
+  const items = [];
+  const usedIds = [];
+  for(let i = 0; i < 3; i++){
+    let rarity = rollRarity(floor);
+    // 10% chance to bump one rarity tier higher
+    if(_cr(100) < 10){
+      const ri = rarities.indexOf(rarity);
+      if(ri < rarities.length - 1) rarity = rarities[ri + 1];
+    }
+    let item = pickItemOfRarity(rarity, usedIds);
+    if(!item){
+      for(const fb of rarities){
+        item = pickItemOfRarity(fb, usedIds);
+        if(item) break;
+      }
+    }
+    if(item){ items.push(item); usedIds.push(item.id); }
+  }
+  if(!items.length){ _sysMsg('Shop: no inventory available'); return; }
+
+  // Reuse item-roll modal with shop branding
+  const ov = document.getElementById('item-roll-ov');
+  const titleEl = ov ? ov.querySelector('.irm-title') : null;
+  const subEl = document.getElementById('irm-sub');
+  if(titleEl) titleEl.textContent = '🏪 Shop — Floor ' + floor + ' Wares';
+  if(subEl) subEl.textContent = 'The shopkeeper displays three items. Players may purchase at listed cost.';
+  openItemRoll(items);
 }
 
 function _renderFloorCounter(){
@@ -7615,6 +8235,27 @@ function _cvHandleMsg(d){
       _cvImages=_cvImages.filter(i=>i.id!==d.id); break;
     case 'cv-token-move':
       _cvTokens[d.peerId]={wx:d.wx,wy:d.wy}; break;
+    case 'cv-token-delete':
+      delete _cvTokens[d.peerId]; break;
+    case 'cv-ping':
+      _cvMapPings.push({wx:d.wx,wy:d.wy,name:d.name||'',t:Date.now()}); break;
+    case 'cv-token-request':
+      // DM receives player's request to add an extra token
+      if(partyIsDM){
+        window._pendingTokenReq=d;
+        const apDiv=document.getElementById('vtc-tok-approve');
+        const apMsg=document.getElementById('vtc-tok-approve-msg');
+        if(apDiv&&apMsg){
+          apMsg.textContent=(d.requesterName||'A player')+' wants to add token "'+d.tokenName+'"';
+          apDiv.style.display='block';
+        }
+      } break;
+    case 'cv-token-granted':
+      _cvTokens[d.tokenId]={wx:d.wx,wy:d.wy,label:d.tokenName,color:d.color,ownerId:d.ownerId,isExtra:true};
+      _sysMsg((d.ownerName||'Player')+'\'s token "'+d.tokenName+'" was added.'); break;
+    case 'cv-token-denied':
+      if(partyPeer&&d.requesterId===partyPeer.id)
+        _sysMsg('DM denied your token request.'); break;
     case 'cv-floor-init':
       { _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
         const fbi=document.getElementById('vtc-floor-num');if(fbi)fbi.textContent='1'; } break;
@@ -7755,6 +8396,12 @@ function _setupConn(conn){
         hostId:partyPeer.id,hostName:partyMyName,cvSync:_cvSyncPayload()});}catch(e){}
       // Tell everyone else a new peer joined
       const joinName=conn.metadata?.name||'Player';
+      // Remove stale entries with the same display name (player rejoined with new peer ID)
+      Object.keys(partyPlayers).forEach(pid=>{
+        if(pid!==conn.peer&&partyPlayers[pid].name===joinName){
+          delete partyPlayers[pid]; delete partyConns[pid]; delete partyCharSheets[pid];
+        }
+      });
       _broadcast({type:'peer-join',id:conn.peer,name:joinName},conn.peer);
       partyPlayers[conn.peer]={name:joinName,isDM:false};
     }
@@ -7806,6 +8453,12 @@ function _handleData(d,fromConn){
       _partyBroadcastCharSheet(); break;
     case 'peer-join':
       _sysMsg(d.name+' joined the room');
+      // Remove stale same-name entries (player rejoin with new ID)
+      Object.keys(partyPlayers).forEach(pid=>{
+        if(pid!==d.id&&partyPlayers[pid].name===d.name){
+          delete partyPlayers[pid]; delete partyConns[pid]; delete partyCharSheets[pid];
+        }
+      });
       partyPlayers[d.id]={name:d.name,isDM:false,color:_colorForPeer(d.id)};
       _renderPlayers();
       _partyBroadcastCharSheet(); break;
@@ -7936,6 +8589,46 @@ function sendPartyMsg(){
 }
 
 // Free-form dice roller (party room sidebar). Posts to chat if connected.
+let _diceQueue=[];
+function addDieToQueue(sides){
+  const countEl=document.getElementById('pty-dice-count');
+  const count=Math.max(1,Math.min(20,parseInt(countEl?.value)||1));
+  const ex=_diceQueue.find(d=>d.sides===sides);
+  if(ex) ex.count+=count; else _diceQueue.push({count,sides});
+  _renderDiceQueue();
+}
+function _renderDiceQueue(){
+  const qEl=document.getElementById('pty-dice-formula');
+  if(!qEl) return;
+  if(_diceQueue.length===0){qEl.textContent='Tap dice to build a roll';qEl.style.color='var(--text-muted)';return;}
+  const modEl=document.getElementById('pty-dice-mod');
+  const mod=parseInt(modEl?.value)||0;
+  qEl.style.color='var(--cc)';
+  qEl.textContent=_diceQueue.map(d=>d.count+'d'+d.sides).join(' + ')+(mod?` + ${mod}`:'');
+}
+function clearDiceQueue(){_diceQueue=[];_renderDiceQueue();}
+function rollDiceQueue(){
+  if(_diceQueue.length===0) return;
+  const modEl=document.getElementById('pty-dice-mod');
+  const modifier=parseInt(modEl?.value)||0;
+  const parts=[];let total=0;
+  _diceQueue.forEach(d=>{
+    const rolls=Array.from({length:d.count},()=>_cr(d.sides)+1);
+    const sum=rolls.reduce((a,b)=>a+b,0);
+    total+=sum;
+    parts.push(d.count+'d'+d.sides+'('+rolls.join('+')+')');
+  });
+  total+=modifier;
+  const detail=parts.join(' + ')+(modifier?(modifier>0?' + '+modifier:' - '+Math.abs(modifier)):'')+' = '+total;
+  const resEl=document.getElementById('pty-dice-result');
+  if(resEl){resEl.className='pty-dice-result';resEl.innerHTML='<div class="pty-dice-result-total">'+total+'</div><div class="pty-dice-result-detail">'+detail+'</div>';}
+  if(partyPeer&&partyPeer.open!==false){
+    const rollText='🎲 '+detail;
+    const msg={type:'chat',user:partyMyName,text:rollText,ts:Date.now(),isDM:partyIsDM};
+    _broadcast(msg);_appendMsg({user:partyMyName,text:rollText,ts:msg.ts,isDM:partyIsDM,announce:false});
+  }
+  _diceQueue=[];_renderDiceQueue();
+}
 function partyRollDie(sides){
   const countEl=document.getElementById('pty-dice-count');
   const modEl=document.getElementById('pty-dice-mod');
@@ -7944,7 +8637,7 @@ function partyRollDie(sides){
   const count=Math.max(1,Math.min(20,parseInt(countEl&&countEl.value)||1));
   const mod=parseInt(modEl&&modEl.value)||0;
   const rolls=[];
-  for(let i=0;i<count;i++) rolls.push(1+Math.floor(Math.random()*sides));
+  for(let i=0;i<count;i++) rolls.push(_cr(sides)+1);
   const sum=rolls.reduce((a,b)=>a+b,0);
   const total=sum+mod;
   const modStr=mod?(mod>0?'+'+mod:String(mod)):'';
@@ -7966,7 +8659,7 @@ function partyRollDie(sides){
   clearInterval(window._pdiceCycle);
   window._pdiceCycle=setInterval(()=>{
     cycles++;
-    const fake=1+Math.floor(Math.random()*sides);
+    const fake=_cr(sides)+1;
     resEl.innerHTML='<div class="pty-dice-result-total">'+(count>1?'…':fake)+'</div>'
       +'<div class="pty-dice-result-detail">rolling '+expr+'…</div>';
     if(cycles>=8){
@@ -8103,6 +8796,9 @@ function _showRoom(code){
   if(rv){rv.style.display='flex';}
   const cBadge=document.getElementById('prv-code');
   if(cBadge) cBadge.textContent=code;
+  // Show player token-request button for non-DM players
+  const pt=document.getElementById('vtc-player-tools');
+  if(pt) pt.style.display=partyIsDM?'none':'flex';
 }
 
 function _showDMPanel(){
@@ -8112,9 +8808,11 @@ function _showDMPanel(){
   if(ul) ul.style.display='none';
   const layout=document.getElementById('pty-layout');
   if(layout) layout.classList.remove('no-dm');
-  // Reveal DM-only VTT controls
+  // Reveal DM-only VTT controls, hide player-only ones
   const dmTools=document.getElementById('vtc-dm-tools');
   if(dmTools) dmTools.style.display='flex';
+  const ptTools=document.getElementById('vtc-player-tools');
+  if(ptTools) ptTools.style.display='none';
   const roomBtn=document.getElementById('vtc-room');
   if(roomBtn) roomBtn.style.display='';
   // Init floor 1 if not already done
