@@ -536,6 +536,18 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .item-prop.attune{background:rgba(140,60,200,.1);border-color:rgba(140,60,200,.3);color:#aa55dd}
 .item-prop.prof-warn{background:rgba(200,60,60,.1);border-color:rgba(200,60,60,.3);color:#c44040}
 .item-desc{font-size:11px;color:var(--text-dim);line-height:1.4;margin-top:5px}
+.inv-desc-btn{background:none;border:none;color:var(--text-muted);font-size:10px;cursor:pointer;padding:1px 0;margin-top:2px;text-align:left}
+.inv-desc-btn:hover{color:var(--text-dim)}
+.cs-stat-reroll{position:absolute;top:2px;right:2px;background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;padding:2px;line-height:1;opacity:0;transition:opacity .15s}
+.cs-stat:hover .cs-stat-reroll{opacity:1}
+.pty-dice-formula{font-size:11px;color:var(--cc);min-height:18px;margin:4px 0 2px;text-align:center;font-weight:600;letter-spacing:.03em}
+.pty-dice-roll-btn{background:var(--cc-pale);border:1px solid var(--cc);border-radius:6px;color:var(--cc);font-size:12px;font-weight:700;cursor:pointer;padding:5px 0;width:100%;margin-top:4px;letter-spacing:.04em}
+.pty-dice-roll-btn:hover{background:var(--cc-dim)}
+.pty-dice-clear{background:none;border:none;color:var(--text-muted);font-size:10px;cursor:pointer;margin-left:6px}
+.xp-gain-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.xp-gain-inp{width:70px;background:transparent;border:none;border-bottom:1px solid var(--border-hi);color:var(--text);font-size:12px;font-weight:600;text-align:center;outline:none;padding:1px 4px}
+.xp-gain-btn{background:var(--green-bg);border:1px solid var(--green);border-radius:4px;color:var(--green);font-size:11px;font-weight:700;cursor:pointer;padding:3px 8px}
+.xp-gain-btn:hover{background:var(--green)25;}
 .item-card-foot{padding:6px 11px;border-top:.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .item-cost{font-size:10px;color:var(--text-muted)}
 .item-cost strong{color:var(--text-dim)}
@@ -1729,8 +1741,8 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .pty-empty{font-size:11px;color:var(--text-muted);padding:6px 8px;font-style:italic}
 
 /* Chat panel */
-.pty-chat-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;min-height:220px;margin-top:12px}
-.pty-log{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:5px;min-height:280px}
+.pty-chat-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;height:260px;margin-top:12px}
+.pty-log{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:5px;min-height:0}
 .pty-log::-webkit-scrollbar{width:4px}
 .pty-log::-webkit-scrollbar-track{background:transparent}
 .pty-log::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px}
@@ -1922,16 +1934,21 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 </div>
 
 <!-- XP Tracker -->
-<div id="cs-xp-row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;background:var(--surface2);border:.5px solid var(--border);border-radius:6px;padding:5px 12px;flex-wrap:wrap">
+<div id="cs-xp-row" style="display:flex;align-items:center;gap:10px;margin-bottom:4px;background:var(--surface2);border:.5px solid var(--border);border-radius:6px;padding:5px 12px;flex-wrap:wrap">
   <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);white-space:nowrap">XP</div>
-  <input id="cs-xp" type="number" min="0" value="0" placeholder="0"
+  <input id="cs-xp" type="number" min="0" value="900" placeholder="0"
     style="width:90px;background:transparent;border:none;border-bottom:1px solid var(--border-hi);color:var(--text);font-size:13px;font-weight:700;text-align:center;outline:none;padding:1px 4px"
     oninput="updateXP(this.value)">
   <div style="font-size:11px;color:var(--text-dim)">/</div>
-  <div id="cs-xp-next" style="font-size:11px;font-weight:600;color:var(--fighter)">900 (next level)</div>
+  <div id="cs-xp-next" style="font-size:11px;font-weight:600;color:var(--fighter)">2700 (next level)</div>
   <div id="cs-xp-bar-wrap" style="flex:1;min-width:100px;height:4px;background:var(--border-hi);border-radius:2px;overflow:hidden">
     <div id="cs-xp-bar" style="height:100%;background:var(--fighter);border-radius:2px;width:0%;transition:width .3s"></div>
   </div>
+</div>
+<div class="xp-gain-row">
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)">Gain XP</div>
+  <input id="cs-xp-gain" class="xp-gain-inp" type="number" min="0" placeholder="0">
+  <button class="xp-gain-btn" onclick="addXP()">+ Add</button>
 </div>
 
 <!-- Stat badges + quick stats + HP -->
@@ -2272,20 +2289,25 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <div class="pty-dice-panel">
         <div class="pty-panel-head">🎲 Dice Roller</div>
         <div class="pty-dice-grid">
-          <button class="pty-dice-btn" onclick="partyRollDie(4)" title="Roll d4"><span class="die-glyph">▲</span><span class="die-lbl">d4</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(6)" title="Roll d6"><span class="die-glyph">◼</span><span class="die-lbl">d6</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(8)" title="Roll d8"><span class="die-glyph">◆</span><span class="die-lbl">d8</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(10)" title="Roll d10"><span class="die-glyph">⬢</span><span class="die-lbl">d10</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(12)" title="Roll d12"><span class="die-glyph">⬟</span><span class="die-lbl">d12</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(20)" title="Roll d20"><span class="die-glyph">✦</span><span class="die-lbl">d20</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(100)" title="Roll d100"><span class="die-glyph">%</span><span class="die-lbl">d100</span></button>
-          <button class="pty-dice-btn" onclick="partyRollDie(2)" title="Coin flip"><span class="die-glyph">◐</span><span class="die-lbl">d2</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(4)" title="Add d4 to roll"><span class="die-glyph">▲</span><span class="die-lbl">d4</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(6)" title="Add d6 to roll"><span class="die-glyph">◼</span><span class="die-lbl">d6</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(8)" title="Add d8 to roll"><span class="die-glyph">◆</span><span class="die-lbl">d8</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(10)" title="Add d10 to roll"><span class="die-glyph">⬢</span><span class="die-lbl">d10</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(12)" title="Add d12 to roll"><span class="die-glyph">⬟</span><span class="die-lbl">d12</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(20)" title="Add d20 to roll"><span class="die-glyph">✦</span><span class="die-lbl">d20</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(100)" title="Add d100 to roll"><span class="die-glyph">%</span><span class="die-lbl">d100</span></button>
+          <button class="pty-dice-btn" onclick="addDieToQueue(2)" title="Add d2 to roll"><span class="die-glyph">◐</span><span class="die-lbl">d2</span></button>
         </div>
         <div class="pty-dice-opts">
           <label>Qty<input id="pty-dice-count" type="number" min="1" max="20" value="1"></label>
           <label>Mod<input id="pty-dice-mod" type="number" value="0"></label>
         </div>
-        <div class="pty-dice-result empty" id="pty-dice-result">Click a die to roll</div>
+        <div class="pty-dice-formula" id="pty-dice-formula">Tap dice to build a roll</div>
+        <div style="display:flex;gap:4px">
+          <button class="pty-dice-roll-btn" onclick="rollDiceQueue()">Roll</button>
+          <button class="pty-dice-clear" onclick="clearDiceQueue()" title="Clear formula">✕ Clear</button>
+        </div>
+        <div class="pty-dice-result empty" id="pty-dice-result"></div>
       </div>
 
       <div class="pty-players-panel">
@@ -3545,7 +3567,7 @@ let chosenCard = null;
 function getCD(){return CLASS_DATA_MAP[currentClass]||CLASS_DATA_MAP.fighter;}
 let activeTier=0; // 0=all, 1/2/3=specific tier
 function tierFromRoll(roll){return roll<=7?1:roll<=14?2:3;}
-function getClassFeatureIds(){return new Set((CLASS_STARTING_FEATURES[currentClass]||[]).map(f=>f.id));}
+function getClassFeatureIds(){return new Set((CLASS_STARTING_FEATURES[currentClass]||[]).filter(f=>f.level<=3).map(f=>f.id));}
 function getMainPool(tier){
   const cd=getCD();
   const cfIds=getClassFeatureIds();
@@ -3845,10 +3867,10 @@ function renderActions(){
       const atkMod=ranged||finesse?Math.max(strMod,dexMod)+pb:strMod+pb;
       weaponRows+=`<div style="display:grid;grid-template-columns:1fr 68px 60px;gap:4px;
           padding:7px 11px;border-bottom:.5px solid var(--border);font-size:12px;cursor:pointer"
-          onclick="doRoll('${w.name} Attack','${ranged||finesse?'dex':'str'}',true)"
-          title="Click to roll attack">
+          onclick="doWeaponRoll('${w.name.replace(/'/g,"\\'")}','${ranged||finesse?'dex':'str'}','${(w.stat||'').replace(/'/g,"\\'")}','${(w.statType||'').replace(/'/g,"\\'")}')"
+          title="Click to roll attack + damage">
         <div><div style="font-weight:600;color:var(--text)">${w.name}</div>
-          <div style="font-size:10px;color:var(--text-dim)">${w.cat||''} ${w.stat||''}</div></div>
+          <div style="font-size:10px;color:var(--text-dim)">${w.cat||''} ${w.statType||''}</div></div>
         <div style="text-align:center;font-size:15px;font-weight:700;color:var(--cc)">${fmtMod(atkMod)}</div>
         <div style="text-align:center;font-size:11px;color:var(--text-dim)">${w.stat||'—'}</div>
       </div>`;
@@ -3992,13 +4014,14 @@ function renderCharSheet(){
     const racial=(_rd.statBonuses[s]||0);
     const total=base+racial;
     const rollNote=rolls.length?rolls.slice(1).join('+')+' −'+rolls[0]:'tap to roll';
-    return`<div class="cs-stat" onclick="rollStat('${s}')" title="${STAT_LABELS[s]}: ${total}${racial?' (base '+base+(racial>0?'+':'')+racial+' racial)':''} — click to reroll">
+    return`<div class="cs-stat" style="position:relative" onclick="doRoll('${STAT_LABELS[s]} Check','${s}',false)" title="Click to roll ${STAT_LABELS[s]} check">
       <div class="cs-stat-shell">
         <span class="cs-stat-name">${STAT_LABELS[s]}</span>
         <span class="cs-stat-mod">${fmtMod(mod(total))}</span>
         <span class="cs-stat-score">${total}</span>
       </div>
       <div class="cs-stat-rolled">${rollNote}</div>
+      <button class="cs-stat-reroll" onclick="event.stopPropagation();rollStat('${s}')" title="Reroll stat (4d6 drop lowest)">↻</button>
     </div>`;
   }).join('')+`<button class="cs-roll-all-btn" onclick="rollAllStats();event.stopPropagation()">⟳ Roll All</button>`;
   // saving throws — update proficiencies from class
@@ -4047,18 +4070,18 @@ function renderCharSheet(){
   const _cd=getCD(),allCards=[..._cd.generalCards,...Object.values(_cd.subclassCards).flat()];
   const abEl=document.getElementById('cs-abilities');
   if(abEl){
-    const classFeats=(CLASS_STARTING_FEATURES[currentClass]||[]).filter(f=>f.level<=currentLevel);
+    const classFeats=(CLASS_STARTING_FEATURES[currentClass]||[]).filter(f=>f.level<=Math.min(currentLevel,3));
     const classSection=classFeats.length?
       '<div class="cs-panel-hd" style="margin:0 0 6px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Class Features</div>'+
       '<div class="cs-abilities-box" style="margin-bottom:12px">'+
-      classFeats.map(f=>`<div class="cs-ability-row">${typeTag(f.type)}<div><div class="cs-ability-name">${f.name}</div><div class="cs-ability-desc">${f.desc}</div></div></div>`).join('')+
+      classFeats.map(f=>`<div class="cs-ability-row" onclick="rollAbility('${f.name.replace(/'/g,"\\'")}','${f.type}')" style="cursor:pointer" title="Click to use/announce">${typeTag(f.type)}<div><div class="cs-ability-name">${f.name}</div><div class="cs-ability-desc">${f.scaleFn?f.scaleFn(currentLevel):f.desc}</div></div></div>`).join('')+
       '</div>':'';
     const deckSection=acquiredMain.size===0?
       '<div class="cs-no-feats">No abilities yet — draw from the Ability Deck tab</div>':
       '<div class="cs-panel-hd" style="margin:0 0 6px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:700">Acquired Abilities</div>'+
       '<div class="cs-abilities-box">'+[...acquiredMain].map(id=>{
         const c=allCards.find(x=>x.id===id);
-        return c?`<div class="cs-ability-row">${typeTag(c.type)}<div><div class="cs-ability-name">${c.name}</div><div class="cs-ability-desc">${c.desc}</div></div></div>`:'';
+        return c?`<div class="cs-ability-row" onclick="rollAbility('${c.name.replace(/'/g,"\\'")}','${c.type}')" style="cursor:pointer" title="Click to use/announce">${typeTag(c.type)}<div><div class="cs-ability-name">${c.name}</div><div class="cs-ability-desc">${c.scaleFn?c.scaleFn(currentLevel):c.desc}</div></div></div>`:'';
       }).join('')+'</div>';
     abEl.innerHTML=classSection+deckSection;
   }
@@ -4156,12 +4179,12 @@ function applyDmg(){
   document.getElementById('cs-dmg-amt').value='';
 }
 // proficiency toggles
-function toggleSaveProf(stat){saveProfs.has(stat)?saveProfs.delete(stat):saveProfs.add(stat);renderCharSheet();}
+function toggleSaveProf(stat){saveProfs.has(stat)?saveProfs.delete(stat):saveProfs.add(stat);renderCharSheet();scheduleSave();}
 function cycleSkillProf(id){
   if(skillExp.has(id)){skillExp.delete(id);skillProfs.delete(id);}
   else if(skillProfs.has(id)){skillExp.add(id);}
   else{skillProfs.add(id);}
-  renderCharSheet();
+  renderCharSheet();scheduleSave();
 }
 function toggleInsp(){inspiration=!inspiration;renderCharSheet();}
 function toggleDeath(t,idx){deathSaves[t]=deathSaves[t]>idx?idx:idx+1;renderCharSheet();}
@@ -4176,6 +4199,24 @@ function switchRTab(id,el){
 function doRoll(label,stat,isProf,skillId){
   _rl={label,stat,skillId:skillId||null};
   execRoll();
+  document.getElementById('cs-roll-ov').classList.add('open');
+}
+function doWeaponRoll(wName,stat,damageStat,damageType){
+  _rl={label:wName+' Attack',stat,skillId:null};
+  execRoll();
+  // Parse damage dice from damageStat e.g. "1d8", "1d6 / 1d8"
+  const primary=(damageStat||'').split('/')[0].trim();
+  const dmgMatch=primary.match(/(\d+)d(\d+)/);
+  if(dmgMatch){
+    const cnt=parseInt(dmgMatch[1]),sides=parseInt(dmgMatch[2]);
+    setTimeout(()=>{
+      const rolls=Array.from({length:cnt},()=>1+Math.floor(Math.random()*sides));
+      const atkMod=Math.floor((statTotal(stat)-10)/2);
+      const dmgTotal=rolls.reduce((a,b)=>a+b,0)+atkMod;
+      const detailEl=document.getElementById('cs-roll-detail');
+      if(detailEl) detailEl.innerHTML+='<br><span style="font-size:11px;color:#a0b4e0">Damage: '+primary+'('+rolls.join('+')+')+'+(atkMod>=0?'+':'')+atkMod+' = <strong>'+dmgTotal+'</strong> '+(damageType||'')+'</span>';
+    },700);
+  }
   document.getElementById('cs-roll-ov').classList.add('open');
 }
 function dieSVG(n){
@@ -5317,9 +5358,11 @@ const invEl=document.getElementById('inv-list');
   if(invEl){
     invEl.innerHTML=inventory.map(item=>
       `<div class="inv-item${item.equipped?' equipped':''}">
-        <div style="flex:1">
+        <div style="flex:1;min-width:0">
           <div class="inv-item-name" onclick="toggleEquipped('${item.id}')" title="Click to toggle equipped">${item.name}</div>
           <div class="inv-item-stat">${item.stat} · ${item.wt} lb${item.equipped?' · <span style="color:var(--cc)">Equipped</span>':''}</div>
+          ${item.desc?`<div class="item-desc" id="idesc-${item.id}" style="display:none">${item.desc}</div>
+          <button class="inv-desc-btn" id="idbtn-${item.id}" onclick="toggleItemDesc('${item.id}')">▾ Info</button>`:''}
         </div>
         <div class="inv-qty-row">
           <button class="inv-qty-btn" onclick="changeQty('${item.id}',-1)">−</button>
@@ -5572,7 +5615,8 @@ const CLASS_STARTING_FEATURES = {
     {id:'cf_ftr_ea2', level:11, name:'Extra Attack (3)',  type:'p', desc:'When you take the Attack action, you can attack three times (LV 20: four times).'},
   ],
   barbarian:[
-    {id:'cf_bar_rage',level:1,  name:'Rage',              type:'c', desc:'Bonus action: enter rage for 1 minute. +2 melee damage, resistance to B/P/S damage, advantage on STR checks and saves. Uses scale with level: 2 at LV1, up to unlimited at LV 20.'},
+    {id:'cf_bar_rage',level:1,  name:'Rage',              type:'c', desc:'Bonus action: enter rage for 1 minute. +2 melee damage, resistance to B/P/S damage, advantage on STR checks and saves. Uses scale with level: 2 at LV1, up to unlimited at LV 20.',
+     scaleFn:lv=>{const dmg=lv>=16?4:lv>=9?3:2;const uses=lv>=20?'Unlimited':lv>=17?6:lv>=15?5:lv>=12?4:lv>=9?3:lv>=6?4:lv>=3?3:2;return`Bonus action: enter rage (1 min). +${dmg} melee damage, resistance to B/P/S damage, advantage on STR checks/saves. Uses at LV${lv}: ${uses}.`;}},
     {id:'cf_bar_ud',  level:1,  name:'Unarmored Defense', type:'p', desc:'While not wearing armor, your AC = 10 + DEX modifier + CON modifier.'},
     {id:'cf_bar_ra',  level:2,  name:'Reckless Attack',   type:'c', desc:'When you make your first attack on your turn, choose to attack recklessly. Advantage on all STR attacks this turn; attackers have advantage against you until next turn.'},
     {id:'cf_bar_ds',  level:2,  name:'Danger Sense',      type:'p', desc:'Advantage on DEX saving throws against effects you can see (not blind/deaf/incapacitated).'},
@@ -5602,7 +5646,8 @@ const CLASS_STARTING_FEATURES = {
   ],
   rogue:[
     {id:'cf_rog_exp', level:1,  name:'Expertise',         type:'p', desc:'Choose 2 proficiencies (skills or thieves\' tools): double your proficiency bonus for those checks. Two more at LV 6.'},
-    {id:'rg01',       level:1,  name:'Sneak Attack',      type:'c', desc:'Once per turn, deal extra damage when you hit with a finesse or ranged weapon and have advantage, or an ally is adjacent to target. 1d6 at LV 1, scaling to 10d6 at LV 19.'},
+    {id:'rg01',       level:1,  name:'Sneak Attack',      type:'c', desc:'Once per turn, deal extra damage when you hit with a finesse or ranged weapon and have advantage, or an ally is adjacent to target. 1d6 at LV 1, scaling to 10d6 at LV 19.',
+     scaleFn:lv=>`Once per turn, deal extra damage when you hit with a finesse or ranged weapon and have advantage, or an ally is adjacent to target. Current extra damage at LV${lv}: ${Math.ceil(lv/2)}d6.`},
     {id:'cf_rog_tc',  level:1,  name:"Thieves' Cant",     type:'p', desc:'You know a secret mix of dialect, jargon, and code for passing messages to other rogues. Takes 4× longer to convey messages.'},
     {id:'cf_rog_ca',  level:2,  name:'Cunning Action',    type:'b', desc:'Bonus action on each turn: Dash, Disengage, or Hide.'},
     {id:'cf_rog_ud',  level:5,  name:'Uncanny Dodge',     type:'r', desc:'When an attacker you can see hits you, use your reaction to halve the attack\'s damage.'},
@@ -5871,7 +5916,6 @@ function onLevelChange(v){
 const XP_THRESHOLDS=[0,0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
 function updateXP(val){
   const xp=Math.max(0,parseInt(val)||0);
-  // find current level from XP
   let lvFromXP=1;
   for(let i=1;i<=20;i++){if(xp>=XP_THRESHOLDS[i])lvFromXP=i;}
   const nextLvl=Math.min(20,lvFromXP+1);
@@ -5882,6 +5926,44 @@ function updateXP(val){
   const barEl=document.getElementById('cs-xp-bar');
   if(nextEl) nextEl.textContent=nextLvl<=20?nextThresh+' (Lv '+nextLvl+')':`Max (Lv 20)`;
   if(barEl) barEl.style.width=pct+'%';
+}
+function addXP(){
+  const gainEl=document.getElementById('cs-xp-gain');
+  const gain=Math.max(0,parseInt(gainEl?.value)||0);
+  if(!gain){gainEl&&(gainEl.style.borderColor='var(--red)');setTimeout(()=>{if(gainEl)gainEl.style.borderColor='';},800);return;}
+  const xpEl=document.getElementById('cs-xp');
+  const current=Math.max(0,parseInt(xpEl?.value)||0);
+  const newXP=current+gain;
+  if(xpEl) xpEl.value=newXP;
+  updateXP(newXP);
+  if(gainEl) gainEl.value='';
+  scheduleSave();
+  showToast('+'+gain+' XP gained!','rest-short');
+}
+function toggleItemDesc(id){
+  const d=document.getElementById('idesc-'+id);
+  const b=document.getElementById('idbtn-'+id);
+  if(!d) return;
+  const shown=d.style.display!=='none';
+  d.style.display=shown?'none':'block';
+  if(b) b.textContent=shown?'▾ Info':'▴ Hide';
+}
+function rollAbility(name,type){
+  const passive=['p'].includes(type);
+  if(passive){
+    if(partyPeer&&partyPeer.open!==false){
+      const text='['+name+'] (passive ability)';
+      const msg={type:'chat',user:partyMyName,text,ts:Date.now(),isDM:partyIsDM};
+      _broadcast(msg);_appendMsg({user:partyMyName,text,ts:msg.ts,isDM:partyIsDM,announce:false});
+    }
+    return;
+  }
+  // Active ability: announce to party and show a d20 check prompt
+  if(partyPeer&&partyPeer.open!==false){
+    const text='['+name+'] used!';
+    const msg={type:'chat',user:partyMyName,text,ts:Date.now(),isDM:partyIsDM};
+    _broadcast(msg);_appendMsg({user:partyMyName,text,ts:msg.ts,isDM:partyIsDM,announce:false});
+  }
 }
 
 function switchTab(id,el){
@@ -6295,7 +6377,7 @@ function loadState(){
         'cs-name':         s.charName||'',
         'cs-background':   s.csBackground||'',
         'cs-align':        s.csAlign||'',
-        'cs-xp':           s.csXP||'',
+        'cs-xp':           s.csXP!=null?s.csXP:'900',
         'cs-ac':           s.csAC||'10',
         'cs-speed':        s.csSpeed||'30',
         'cs-hp-cur':       s.csHPCur||'0',
@@ -6508,6 +6590,7 @@ let _cvTokTimer=null;
 let _cvStrokeCvs=null,_cvStrokeCtx=null;
 // Named pins
 let _cvPins=[],_cvPinPending=null;
+let _cvMapPings=[];
 // Image resize state
 let _cvResizingImg=null; // {id,corner,origWW,origWH,origWX,origWY,startSX,startSY}
 // Floor system
@@ -6631,6 +6714,26 @@ function _cvRender(){
     ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';
     ctx.textBaseline='top';
     ctx.fillText(p.name,0,11);
+    ctx.restore();
+  });
+
+  // Map pings (shift+click beacons)
+  const _now=Date.now();
+  _cvMapPings=_cvMapPings.filter(p=>_now-p.t<2800);
+  _cvMapPings.forEach(p=>{
+    const age=_now-p.t, prog=age/2800;
+    const sp=_w2s(p.wx,p.wy); const t=TILE*_cvZoom;
+    ctx.save();
+    for(let i=0;i<3;i++){
+      const rp=Math.min(1,(prog+i*0.12));
+      ctx.globalAlpha=Math.max(0,(1-rp)*0.85);
+      ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.arc(sp.x,sp.y,t*(0.35+rp*2),0,Math.PI*2); ctx.stroke();
+    }
+    ctx.globalAlpha=Math.max(0,1-prog*1.4);
+    ctx.fillStyle='#fbbf24'; ctx.font='bold 11px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText(p.name||'',sp.x,sp.y-t*0.5);
     ctx.restore();
   });
 
@@ -6804,8 +6907,22 @@ function _cvAttachEvents(){
   c.addEventListener('wheel',_cvWheel,{passive:false});
   c.addEventListener('contextmenu',e=>{
     e.preventDefault();
-    if(!partyIsDM||_cvTool==='cursor') return;
+    if(!partyIsDM) return;
     const sx=e.offsetX,sy=e.offsetY;
+    // Right-click on a player/enemy token: DM can delete it
+    const myId=partyPeer?.id;
+    for(const [pid,tok] of Object.entries(_cvTokens)){
+      if(pid===myId) continue;
+      const tp=_w2s(tok.wx,tok.wy);
+      const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
+      if(Math.hypot(sx-tp.x,sy-tp.y)<r+8){
+        delete _cvTokens[pid];
+        _broadcast({type:'cv-token-delete',peerId:pid});
+        return;
+      }
+    }
+    if(_cvTool==='cursor') return;
+    // Right-click on a pin: delete it
     for(let i=_cvPins.length-1;i>=0;i--){
       const p=_cvPins[i];
       const ps=_w2s(p.wx,p.wy);
@@ -6829,6 +6946,15 @@ function _cvPDown(e){
   if(e.button===1){
     _cvPanSX=sx;_cvPanSY=sy;_cvPanOX=_cvOX;_cvPanOY=_cvOY;
     _cvCvs.style.cursor='grabbing'; return;
+  }
+
+  // Shift+click: map ping visible to all players
+  if(e.button===0&&e.shiftKey){
+    const w=_s2w(sx,sy);
+    const pingData={type:'cv-ping',wx:w.x,wy:w.y,name:partyMyName||'?'};
+    _cvMapPings.push({wx:w.x,wy:w.y,name:partyMyName||'?',t:Date.now()});
+    _broadcast(pingData);
+    return;
   }
 
   const myId=partyPeer?.id;
@@ -7615,6 +7741,10 @@ function _cvHandleMsg(d){
       _cvImages=_cvImages.filter(i=>i.id!==d.id); break;
     case 'cv-token-move':
       _cvTokens[d.peerId]={wx:d.wx,wy:d.wy}; break;
+    case 'cv-token-delete':
+      delete _cvTokens[d.peerId]; break;
+    case 'cv-ping':
+      _cvMapPings.push({wx:d.wx,wy:d.wy,name:d.name||'',t:Date.now()}); break;
     case 'cv-floor-init':
       { _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
         const fbi=document.getElementById('vtc-floor-num');if(fbi)fbi.textContent='1'; } break;
@@ -7755,6 +7885,12 @@ function _setupConn(conn){
         hostId:partyPeer.id,hostName:partyMyName,cvSync:_cvSyncPayload()});}catch(e){}
       // Tell everyone else a new peer joined
       const joinName=conn.metadata?.name||'Player';
+      // Remove stale entries with the same display name (player rejoined with new peer ID)
+      Object.keys(partyPlayers).forEach(pid=>{
+        if(pid!==conn.peer&&partyPlayers[pid].name===joinName){
+          delete partyPlayers[pid]; delete partyConns[pid]; delete partyCharSheets[pid];
+        }
+      });
       _broadcast({type:'peer-join',id:conn.peer,name:joinName},conn.peer);
       partyPlayers[conn.peer]={name:joinName,isDM:false};
     }
@@ -7806,6 +7942,12 @@ function _handleData(d,fromConn){
       _partyBroadcastCharSheet(); break;
     case 'peer-join':
       _sysMsg(d.name+' joined the room');
+      // Remove stale same-name entries (player rejoin with new ID)
+      Object.keys(partyPlayers).forEach(pid=>{
+        if(pid!==d.id&&partyPlayers[pid].name===d.name){
+          delete partyPlayers[pid]; delete partyConns[pid]; delete partyCharSheets[pid];
+        }
+      });
       partyPlayers[d.id]={name:d.name,isDM:false,color:_colorForPeer(d.id)};
       _renderPlayers();
       _partyBroadcastCharSheet(); break;
@@ -7936,6 +8078,46 @@ function sendPartyMsg(){
 }
 
 // Free-form dice roller (party room sidebar). Posts to chat if connected.
+let _diceQueue=[];
+function addDieToQueue(sides){
+  const countEl=document.getElementById('pty-dice-count');
+  const count=Math.max(1,Math.min(20,parseInt(countEl?.value)||1));
+  const ex=_diceQueue.find(d=>d.sides===sides);
+  if(ex) ex.count+=count; else _diceQueue.push({count,sides});
+  _renderDiceQueue();
+}
+function _renderDiceQueue(){
+  const qEl=document.getElementById('pty-dice-formula');
+  if(!qEl) return;
+  if(_diceQueue.length===0){qEl.textContent='Tap dice to build a roll';qEl.style.color='var(--text-muted)';return;}
+  const modEl=document.getElementById('pty-dice-mod');
+  const mod=parseInt(modEl?.value)||0;
+  qEl.style.color='var(--cc)';
+  qEl.textContent=_diceQueue.map(d=>d.count+'d'+d.sides).join(' + ')+(mod?` + ${mod}`:'');
+}
+function clearDiceQueue(){_diceQueue=[];_renderDiceQueue();}
+function rollDiceQueue(){
+  if(_diceQueue.length===0) return;
+  const modEl=document.getElementById('pty-dice-mod');
+  const modifier=parseInt(modEl?.value)||0;
+  const parts=[];let total=0;
+  _diceQueue.forEach(d=>{
+    const rolls=Array.from({length:d.count},()=>1+Math.floor(Math.random()*d.sides));
+    const sum=rolls.reduce((a,b)=>a+b,0);
+    total+=sum;
+    parts.push(d.count+'d'+d.sides+'('+rolls.join('+')+')');
+  });
+  total+=modifier;
+  const detail=parts.join(' + ')+(modifier?(modifier>0?' + '+modifier:' - '+Math.abs(modifier)):'')+' = '+total;
+  const resEl=document.getElementById('pty-dice-result');
+  if(resEl){resEl.className='pty-dice-result';resEl.innerHTML='<div class="pty-dice-result-total">'+total+'</div><div class="pty-dice-result-detail">'+detail+'</div>';}
+  if(partyPeer&&partyPeer.open!==false){
+    const rollText='🎲 '+detail;
+    const msg={type:'chat',user:partyMyName,text:rollText,ts:Date.now(),isDM:partyIsDM};
+    _broadcast(msg);_appendMsg({user:partyMyName,text:rollText,ts:msg.ts,isDM:partyIsDM,announce:false});
+  }
+  _diceQueue=[];_renderDiceQueue();
+}
 function partyRollDie(sides){
   const countEl=document.getElementById('pty-dice-count');
   const modEl=document.getElementById('pty-dice-mod');
