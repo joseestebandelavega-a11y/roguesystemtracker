@@ -1821,8 +1821,8 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
    ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
 
-  /* ── Global touch polish ────────────────────────────────────────────────── */
-  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  /* ── Global ─────────────────────────────────────────────────────────────── */
+  * { -webkit-tap-highlight-color: transparent; }
   body { overflow-x: hidden; }
 
   /* ── Navigation tabs ────────────────────────────────────────────────────── */
@@ -1832,98 +1832,141 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   .tab { flex-shrink: 0; white-space: nowrap; padding: 0 14px; font-size: 10px; min-height: 46px; display: flex; align-items: center; }
   .info-btn, .nav-secret-btn { flex-shrink: 0; min-height: 46px; padding: 0 10px; }
 
-  /* ── Content area ───────────────────────────────────────────────────────── */
+  /* ── Content ────────────────────────────────────────────────────────────── */
   .content { padding: 8px 8px 64px; }
 
-  /* ── Character identity fields ──────────────────────────────────────────── */
+  /* ─────────────────────────────────────────────────────────────────────────
+     CHARACTER SHEET
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* Identity fields: stack vertically so nothing wraps out of view */
   .cs-id { flex-direction: column; }
   .cs-id-f { border-right: none !important; border-bottom: 0.5px solid var(--border); min-width: 0; padding: 8px 12px; }
   .cs-id-f:last-child { border-bottom: none; }
+  .cs-id-inp, .cs-id-sel { font-size: 14px; }
 
-  /* ── Stats block ────────────────────────────────────────────────────────── */
-  .cs-stat-row { justify-content: center; gap: 6px; }
-  .cs-stat-shell { width: 58px; }
-  .cs-stat-mod { font-size: 20px; }
+  /* Stats: tighter shells so all 6 fit in one row (6×52 + 5×4 = 332px < 374px) */
+  .cs-stat-row { justify-content: center; gap: 4px; }
+  .cs-stat-shell { width: 52px !important; }
+  .cs-stat-mod { font-size: 19px; }
+  .cs-stat-val { font-size: 13px !important; }
+  .cs-stat-lbl { font-size: 7px !important; letter-spacing: .06em; }
 
-  /* ── HP block ────────────────────────────────────────────────────────────── */
-  .cs-hp-block { min-width: 0; }
+  /* HP block: drop the large min-width that forces horizontal scroll */
+  .cs-hp-block { min-width: 0 !important; }
 
-  /* ── Quick stats row (Proficiency / Initiative / Speed) ─────────────────── */
+  /* Quick stats (Prof / Init / Speed) */
   .cs-quick-row { gap: 6px; }
   .cs-quick { padding: 6px 8px; min-width: 60px; }
   .cs-quick-val { font-size: 18px; }
 
-  /* ── Right-panel sub-tabs ───────────────────────────────────────────────── */
+  /* Sub-tabs (Actions / Abilities / etc) — horizontal scroll, never wrap */
   .cs-rtabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-wrap: nowrap !important; }
   .cs-rtabs::-webkit-scrollbar { display: none; }
-  .cs-rtab { flex-shrink: 0; white-space: nowrap; padding: 8px 12px; font-size: 10px; min-height: 38px; display: flex; align-items: center; }
+  .cs-rtab { flex-shrink: 0; white-space: nowrap; padding: 10px 14px; font-size: 11px; min-height: 42px; display: flex; align-items: center; }
 
-  /* ── Save / skill rows ──────────────────────────────────────────────────── */
-  .cs-save-row, .cs-skill-row { min-height: 36px; display: flex; align-items: center; }
+  /* Saving throws / skills — generous tap height */
+  .cs-save-row, .cs-skill-row { min-height: 38px; display: flex; align-items: center; }
 
-  /* ── Equipment: sidebar → horizontal scroll strip ───────────────────────── */
-  .equip-layout { grid-template-columns: 1fr !important; }
+  /* ─────────────────────────────────────────────────────────────────────────
+     EQUIPMENT TAB
+     (container is .equip-page, not .equip-layout — was targeting wrong class)
+     ───────────────────────────────────────────────────────────────────────── */
 
+  /* Stack sidebar above the grid.
+     minmax(0,1fr) forces the column ≤ container width regardless of content size. */
+  .equip-page { grid-template-columns: minmax(0, 1fr) !important; gap: 0 !important; }
+
+  /* Sidebar: full-width bar, clip content so children scroll inside */
   .equip-sidebar {
     position: static !important;
     top: auto !important;
     width: 100% !important;
-    flex-direction: column;
-    gap: 4px;
-    padding: 6px 6px 0;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    border-radius: 0;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
   }
+  .equip-main { min-width: 0; }
 
+  /* Filter panel: tighter padding */
+  .equip-filter-panel { border-radius: 0 !important; border: none !important; border-bottom: 1px solid var(--border) !important; }
+  .equip-filter-hd { padding: 7px 12px; }
+
+  /* Category buttons: horizontal scrollable pill row */
   .equip-cats {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    overflow-x: auto;
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    gap: 4px;
-    padding-bottom: 6px;
+    gap: 6px !important;
+    padding: 8px 10px !important;
   }
   .equip-cats::-webkit-scrollbar { display: none; }
+  .equip-cat-btn { flex-shrink: 0 !important; white-space: nowrap; padding: 9px 14px !important; font-size: 12px !important; min-height: 40px; gap: 0 !important; }
+  .equip-cat-icon { display: none !important; }
+  .equip-cat-count { display: none !important; }
 
-  .equip-cat-btn { flex-shrink: 0; white-space: nowrap; padding: 6px 10px; font-size: 10px; gap: 4px; }
-  .equip-cat-icon { display: none; }
-  .equip-cat-count { font-size: 9px; }
+  /* Class proficiency filter: horizontal scroll */
+  .class-prof-filter { padding: 6px 10px 8px !important; display: flex; flex-direction: column; gap: 4px; }
+  .cpf-lbl { margin-bottom: 2px; }
+  .class-prof-filter > .cpf-btn,
+  .class-prof-filter .cpf-btn { display: inline-block; }
 
-  .equip-panel { padding: 4px 2px; }
-  .rf-btn { padding: 4px 8px; font-size: 10px; min-height: 30px; }
-  .cpf-btn { padding: 3px 7px; font-size: 10px; min-height: 30px; }
-  .equip-main { padding: 0; }
-  .equip-grid { padding: 6px; gap: 6px; }
-  #equip-search-inp { font-size: 13px; }
+  /* Wrap the cpf buttons in a scroll container via CSS */
+  .class-prof-filter { overflow-x: auto; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center; -webkit-overflow-scrolling: touch; }
+  .class-prof-filter::-webkit-scrollbar { display: none; }
+  .cpf-lbl { display: none; }
+  .cpf-btn { flex-shrink: 0; white-space: nowrap; padding: 7px 12px !important; font-size: 11px !important; min-height: 36px; margin: 0 !important; }
 
-  /* ── Ability deck ───────────────────────────────────────────────────────── */
+  /* Inventory panel: compact */
+  .inv-panel { border-radius: 0 !important; border-left: none !important; border-right: none !important; border-top: none !important; }
+  .inv-hd { padding: 8px 12px; }
+  .inv-list { max-height: 140px; }
+
+  /* Main content area */
+  .equip-main { padding: 0 !important; }
+
+  /* Search + roll + rarity row: stack into 2 rows */
+  .equip-search-row { flex-wrap: wrap !important; gap: 6px; padding: 8px; margin-bottom: 0 !important; }
+  .equip-search { width: 100% !important; font-size: 14px !important; order: -1; }
+  .draw-btn { font-size: 12px !important; min-height: 40px; }
+
+  /* Rarity filters: horizontal scroll row */
+  .rarity-filter { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; width: 100%; }
+  .rarity-filter::-webkit-scrollbar { display: none; }
+  .rf-btn { flex-shrink: 0; white-space: nowrap; padding: 7px 12px !important; font-size: 11px !important; min-height: 36px; }
+
+  /* Grid: single-column full-width cards */
+  .equip-grid { padding: 8px !important; gap: 8px !important; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     ABILITY DECK / PARTY / MODALS
+     ───────────────────────────────────────────────────────────────────────── */
+
   .decks-row { grid-template-columns: 1fr !important; }
 
-  /* ── Party room ─────────────────────────────────────────────────────────── */
   .pty-row { flex-direction: column !important; }
-  .pty-cs-col { width: 100% !important; flex: none !important; }
-  .pty-tools-col { width: 100% !important; flex: none !important; }
+  .pty-cs-col, .pty-tools-col { width: 100% !important; flex: none !important; }
   .pty-tools-scroll { max-height: none; }
+  .pty-dice-btn { min-height: 40px; min-width: 40px; }
 
-  /* ── Roll overlay ───────────────────────────────────────────────────────── */
   .cs-roll-box { padding: 20px 16px; min-width: 260px; max-width: 90vw; }
   .cs-roll-d20 { font-size: 64px !important; }
 
-  /* ── Item roll modal ────────────────────────────────────────────────────── */
   .item-roll-modal { width: 96vw; max-height: 88vh; overflow-y: auto; padding: 12px; }
   .irm-head { padding: 12px 14px 8px; }
   .irm-done-btn { width: 100%; min-height: 44px; }
 
-  /* ── Draw / info modals ─────────────────────────────────────────────────── */
   .draw-modal { width: 96vw; max-height: 90vh; overflow-y: auto; padding: 16px; }
   .info-modal { width: 100vw; max-width: 100vw; border-radius: 0; max-height: 100dvh; overflow: hidden; }
   .info-modal-body { max-height: calc(100dvh - 56px); padding: 16px; }
   .info-modal-tab { padding: 10px 12px; font-size: 10px; }
-
-  /* ── Dice roller in party tools ─────────────────────────────────────────── */
-  .pty-dice-btn { min-height: 40px; min-width: 40px; }
 }
 </style>
 </head>
