@@ -2115,16 +2115,11 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <div class="equip-filter-hd">Categories</div>
       <div class="equip-cats">
 <div class="equip-cat-btn active" id="ecat-all" data-cat="all" onclick="setEquipCat('all')"><span class="equip-cat-icon">📦</span>All Items<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-simple-melee" data-cat="simple-melee" onclick="setEquipCat('simple-melee')"><span class="equip-cat-icon">🗡</span>Simple Melee<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-simple-ranged" data-cat="simple-ranged" onclick="setEquipCat('simple-ranged')"><span class="equip-cat-icon">🏹</span>Simple Ranged<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-martial-melee" data-cat="martial-melee" onclick="setEquipCat('martial-melee')"><span class="equip-cat-icon">⚔</span>Martial Melee<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-martial-ranged" data-cat="martial-ranged" onclick="setEquipCat('martial-ranged')"><span class="equip-cat-icon">🎯</span>Martial Ranged<span class="equip-cat-count">0</span></div>
+<div class="equip-cat-btn" id="ecat-weapons" data-cat="weapons" onclick="setEquipCat('weapons')"><span class="equip-cat-icon">⚔</span>Weapons<span class="equip-cat-count">0</span></div>
 <div class="equip-cat-btn" id="ecat-armor" data-cat="armor" onclick="setEquipCat('armor')"><span class="equip-cat-icon">🛡</span>Armor & Shields<span class="equip-cat-count">0</span></div>
 <div class="equip-cat-btn" id="ecat-gear" data-cat="gear" onclick="setEquipCat('gear')"><span class="equip-cat-icon">🎒</span>Adventuring Gear<span class="equip-cat-count">0</span></div>
 <div class="equip-cat-btn" id="ecat-consumables" data-cat="consumables" onclick="setEquipCat('consumables')"><span class="equip-cat-icon">🧪</span>Potions & Misc<span class="equip-cat-count">0</span></div>
 <div class="equip-cat-btn" id="ecat-scroll" data-cat="scroll" onclick="setEquipCat('scroll')"><span class="equip-cat-icon">📜</span>Spell Scrolls<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-magic-weapons" data-cat="magic-weapons" onclick="setEquipCat('magic-weapons')"><span class="equip-cat-icon">⚔</span>Magic Weapons<span class="equip-cat-count">0</span></div>
-<div class="equip-cat-btn" id="ecat-magic-armor" data-cat="magic-armor" onclick="setEquipCat('magic-armor')"><span class="equip-cat-icon">🛡</span>Magic Armor<span class="equip-cat-count">0</span></div>
 <div class="equip-cat-btn" id="ecat-wondrous" data-cat="wondrous" onclick="setEquipCat('wondrous')"><span class="equip-cat-icon">✨</span>Wondrous Items<span class="equip-cat-count">0</span></div>
       </div>
       <div class="class-prof-filter">
@@ -5512,19 +5507,20 @@ const EQUIP_ITEMS = [
 ];
 
 const EQUIP_CATEGORIES = [
-  {id:"all",           label:"All Items"},
-  {id:"simple-melee",  label:"Simple Melee"},
-  {id:"simple-ranged", label:"Simple Ranged"},
-  {id:"martial-melee", label:"Martial Melee"},
-  {id:"martial-ranged",label:"Martial Ranged"},
-  {id:"armor",         label:"Armor & Shields"},
-  {id:"gear",          label:"Adventuring Gear"},
-  {id:"consumables",   label:"Potions & Misc"},
-  {id:"scroll",        label:"Spell Scrolls"},
-  {id:"magic-weapons", label:"Magic Weapons"},
-  {id:"magic-armor",   label:"Magic Armor"},
-  {id:"wondrous",      label:"Wondrous Items"},
+  {id:"all",        label:"All Items"},
+  {id:"weapons",    label:"Weapons"},
+  {id:"armor",      label:"Armor & Shields"},
+  {id:"gear",       label:"Adventuring Gear"},
+  {id:"consumables",label:"Potions & Misc"},
+  {id:"scroll",     label:"Spell Scrolls"},
+  {id:"wondrous",   label:"Wondrous Items"},
 ];
+
+// Maps combined tab IDs to their underlying item cat values
+const CAT_GROUPS = {
+  weapons: ['simple-melee','simple-ranged','martial-melee','martial-ranged','magic-weapons'],
+  armor:   ['armor','magic-armor'],
+};
 
 // Class proficiency map for equipment
 const CLASS_EQUIP_PROF = {
@@ -6435,7 +6431,10 @@ function setEquipClassFilter(cls){
 }
 function getEquipPool(){
   let items=EQUIP_ITEMS||[];
-  if(equipFilter&&equipFilter!=='all') items=items.filter(i=>i.cat===equipFilter);
+  if(equipFilter&&equipFilter!=='all'){
+    const cats=CAT_GROUPS[equipFilter]||[equipFilter];
+    items=items.filter(i=>cats.includes(i.cat));
+  }
   if(equipRarityFilter&&equipRarityFilter!=='all'){
     // Map button keys to display values (case-insensitive match)
     const rm={common:'common',uncommon:'uncommon',rare:'rare',veryrare:'very rare',legendary:'legendary'};
@@ -6457,7 +6456,8 @@ function renderEquipFiltered(){
   EQUIP_CATEGORIES&&EQUIP_CATEGORIES.forEach(c=>{
     const btn=document.getElementById('ecat-'+c.id);
     if(!btn)return;
-    const n=c.id==='all'?(EQUIP_ITEMS||[]).length:(EQUIP_ITEMS||[]).filter(x=>x.cat===c.id).length;
+    const cats=CAT_GROUPS[c.id]||[c.id];
+    const n=c.id==='all'?(EQUIP_ITEMS||[]).length:(EQUIP_ITEMS||[]).filter(x=>cats.includes(x.cat)).length;
     const cnt=btn.querySelector('.equip-cat-count');
     if(cnt)cnt.textContent=n;
   });
