@@ -4225,17 +4225,21 @@ function doRoll(label,stat,isProf,skillId){
 function doWeaponRoll(wName,stat,damageStat,damageType){
   _rl={label:wName+' Attack',stat,skillId:null};
   execRoll();
-  // Parse damage dice from damageStat e.g. "1d8", "1d6 / 1d8"
-  const primary=(damageStat||'').split('/')[0].trim();
-  const dmgMatch=primary.match(/(\d+)d(\d+)/);
+  // Search for the first XdY pattern anywhere in the stat string.
+  // Splitting on '/' broke magic weapons whose stat is "+1 atk/dmg, 1d8 slashing".
+  const dmgMatch=(damageStat||'').match(/(\d+)d(\d+)/);
+  // Parse a leading flat magic bonus e.g. "+2 atk/dmg..." → 2
+  const magicBonus=parseInt((damageStat||'').match(/^\+(\d+)/)?.[1]||'0');
   if(dmgMatch){
     const cnt=parseInt(dmgMatch[1]),sides=parseInt(dmgMatch[2]);
     setTimeout(()=>{
       const rolls=Array.from({length:cnt},()=>1+Math.floor(Math.random()*sides));
       const atkMod=Math.floor((statTotal(stat)-10)/2);
-      const dmgTotal=rolls.reduce((a,b)=>a+b,0)+atkMod;
+      const totalBonus=atkMod+magicBonus;
+      const dmgTotal=rolls.reduce((a,b)=>a+b,0)+totalBonus;
+      const bonusStr=totalBonus>=0?'+'+totalBonus:''+totalBonus;
       const detailEl=document.getElementById('cs-roll-detail');
-      if(detailEl) detailEl.innerHTML+='<br><span style="font-size:11px;color:#a0b4e0">Damage: '+primary+'('+rolls.join('+')+')+'+(atkMod>=0?'+':'')+atkMod+' = <strong>'+dmgTotal+'</strong> '+(damageType||'')+'</span>';
+      if(detailEl) detailEl.innerHTML+='<br><span style="font-size:11px;color:#a0b4e0">Damage: '+dmgMatch[0]+'('+rolls.join('+')+') '+bonusStr+' = <strong>'+dmgTotal+'</strong> '+(damageType||'')+'</span>';
     },700);
   }
   document.getElementById('cs-roll-ov').classList.add('open');
