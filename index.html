@@ -1852,6 +1852,10 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   .cs-stat-val { font-size: 13px !important; }
   .cs-stat-lbl { font-size: 7px !important; letter-spacing: .06em; }
 
+  /* Body grid: minmax(0,1fr) prevents auto-minimum from expanding column past viewport */
+  .cs-body { grid-template-columns: minmax(0, 1fr) !important; }
+  .cs-body > * { min-width: 0; }
+
   /* HP block: drop the large min-width that forces horizontal scroll */
   .cs-hp-block { min-width: 0 !important; }
 
