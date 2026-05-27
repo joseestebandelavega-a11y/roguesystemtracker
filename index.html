@@ -2263,12 +2263,37 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
             <button class="vtc-btn" id="vtc-pin" onclick="_cvSetTool('pin')" title="Drop a named pin (enemy/NPC)">📍 Pin</button>
             <button class="vtc-btn" id="vtc-go-up" onclick="_cvDmGoUpFloor()" style="display:none" title="Go up to previous floor">⬆ Up</button>
             <button class="vtc-btn" id="vtc-go-down" onclick="_cvDmNewFloor()" title="Descend to next floor">⬇ Down</button>
+            <button class="vtc-btn" onclick="_cvExportSession()" title="Save session to file">💾 Save</button>
+            <label class="vtc-btn" title="Load a saved session from file">
+              📂 Load<input type="file" accept=".json" style="display:none" onchange="_cvImportSession(this.files[0]);this.value=''">
+            </label>
+          </div>
+          <div class="vtc-tg" id="vtc-player-tools">
+            <button class="vtc-btn" onclick="_cvOpenTokenRequest()" title="Ask DM to add another token for you">＋ Token</button>
           </div>
         </div>
         <div class="vtc-cont" id="vtc-cont">
           <canvas id="pty-canvas"></canvas>
           <div id="vtc-floor-counter" style="position:absolute;top:6px;left:8px;font-size:10px;color:rgba(255,255,255,.55);pointer-events:none;display:none"></div>
           <div style="position:absolute;bottom:6px;right:8px;font-size:9px;color:rgba(255,255,255,.18);pointer-events:none;letter-spacing:.04em">Pan: drag · Draw: ✏ · Zoom: scroll · Right-click: delete</div>
+          <!-- Extra token request form (players) -->
+          <div id="vtc-tok-req-form" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border-hi);border-radius:10px;padding:14px;width:200px;z-index:20;box-shadow:0 4px 24px rgba(0,0,0,.6)">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:8px">Request Extra Token</div>
+            <input id="vtc-tok-req-name" class="pty-inp" placeholder="Token name…" maxlength="30" style="width:100%;padding:5px 8px;font-size:12px;margin-bottom:8px"
+              onkeydown="if(event.key==='Enter')_cvSubmitTokenRequest();if(event.key==='Escape')_cvCancelTokenRequest()">
+            <div style="display:flex;gap:6px">
+              <button class="pty-btn" onclick="_cvSubmitTokenRequest()" style="flex:1;padding:5px 0;font-size:11px">Request</button>
+              <button class="pty-btn ghost" onclick="_cvCancelTokenRequest()" style="flex:1;padding:5px 0;font-size:11px">Cancel</button>
+            </div>
+          </div>
+          <!-- DM token-request notification -->
+          <div id="vtc-tok-approve" style="display:none;position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#150a2a;border:1px solid #7c3aed;border-radius:8px;padding:10px 14px;z-index:20;min-width:220px;box-shadow:0 4px 20px rgba(0,0,0,.7)">
+            <div id="vtc-tok-approve-msg" style="font-size:12px;color:#d8b4fe;margin-bottom:8px"></div>
+            <div style="display:flex;gap:6px">
+              <button class="pty-btn" onclick="_cvGrantToken()" style="flex:1;padding:4px 0;font-size:11px;background:#1a0a2e;border-color:#7c3aed;color:#d8b4fe">Allow</button>
+              <button class="pty-btn ghost" onclick="_cvDenyToken()" style="flex:1;padding:4px 0;font-size:11px">Deny</button>
+            </div>
+          </div>
           <!-- Pin placement form -->
           <div id="vtc-pin-form" class="vtc-pin-form">
             <input id="vtc-pin-name" class="pty-inp" placeholder="Name…" maxlength="40" style="padding:5px 8px;font-size:12px"
@@ -6881,14 +6906,18 @@ function _cvDrawStroke(ctx,s){
 function _cvDrawToken(ctx,pid,tok){
   const p=_w2s(tok.wx,tok.wy);
   const pl=partyPlayers[pid];
-  const color=pl?.color||'#d4891a';
-  const name=pl?.name||'?';
+  // Extra tokens carry label/color directly; player tokens look up partyPlayers
+  const color=tok.color||pl?.color||'#d4891a';
+  const name=tok.label||pl?.name||'?';
   const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
   ctx.save();
   ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=7;
   ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
   ctx.fillStyle=color; ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=2; ctx.stroke();
+  // Extra tokens: dashed outline to distinguish from main player token
+  if(tok.isExtra){ctx.setLineDash([3,2]);ctx.strokeStyle='rgba(255,255,255,.9)';}
+  else {ctx.strokeStyle='rgba(255,255,255,.75)';}
+  ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
   ctx.shadowBlur=0;
   ctx.fillStyle='#fff';
   ctx.font='bold '+Math.floor(r*0.85)+'px sans-serif';
@@ -6968,13 +6997,13 @@ function _cvPDown(e){
       const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
       if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=myId; return; }
     }
-    if(partyIsDM){
-      for(const [pid,tok] of Object.entries(_cvTokens)){
-        if(pid===myId) continue;
-        const tp=_w2s(tok.wx,tok.wy);
-        const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
-        if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
-      }
+    // Own extra tokens (player can drag tokens they own)
+    for(const [pid,tok] of Object.entries(_cvTokens)){
+      if(pid===myId) continue;
+      if(tok.ownerId!==myId&&!partyIsDM) continue;
+      const tp=_w2s(tok.wx,tok.wy);
+      const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
+      if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
     }
 
     if(partyIsDM){
@@ -7241,6 +7270,70 @@ function _cvCancelPin(){
   _cvPinPending=null;
   const form=document.getElementById('vtc-pin-form');
   if(form) form.style.display='none';
+}
+
+// ── Session save / load ───────────────────────────────────────────────────────
+function _cvExportSession(){
+  const payload=_cvSyncPayload();
+  const data=JSON.stringify({version:1,exportedAt:new Date().toISOString(),
+    roomCode:partyRoomCode||'offline',...payload},null,2);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download='session-'+(partyRoomCode||'map')+'-floor'+_floorCount+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('Session saved to file','rest-long');
+}
+function _cvImportSession(file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      _cvApplySync(d);
+      _broadcast({type:'cv-sync',..._cvSyncPayload()});
+      _sysMsg('Session loaded — Floor '+_floorCount+' restored for all players.');
+    }catch(err){ _sysMsg('Import failed: '+err.message); }
+  };
+  reader.readAsText(file);
+}
+
+// ── Extra token request ───────────────────────────────────────────────────────
+function _cvOpenTokenRequest(){
+  const form=document.getElementById('vtc-tok-req-form');
+  if(form){ form.style.display='block'; setTimeout(()=>document.getElementById('vtc-tok-req-name')?.focus(),50); }
+}
+function _cvCancelTokenRequest(){
+  const form=document.getElementById('vtc-tok-req-form');
+  if(form) form.style.display='none';
+}
+function _cvSubmitTokenRequest(){
+  const nameEl=document.getElementById('vtc-tok-req-name');
+  const tokenName=(nameEl?.value||'').trim();
+  if(!tokenName) return;
+  _cvCancelTokenRequest();
+  const ctr=_s2w(_cvW/2,_cvH/2);
+  _broadcast({type:'cv-token-request',requesterId:partyPeer?.id,requesterName:partyMyName,
+    tokenName,wx:ctr.x,wy:ctr.y});
+  _sysMsg('Token request "'+tokenName+'" sent to DM…');
+  if(nameEl) nameEl.value='';
+}
+function _cvGrantToken(){
+  const req=window._pendingTokenReq; if(!req) return;
+  window._pendingTokenReq=null;
+  const apDiv=document.getElementById('vtc-tok-approve'); if(apDiv) apDiv.style.display='none';
+  const tokenId=req.requesterId+'_'+req.tokenName.replace(/\s+/g,'_').toLowerCase();
+  const color=partyPlayers[req.requesterId]?.color||_colorForPeer(req.requesterId);
+  const tok={wx:req.wx,wy:req.wy,label:req.tokenName,color,ownerId:req.requesterId,isExtra:true};
+  _cvTokens[tokenId]=tok;
+  _broadcast({type:'cv-token-granted',tokenId,tokenName:req.tokenName,
+    wx:req.wx,wy:req.wy,color,ownerId:req.requesterId,ownerName:req.requesterName});
+}
+function _cvDenyToken(){
+  const req=window._pendingTokenReq; if(!req) return;
+  window._pendingTokenReq=null;
+  const apDiv=document.getElementById('vtc-tok-approve'); if(apDiv) apDiv.style.display='none';
+  _broadcast({type:'cv-token-denied',requesterId:req.requesterId});
+  _sysMsg('Token request from '+req.requesterName+' denied.');
 }
 
 function _cvSetBrush(v){ _cvBrush=v; }
@@ -7745,6 +7838,23 @@ function _cvHandleMsg(d){
       delete _cvTokens[d.peerId]; break;
     case 'cv-ping':
       _cvMapPings.push({wx:d.wx,wy:d.wy,name:d.name||'',t:Date.now()}); break;
+    case 'cv-token-request':
+      // DM receives player's request to add an extra token
+      if(partyIsDM){
+        window._pendingTokenReq=d;
+        const apDiv=document.getElementById('vtc-tok-approve');
+        const apMsg=document.getElementById('vtc-tok-approve-msg');
+        if(apDiv&&apMsg){
+          apMsg.textContent=(d.requesterName||'A player')+' wants to add token "'+d.tokenName+'"';
+          apDiv.style.display='block';
+        }
+      } break;
+    case 'cv-token-granted':
+      _cvTokens[d.tokenId]={wx:d.wx,wy:d.wy,label:d.tokenName,color:d.color,ownerId:d.ownerId,isExtra:true};
+      _sysMsg((d.ownerName||'Player')+'\'s token "'+d.tokenName+'" was added.'); break;
+    case 'cv-token-denied':
+      if(partyPeer&&d.requesterId===partyPeer.id)
+        _sysMsg('DM denied your token request.'); break;
     case 'cv-floor-init':
       { _floorRoomBudget=d.budget||0; _floorRoomQueue=d.queue||[];
         const fbi=document.getElementById('vtc-floor-num');if(fbi)fbi.textContent='1'; } break;
@@ -8285,6 +8395,9 @@ function _showRoom(code){
   if(rv){rv.style.display='flex';}
   const cBadge=document.getElementById('prv-code');
   if(cBadge) cBadge.textContent=code;
+  // Show player token-request button for non-DM players
+  const pt=document.getElementById('vtc-player-tools');
+  if(pt) pt.style.display=partyIsDM?'none':'flex';
 }
 
 function _showDMPanel(){
@@ -8294,9 +8407,11 @@ function _showDMPanel(){
   if(ul) ul.style.display='none';
   const layout=document.getElementById('pty-layout');
   if(layout) layout.classList.remove('no-dm');
-  // Reveal DM-only VTT controls
+  // Reveal DM-only VTT controls, hide player-only ones
   const dmTools=document.getElementById('vtc-dm-tools');
   if(dmTools) dmTools.style.display='flex';
+  const ptTools=document.getElementById('vtc-player-tools');
+  if(ptTools) ptTools.style.display='none';
   const roomBtn=document.getElementById('vtc-room');
   if(roomBtn) roomBtn.style.display='';
   // Init floor 1 if not already done
