@@ -2084,6 +2084,10 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px" id="acquired-sub-label"></div>
       <div class="acquired-chips" id="acquired-sub-chips"><span class="no-acquired">None yet</span></div>
     </div>
+    <div id="boss-powers-section" style="margin-top:8px;display:none">
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#ff7070;margin-bottom:6px">☠ Boss Powers</div>
+      <div class="acquired-chips" id="boss-powers-chips"></div>
+    </div>
   </div>
 
 </div>
@@ -2363,6 +2367,11 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
     <p>Connect with your party in real time — shared chat, DM controls, and eventually a live map.</p>
     <div class="pty-field-row">
       <input class="pty-inp" id="party-name-inp" placeholder="Your name" maxlength="20">
+      <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
+        <input type="color" id="party-color-picker" value="#f87171" oninput="_syncColorPicker(this.value)" style="width:36px;height:32px;border:1px solid var(--border);border-radius:5px;background:none;cursor:pointer;padding:2px;flex-shrink:0">
+        <input class="pty-inp" id="party-color-hex" placeholder="#f87171" maxlength="7" value="#f87171" oninput="_syncColorHex(this.value)" style="flex:1;font-family:monospace;font-size:13px" title="Token color (hex)">
+        <div id="party-color-preview" style="width:18px;height:18px;border-radius:50%;background:#f87171;border:2px solid rgba(255,255,255,.25);flex-shrink:0"></div>
+      </div>
       <div class="pty-pw-row">
         <div class="pty-pw-label">DM Password (optional — host only)</div>
         <input type="password" class="pty-inp" id="party-host-pw" placeholder="Set DM password…" maxlength="64">
@@ -3889,6 +3898,8 @@ let currentSubclass = 'none';
 let currentLevel = 3;
 let acquiredMain = new Set();
 let acquiredSub = new Set();
+let bossPowers = [];          // {name,type,desc,level,source} drawn from boss rooms
+let _bossDrawnRooms = new Set(); // roomIds this player has already drawn from
 let bmLevelsDone = new Set();
 let bmBatchRemaining = 0;
 let bmCurrentBatchLevel = 0;
@@ -4008,6 +4019,13 @@ function render(){
   const acqSubEl=document.getElementById('acquired-sub-chips');
   acqSubEl.innerHTML=acquiredSub.size===0?'<span class="no-acquired">None yet</span>':[...acquiredSub].map(id=>{const c=allSub.find(x=>x.id===id);return c?`<div class="chip">${c.name}<span class="chip-x" onclick="removeAcquired('sub','${id}')">×</span></div>`:''}).join('');
   document.getElementById('available-count').textContent=mainPool.length+' (main deck)';
+  // Boss powers chips
+  const bpSec=document.getElementById('boss-powers-section');
+  const bpChips=document.getElementById('boss-powers-chips');
+  if(bpSec&&bpChips){
+    bpSec.style.display=bossPowers.length?'block':'none';
+    bpChips.innerHTML=bossPowers.map((p,i)=>`<div class="chip" style="border-color:#9b0000;color:#ff9999">${_escH(p.name)}<span class="chip-x" onclick="bossPowers.splice(${i},1);renderAbilityDeck();renderCharSheet()">×</span></div>`).join('');
+  }
 }
 
 
@@ -4434,7 +4452,10 @@ function renderCharSheet(){
         const c=allCards.find(x=>x.id===id);
         return c?`<div class="cs-ability-row" onclick="rollAbility('${c.name.replace(/'/g,"\\'")}','${c.type}')" style="cursor:pointer" title="Click to use/announce">${typeTag(c.type)}<div><div class="cs-ability-name">${c.name}</div><div class="cs-ability-desc">${c.scaleFn?c.scaleFn(currentLevel):c.desc}</div></div></div>`:'';
       }).join('')+'</div>';
-    abEl.innerHTML=classSection+deckSection;
+    const bossSection=bossPowers.length===0?'':
+      '<div class="cs-panel-hd" style="margin:12px 0 6px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#ff7070;font-weight:700">☠ Boss Powers</div>'+
+      '<div class="cs-abilities-box">'+bossPowers.map(f=>`<div class="cs-ability-row" onclick="rollAbility('${f.name.replace(/'/g,"\\'")}','${f.type}')" style="cursor:pointer;border-left:2px solid #9b0000" title="Click to use/announce">${typeTag(f.type)}<div><div class="cs-ability-name">${f.name}</div><div class="cs-ability-desc">${f.desc}</div></div></div>`).join('')+'</div>';
+    abEl.innerHTML=classSection+deckSection+bossSection;
   }
   // maneuvers
   const manTab=document.getElementById('cs-maneuvers-tab');
@@ -7580,14 +7601,20 @@ function _cvDrawRoom(ctx,r){
             ctx.fillStyle=r.bossUnlocked?'#88ff88':'rgba(255,200,200,0.55)';
             ctx.fillText(r.bossUnlocked?'🔓 Unlocked (click to edit)':'🔒 Locked (click to edit)',cx,cy+8);
           } else if(r.bossUnlocked){
-            const rbw=Math.min(88,bw-8),rbh=Math.min(20,bh/3-2);
-            ctx.fillStyle='rgba(155,0,0,.3)';
-            ctx.beginPath();ctx.roundRect(cx-rbw/2,cy+5,rbw,rbh,3);ctx.fill();
-            ctx.strokeStyle='#e03333';ctx.lineWidth=1;
-            ctx.beginPath();ctx.roundRect(cx-rbw/2,cy+5,rbw,rbh,3);ctx.stroke();
-            ctx.fillStyle='#ffbbbb';
-            ctx.font='bold '+subFs+'px sans-serif';
-            ctx.fillText('✨ Draw Power',cx,cy+5+rbh/2);
+            if(_bossDrawnRooms.has(r.id)){
+              ctx.fillStyle='rgba(255,255,255,.25)';
+              ctx.font=subFs+'px sans-serif';
+              ctx.fillText('✓ Power claimed',cx,cy+7);
+            } else {
+              const rbw=Math.min(88,bw-8),rbh=Math.min(20,bh/3-2);
+              ctx.fillStyle='rgba(155,0,0,.3)';
+              ctx.beginPath();ctx.roundRect(cx-rbw/2,cy+5,rbw,rbh,3);ctx.fill();
+              ctx.strokeStyle='#e03333';ctx.lineWidth=1;
+              ctx.beginPath();ctx.roundRect(cx-rbw/2,cy+5,rbw,rbh,3);ctx.stroke();
+              ctx.fillStyle='#ffbbbb';
+              ctx.font='bold '+subFs+'px sans-serif';
+              ctx.fillText('✨ Draw Power',cx,cy+5+rbh/2);
+            }
           } else {
             ctx.fillStyle='rgba(255,80,80,.35)';
             ctx.fillText('⬜ Locked',cx,cy+8);
@@ -7771,7 +7798,7 @@ function _cvPDown(e){
         if(r.type==='boss'&&r.bossUnlocked){
           const rects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
           if(rects.some(rc=>wb.x>=rc.gx&&wb.x<=rc.gx+rc.gw&&wb.y>=rc.gy&&wb.y<=rc.gy+rc.gh)){
-            _cvBossDraw(); return;
+            _cvBossDraw(r.id); return;
           }
         }
       }
@@ -8367,11 +8394,16 @@ function _buildBossAbilityPool(maxLevel){
   return pool;
 }
 
-function _cvBossDraw(){
+function _cvBossDraw(roomId){
+  if(_bossDrawnRooms.has(roomId)){showToast('You have already drawn a power from this room');return;}
   const lvl=typeof currentLevel!=='undefined'?currentLevel:1;
   const pool=_buildBossAbilityPool(lvl);
   if(!pool.length){showToast('No abilities available at your level');return;}
   const ability=pool[Math.floor(Math.random()*pool.length)];
+  _bossDrawnRooms.add(roomId);
+  bossPowers.push(ability);
+  if(typeof renderAbilityDeck==='function') renderAbilityDeck();
+  if(typeof renderCharSheet==='function') renderCharSheet();
   const ov=document.getElementById('boss-ability-ov');
   const card=document.getElementById('boss-ability-content');
   if(!ov||!card) return;
@@ -9203,6 +9235,26 @@ function _tryBecomeHub(){
   }, Math.random()*3000);
 }
 
+function _syncColorPicker(val){
+  const hex=document.getElementById('party-color-hex');
+  const prev=document.getElementById('party-color-preview');
+  if(hex) hex.value=val;
+  if(prev) prev.style.background=val;
+}
+function _syncColorHex(val){
+  const cleaned=val.startsWith('#')?val:'#'+val;
+  const picker=document.getElementById('party-color-picker');
+  const prev=document.getElementById('party-color-preview');
+  if(/^#[0-9a-fA-F]{6}$/.test(cleaned)){
+    if(picker) picker.value=cleaned;
+    if(prev) prev.style.background=cleaned;
+  }
+}
+function _getChosenColor(){
+  const hex=(document.getElementById('party-color-hex')?.value||'').trim();
+  return /^#[0-9a-fA-F]{6}$/.test(hex)?hex:null;
+}
+
 async function hostRoom(){
   const name=(document.getElementById('party-name-inp')?.value||'').trim()||'Host';
   const pw=(document.getElementById('party-host-pw')?.value||'').trim();
@@ -9215,7 +9267,7 @@ async function hostRoom(){
 
   partyPeer.on('open',(id)=>{
     _ptyHubId=id;
-    myPlayerColor=_colorForPeer(id);
+    myPlayerColor=_getChosenColor()||_colorForPeer(id);
     partyPlayers[id]={name,isDM:false,color:myPlayerColor};
     const sw=document.getElementById('vtc-swatch');if(sw)sw.style.background=myPlayerColor;
     _showRoom(code);
@@ -9253,7 +9305,7 @@ function _joinInternal(code,name){
   partyMyName=name; partyRoomCode=code; partyIsHub=false;
   partyPeer=new Peer(PEER_CONFIG);
   partyPeer.on('open',(id)=>{
-    myPlayerColor=_colorForPeer(id);
+    myPlayerColor=_getChosenColor()||_colorForPeer(id);
     partyPlayers[id]={name,isDM:false,color:myPlayerColor};
     const sw=document.getElementById('vtc-swatch');if(sw)sw.style.background=myPlayerColor;
     const conn=partyPeer.connect(_hubId(code),{metadata:{name}});
