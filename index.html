@@ -205,7 +205,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .cs-ac-wrap{position:relative;width:68px;height:76px;flex-shrink:0}
 .cs-ac-wrap svg{position:absolute;inset:0;width:100%;height:100%}
 .cs-ac-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.cs-ac-input{font-size:22px;font-weight:700;font-family:Georgia,serif;color:var(--text);background:transparent;border:none;text-align:center;width:44px;outline:none}
+.cs-ac-input{font-size:22px;font-weight:700;font-family:Georgia,serif;color:var(--text);background:transparent;border:none;text-align:center;width:44px;outline:none;cursor:default;pointer-events:none}
 .cs-ac-lbl{font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim)}
 /* insp */
 .cs-insp{width:52px;height:52px;border-radius:50%;border:2px solid var(--border-hi);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
@@ -2155,7 +2155,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <path d="M50 12 L86 19 L86 55 C86 77 70 94 50 101 C30 94 14 77 14 55 L14 19 Z"
             fill="none" stroke="rgba(226,161,75,0.28)" stroke-width="1"/>
     </svg>
-    <div class="cs-ac-inner"><input class="cs-ac-input" id="cs-ac" type="number" value="10"><div class="cs-ac-lbl"><span>Armor</span><span>Class</span></div><div id="cs-ac-tip" style="font-size:8px;color:rgba(246,225,179,.5);margin-top:1px"></div></div>
+    <div class="cs-ac-inner"><input class="cs-ac-input" id="cs-ac" type="number" value="10" readonly tabindex="-1"><div class="cs-ac-lbl"><span>Armor</span><span>Class</span></div><div id="cs-ac-tip" style="font-size:8px;color:rgba(246,225,179,.5);margin-top:1px"></div></div>
   </div>
   <div class="cs-insp" id="cs-insp-badge" onclick="toggleInsp()" title="Inspiration"><div class="cs-insp-star" id="cs-insp-star">☆</div><div class="cs-insp-lbl">Inspire</div></div>
   </div>
@@ -4315,14 +4315,16 @@ function renderCharSheet(){
   function _accessoryACBonus(){return inventory.filter(i=>i.equipped&&!_isArmorCat(i)).reduce((s,i)=>{const m=(i.stat||'').match(/\+(\d+)\s*AC/);return s+(m?parseInt(m[1]):0);},0);}
   const shieldBonus=equippedShield?_shieldACBonus(equippedShield):0;
   const accBonus=_accessoryACBonus();
+  let computedAC;
   if(equippedArmor){
     const base=_parseArmorAC(equippedArmor);
-    if(base!==null&&acEl) acEl.value=base+shieldBonus+accBonus;
+    computedAC=(base!==null?base:10+dexM)+shieldBonus+accBonus;
   } else if(currentClass==='barbarian'){
-    if(acEl) acEl.value=10+dexM+conM+shieldBonus+accBonus;
-  } else if(shieldBonus||accBonus){
-    if(acEl) acEl.value=10+dexM+shieldBonus+accBonus;
+    computedAC=10+dexM+conM+shieldBonus+accBonus;
+  } else {
+    computedAC=10+dexM+shieldBonus+accBonus;
   }
+  if(acEl) acEl.value=computedAC;
   const acTip=document.getElementById('cs-ac-tip');
   const armorName=equippedArmor?equippedArmor.name:'Unarmored';
   if(acTip)acTip.textContent=armorName+(equippedShield?' + Shield':'')+(accBonus?' +'+accBonus+' bonus':'')+' · DEX '+fmtMod(dexM);
@@ -8503,8 +8505,8 @@ function _renderPeerSheet(data,peerId){
           <input type="number" id="dme-tmp-${eid}" class="dm-edit-inp" value="${data.hpTemp||0}" min="0" style="width:52px;font-size:18px;text-align:center;margin-top:4px">
         </div>
         <div class="pty-peer-box">
-          <div class="pty-peer-box-lbl">AC</div>
-          <input type="number" id="dme-ac-${eid}" class="dm-edit-inp" value="${data.ac||10}" min="0" style="width:52px;font-size:18px;text-align:center;margin-top:4px">
+          <div class="pty-peer-box-lbl">AC <span style="font-size:8px;color:var(--text-dim)">(auto)</span></div>
+          <div class="pty-peer-box-val" style="margin-top:4px">${data.ac||10}</div>
         </div>
         <div class="pty-peer-box">
           <div class="pty-peer-box-lbl">Speed</div>
@@ -8564,11 +8566,10 @@ function _dmAdjHp(peerId,eid,delta){
 function _dmApplySheetEdit(peerId,eid){
   const hp=parseInt(document.getElementById('dme-hp-'+eid)?.value)||0;
   const hpTemp=parseInt(document.getElementById('dme-tmp-'+eid)?.value)||0;
-  const ac=parseInt(document.getElementById('dme-ac-'+eid)?.value)||10;
   const speed=parseInt(document.getElementById('dme-spd-'+eid)?.value)||30;
   const dsS=Math.max(0,Math.min(3,parseInt(document.getElementById('dme-ds-s-'+eid)?.value)||0));
   const dsF=Math.max(0,Math.min(3,parseInt(document.getElementById('dme-ds-f-'+eid)?.value)||0));
-  const changes={hp,hpTemp,ac,speed,deathSaves:{s:dsS,f:dsF}};
+  const changes={hp,hpTemp,speed,deathSaves:{s:dsS,f:dsF}};
   if(partyCharSheets[peerId]) Object.assign(partyCharSheets[peerId],changes);
   _broadcast({type:'dm-sheet-edit',targetPeer:peerId,changes});
   showToast('Sheet updated for '+(partyCharSheets[peerId]?.name||'player'));
@@ -8954,8 +8955,6 @@ function _handleData(d,fromConn){
         if(curEl&&c.hp!==undefined) curEl.value=c.hp;
         const tmpEl=document.getElementById('cs-hp-temp');
         if(tmpEl&&c.hpTemp!==undefined) tmpEl.value=c.hpTemp;
-        const acEl=document.getElementById('cs-ac');
-        if(acEl&&c.ac!==undefined) acEl.value=c.ac;
         const spdEl=document.getElementById('cs-speed');
         if(spdEl&&c.speed!==undefined) spdEl.value=c.speed;
         if(c.deathSaves){
