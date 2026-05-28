@@ -1689,6 +1689,9 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-hp-btn:hover{background:var(--surface3,#2a2540);border-color:#7c3aed;color:#c084fc}
 .dm-apply-btn{margin-top:10px;width:100%;padding:8px;background:rgba(124,58,237,.2);border:1px solid #7c3aed;border-radius:6px;color:#c084fc;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em}
 .dm-apply-btn:hover{background:rgba(124,58,237,.35);color:#e9d5ff}
+.dm-inv-result{padding:5px 8px;cursor:pointer;border-bottom:.5px solid var(--border);display:flex;align-items:center}
+.dm-inv-result:last-child{border-bottom:none}
+.dm-inv-result:hover{background:var(--surface2)}
 .pty-peer-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .pty-peer-stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;min-width:56px}
 .pty-peer-stat-k{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;display:block}
@@ -4289,27 +4292,40 @@ function renderCharSheet(){
   // attack bonus
   const ab=Math.max(mod(statTotal('str')),mod(statTotal('dex')))+pb;
   const atk=document.getElementById('cs-atk');if(atk)atk.textContent=fmtMod(ab);
-  // AC: update dex tooltip. Input is manually set but we show DEX mod next to it.
+  // AC: auto-calculate from equipped armor + accessories (DEX, magic items, etc.)
   const dexM=mod(statTotal('dex'));
   const conM=mod(statTotal('con'));
-  // Auto-calculate AC from equipped armor
-  const equippedShield=inventory.find(i=>i.equipped&&i.cat==='armor'&&(i.name||'').toLowerCase().includes('shield'));
-  const equippedArmor=inventory.find(i=>i.equipped&&i.cat==='armor'&&!(i.name||'').toLowerCase().includes('shield'));
+  const _isArmorCat=i=>i.cat==='armor'||i.cat==='magic-armor';
+  const _isShieldItem=i=>_isArmorCat(i)&&(i.statType||'').toLowerCase().includes('shield');
+  const equippedShield=inventory.find(i=>i.equipped&&_isShieldItem(i));
+  const equippedArmor=inventory.find(i=>i.equipped&&_isArmorCat(i)&&!_isShieldItem(i));
   const acEl=document.getElementById('cs-ac');
+  function _parseArmorAC(item){
+    const raw=item.stat||''; const st=(item.statType||'').toLowerCase();
+    if(item.acBase){const a=item.acBase;if(a.includes('DEX')){const b=parseInt(a)||10;return b+(st.includes('medium')?Math.min(2,dexM):dexM);}return parseInt(a)||10;}
+    const dp=raw.match(/\((\d+)\+DEX/);if(dp){const b=parseInt(dp[1]);return b+(st.includes('medium')?Math.min(2,dexM):dexM);}
+    const fp=raw.match(/\((\d+)\)/);if(fp)return parseInt(fp[1]);
+    if(raw.includes('+ DEX (max 2)'))return(parseInt(raw)||10)+Math.min(2,dexM);
+    if(raw.includes('+ DEX'))return(parseInt(raw)||10)+dexM;
+    const ap=raw.match(/\bAC\s+(\d+)/);if(ap)return parseInt(ap[1]);
+    const n=parseInt(raw);if(!isNaN(n)&&n>0)return n;
+    return null;
+  }
+  function _shieldACBonus(shield){const m=(shield?.stat||'').match(/\+(\d+)\s*AC/);return m?parseInt(m[1]):2;}
+  function _accessoryACBonus(){return inventory.filter(i=>i.equipped&&!_isArmorCat(i)).reduce((s,i)=>{const m=(i.stat||'').match(/\+(\d+)\s*AC/);return s+(m?parseInt(m[1]):0);},0);}
+  const shieldBonus=equippedShield?_shieldACBonus(equippedShield):0;
+  const accBonus=_accessoryACBonus();
   if(equippedArmor){
-    const raw=equippedArmor.stat||'';
-    let baseAC=10;
-    if(raw.includes('+ DEX (max 2)')){baseAC=parseInt(raw)||12; baseAC+=Math.min(2,dexM);}
-    else if(raw.includes('+ DEX')){baseAC=parseInt(raw)||11; baseAC+=dexM;}
-    else{baseAC=parseInt(raw)||10;}
-    if(equippedShield) baseAC+=2;
-    if(acEl) acEl.value=baseAC;
+    const base=_parseArmorAC(equippedArmor);
+    if(base!==null&&acEl) acEl.value=base+shieldBonus+accBonus;
   } else if(currentClass==='barbarian'){
-    if(acEl) acEl.value=10+dexM+conM;
+    if(acEl) acEl.value=10+dexM+conM+shieldBonus+accBonus;
+  } else if(shieldBonus||accBonus){
+    if(acEl) acEl.value=10+dexM+shieldBonus+accBonus;
   }
   const acTip=document.getElementById('cs-ac-tip');
   const armorName=equippedArmor?equippedArmor.name:'Unarmored';
-  if(acTip)acTip.textContent=armorName+(equippedShield?' + Shield':'')+' · DEX '+fmtMod(dexM);
+  if(acTip)acTip.textContent=armorName+(equippedShield?' + Shield':'')+(accBonus?' +'+accBonus+' bonus':'')+' · DEX '+fmtMod(dexM);
   // attacks per action
   const apa=document.getElementById('cs-apa');
   if(apa){let a='Attacks: 1';if(acquiredMain.has('g20')||acquiredMain.has('bar01'))a='Attacks: 2';if(acquiredMain.has('g22'))a='Attacks: 3';apa.textContent='· '+a;}
@@ -5818,7 +5834,7 @@ const EQUIP_ITEMS = [
 {id:"mvr03",cat:"magic-weapons",name:"Staff of Striking",stat:"+3, +3d6 force (3 charges)",statType:"Quarterstaff",cost:"5,000 gp",wt:4,rarity:"Very Rare",
  props:["Attunement","10 charges"],prof:["wizard","druid","cleric"],
  desc:"This staff can be wielded as a magic quarterstaff that grants a +3 bonus to attack and damage rolls made with it. The staff has 10 charges. When you hit with a melee attack using it, you can expend up to 3 of its charges. For each charge expended, the target takes an extra 1d6 force damage."},
-{id:"mvr05",cat:"magic-armor",name:"Studded Leather of Elvenkind",stat:"+1 AC & Stealth adv.",statType:"Light armor",cost:"2,000 gp",wt:13,rarity:"Uncommon",
+{id:"mvr05",cat:"magic-armor",name:"Studded Leather of Elvenkind",stat:"+1 AC & Stealth adv.",statType:"Light armor",acBase:"13 + DEX",cost:"2,000 gp",wt:13,rarity:"Uncommon",
  props:["Attunement"],prof:["fighter","rogue","barbarian","warlock","druid"],
  desc:"You have a +1 bonus to AC while wearing this armor, and Dexterity (Stealth) checks made while wearing it have advantage if you are proficient with the armor."},
 {id:"mvr06",cat:"wondrous",name:"Belt of Giant Strength (Stone)",stat:"STR 23",statType:"Wondrous Item",cost:"18,000 gp",wt:1,rarity:"Very Rare",
@@ -5918,6 +5934,8 @@ function isEquipProficient(item){
 let inventory = [];
 let equipFilter = "simple-melee";
 let equipSearch = "";
+let _dmInvSearch = '';
+let _dmInvSearchPeer = '';
 
 function addToInventory(itemId){
   const item=EQUIP_ITEMS.find(i=>i.id===itemId);
@@ -8450,9 +8468,10 @@ function _renderPeerSheet(data,peerId){
   const unequipped=(data.inventory||[]).filter(i=>!i.equipped);
   const invHtml=[...equipped,...unequipped].map(i=>`
     <div class="pty-peer-inv-row">
-      <span class="pty-peer-inv-name">${_escH(i.name)}${(i.qty||1)>1?' ×'+(i.qty||1):''}</span>
+      <span class="pty-peer-inv-name" style="flex:1">${_escH(i.name)}${(i.qty||1)>1?' ×'+(i.qty||1):''}</span>
       ${i.equipped?'<span class="pty-peer-inv-equipped">Equipped</span>':''}
       <span style="font-size:10px;color:var(--text-dim)">${i.stat||''}</span>
+      ${partyIsDM?`<button onclick="_dmRemoveItem('${_escH(peerId)}','${_escH(i.id)}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;line-height:1;padding:0 3px;flex-shrink:0" title="Remove">×</button>`:''}
     </div>`).join('');
 
   if(partyIsDM){
@@ -8494,7 +8513,12 @@ function _renderPeerSheet(data,peerId){
       </div>
       ${dsHtml}
       <button class="dm-apply-btn" onclick="_dmApplySheetEdit('${peerId}','${eid}')">Apply Changes to ${_escH(data.name)}</button>
-      ${data.inventory?.length?`<div class="pty-peer-section-hd" style="margin-top:12px">Inventory (${data.inventory.length} items)</div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;max-height:180px;overflow-y:auto">${invHtml}</div>`:''}
+      <div class="pty-peer-section-hd" style="margin-top:12px">Inventory (${(data.inventory||[]).length} items)</div>
+      ${data.inventory?.length?`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;max-height:180px;overflow-y:auto">${invHtml}</div>`:'<div style="font-size:11px;color:var(--text-dim);padding:4px 0">No items in inventory</div>'}
+      <div style="margin-top:6px">
+        <input id="dm-inv-search" value="${_escH(_dmInvSearchPeer===peerId?_dmInvSearch:'')}" placeholder="Search to add item..." oninput="_dmInvSearchChange(this.value,'${_escH(peerId)}')" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text)">
+        <div id="dm-inv-results" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;max-height:150px;overflow-y:auto;margin-top:2px">${(_dmInvSearchPeer===peerId&&_dmInvSearch)?EQUIP_ITEMS.filter(i=>i.name.toLowerCase().includes(_dmInvSearch)||(i.desc||'').toLowerCase().includes(_dmInvSearch)).slice(0,10).map(i=>`<div class="dm-inv-result" onclick="_dmAddItem('${_escH(peerId)}','${i.id}')"><span style="font-weight:600;font-size:11px">${_escH(i.name)}</span><span style="font-size:9px;color:var(--text-dim);margin-left:4px">${_escH(i.rarity||'')} ${_escH(i.cat)}</span></div>`).join(''):''}</div>
+      </div>
     `;
   } else {
     el.innerHTML=`
@@ -8549,6 +8573,42 @@ function _dmApplySheetEdit(peerId,eid){
   _broadcast({type:'dm-sheet-edit',targetPeer:peerId,changes});
   showToast('Sheet updated for '+(partyCharSheets[peerId]?.name||'player'));
   _renderPartyCharSheet();
+}
+
+function _dmInvSearchChange(val,peerId){
+  _dmInvSearch=val.toLowerCase();
+  _dmInvSearchPeer=peerId;
+  const el=document.getElementById('dm-inv-results');
+  if(!el) return;
+  if(!_dmInvSearch){el.innerHTML='';return;}
+  const q=_dmInvSearch;
+  const matches=EQUIP_ITEMS.filter(i=>
+    i.name.toLowerCase().includes(q)||(i.desc||'').toLowerCase().includes(q)
+  ).slice(0,10);
+  el.innerHTML=matches.map(i=>`<div class="dm-inv-result" onclick="_dmAddItem('${_escH(peerId)}','${i.id}')">
+    <span style="font-weight:600;font-size:11px">${_escH(i.name)}</span>
+    <span style="font-size:9px;color:var(--text-dim);margin-left:4px">${_escH(i.rarity||'')} ${_escH(i.cat)}</span>
+  </div>`).join('');
+}
+
+function _dmRemoveItem(peerId,itemId){
+  const sheet=partyCharSheets[peerId];
+  if(!sheet) return;
+  sheet.inventory=(sheet.inventory||[]).filter(i=>i.id!==itemId);
+  _broadcast({type:'dm-inv-edit',targetPeer:peerId,action:'remove',itemId});
+  _renderPeerSheet(sheet,peerId);
+}
+
+function _dmAddItem(peerId,itemId){
+  const sheet=partyCharSheets[peerId];
+  const item=EQUIP_ITEMS.find(i=>i.id===itemId);
+  if(!sheet||!item) return;
+  sheet.inventory=sheet.inventory||[];
+  const ex=sheet.inventory.find(i=>i.id===itemId);
+  if(ex){ex.qty=(ex.qty||1)+1;}
+  else{sheet.inventory.push({id:item.id,name:item.name,cat:item.cat,stat:item.stat,wt:item.wt,qty:1,equipped:false});}
+  _broadcast({type:'dm-inv-edit',targetPeer:peerId,action:'add',item:{id:item.id,name:item.name,cat:item.cat,stat:item.stat,wt:item.wt}});
+  _renderPeerSheet(sheet,peerId);
 }
 
 function _partySetViewPeer(pid){
@@ -8904,6 +8964,19 @@ function _handleData(d,fromConn){
           suc.forEach((el,i)=>el.classList.toggle('active',i<(c.deathSaves.s||0)));
           fail.forEach((el,i)=>el.classList.toggle('active',i<(c.deathSaves.f||0)));
         }
+        _partyBroadcastCharSheet();
+      } break;
+    case 'dm-inv-edit':
+      if(partyPeer&&d.targetPeer===partyPeer.id){
+        if(d.action==='remove'&&d.itemId){
+          inventory=inventory.filter(i=>i.id!==d.itemId);
+        } else if(d.action==='add'&&d.item){
+          const ex=inventory.find(i=>i.id===d.item.id);
+          if(ex){ex.qty=(ex.qty||1)+1;}
+          else{inventory.push({...d.item,qty:1,equipped:false});}
+        }
+        renderEquipPage();
+        if(typeof renderCharSheet==='function') renderCharSheet();
         _partyBroadcastCharSheet();
       } break;
     default:
