@@ -4296,7 +4296,7 @@ function renderCharSheet(){
   const dexM=mod(statTotal('dex'));
   const conM=mod(statTotal('con'));
   const _isArmorCat=i=>i.cat==='armor'||i.cat==='magic-armor';
-  const _isShieldItem=i=>_isArmorCat(i)&&(i.statType||'').toLowerCase().includes('shield');
+  const _isShieldItem=i=>_isArmorCat(i)&&((i.statType||'').toLowerCase().includes('shield')||(i.name||'').toLowerCase().includes('shield'));
   const equippedShield=inventory.find(i=>i.equipped&&_isShieldItem(i));
   const equippedArmor=inventory.find(i=>i.equipped&&_isArmorCat(i)&&!_isShieldItem(i));
   const acEl=document.getElementById('cs-ac');
@@ -4311,7 +4311,7 @@ function renderCharSheet(){
     const n=parseInt(raw);if(!isNaN(n)&&n>0)return n;
     return null;
   }
-  function _shieldACBonus(shield){const m=(shield?.stat||'').match(/\+(\d+)\s*AC/);return m?parseInt(m[1]):2;}
+  function _shieldACBonus(shield){const s=shield?.stat||'';const m=s.match(/\+(\d+)\s*AC/)||s.match(/^\+(\d+)$/);return m?parseInt(m[1]):2;}
   function _accessoryACBonus(){return inventory.filter(i=>i.equipped&&!_isArmorCat(i)).reduce((s,i)=>{const m=(i.stat||'').match(/\+(\d+)\s*AC/);return s+(m?parseInt(m[1]):0);},0);}
   const shieldBonus=equippedShield?_shieldACBonus(equippedShield):0;
   const accBonus=_accessoryACBonus();
