@@ -8381,16 +8381,10 @@ function _buildBossAbilityPool(maxLevel){
     ['Paladin',PALADIN_GENERAL],['Warlock',WARLOCK_GENERAL],['Rogue',ROGUE_GENERAL],
     ['Druid',DRUID_GENERAL],['Cleric',CLERIC_GENERAL]];
   for(const[cls,arr]of generals) for(const f of(arr||[]))add(f,cls);
-  const subsets=[SUBCLASS_CARDS,BARBARIAN_SUBCLASS_CARDS,WIZARD_SUBCLASS_CARDS,
-    PALADIN_SUBCLASS_CARDS,WARLOCK_SUBCLASS_CARDS,ROGUE_SUBCLASS_CARDS,
-    DRUID_SUBCLASS_CARDS,CLERIC_SUBCLASS_CARDS];
-  for(const set of subsets) for(const key of Object.keys(set||{})) for(const f of(set[key]||[]))add(f,'Subclass');
-  for(const cls of Object.keys(CLASS_STARTING_FEATURES||{})) for(const f of(CLASS_STARTING_FEATURES[cls]||[]))add(f,cls+' class');
-  for(const rk of Object.keys(RACE_DATA||{})){
-    if(rk==='none') continue;
-    const race=RACE_DATA[rk];
-    for(const t of(race.traits||[]))add({name:t.name,desc:t.desc,level:1,type:'p'},'Race: '+race.name);
-  }
+  const subsets=[['Fighter',SUBCLASS_CARDS],['Barbarian',BARBARIAN_SUBCLASS_CARDS],['Wizard',WIZARD_SUBCLASS_CARDS],
+    ['Paladin',PALADIN_SUBCLASS_CARDS],['Warlock',WARLOCK_SUBCLASS_CARDS],['Rogue',ROGUE_SUBCLASS_CARDS],
+    ['Druid',DRUID_SUBCLASS_CARDS],['Cleric',CLERIC_SUBCLASS_CARDS]];
+  for(const[cls,set]of subsets) for(const key of Object.keys(set||{})) for(const f of(set[key]||[]))add(f,cls+' — '+key[0].toUpperCase()+key.slice(1));
   return pool;
 }
 
