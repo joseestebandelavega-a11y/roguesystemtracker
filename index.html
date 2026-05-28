@@ -9075,9 +9075,9 @@ function _setupConn(conn){
     partyConns[conn.peer]=conn;
     if(partyIsHub){
       // Welcome the new joiner with the full peer list + DM hash
-      const peers=Object.entries(partyPlayers).map(([id,p])=>({id,name:p.name,isDM:p.isDM}));
+      const peers=Object.entries(partyPlayers).map(([id,p])=>({id,name:p.name,isDM:p.isDM,color:p.color}));
       try{conn.send({type:'welcome',peers,dmHash:partyDMHash,roomCode:partyRoomCode,
-        hostId:partyPeer.id,hostName:partyMyName,cvSync:_cvSyncPayload()});}catch(e){}
+        hostId:partyPeer.id,hostName:partyMyName,hostColor:myPlayerColor,cvSync:_cvSyncPayload()});}catch(e){}
       // Tell everyone else a new peer joined
       const joinName=conn.metadata?.name||'Player';
       // Remove stale entries with the same display name (player rejoined with new peer ID)
@@ -9090,11 +9090,12 @@ function _setupConn(conn){
       Object.keys(partyCharSheets).forEach(pid=>{
         if(pid!==conn.peer&&partyCharSheets[pid]?.name===joinName) delete partyCharSheets[pid];
       });
-      _broadcast({type:'peer-join',id:conn.peer,name:joinName},conn.peer);
-      partyPlayers[conn.peer]={name:joinName,isDM:false};
+      const joinColor=conn.metadata?.color||_colorForPeer(conn.peer);
+      _broadcast({type:'peer-join',id:conn.peer,name:joinName,color:joinColor},conn.peer);
+      partyPlayers[conn.peer]={name:joinName,isDM:false,color:joinColor};
     }
     // Send our identity
-    try{conn.send({type:'hello',name:partyMyName,isDM:partyIsDM,id:partyPeer.id});}catch(e){}
+    try{conn.send({type:'hello',name:partyMyName,isDM:partyIsDM,id:partyPeer.id,color:myPlayerColor});}catch(e){}
     _renderPlayers();_partyStatus();
   });
   conn.on('data',d=>_handleData(d,conn));
@@ -9120,11 +9121,11 @@ function _handleData(d,fromConn){
       partyDMHash=d.dmHash;
       _sysMsg('Joined room '+d.roomCode);
       // Add the hub as a player
-      if(d.hostId) partyPlayers[d.hostId]={name:d.hostName||'Host',isDM:false,color:_colorForPeer(d.hostId)};
+      if(d.hostId) partyPlayers[d.hostId]={name:d.hostName||'Host',isDM:false,color:d.hostColor||_colorForPeer(d.hostId)};
       // Mesh: connect to every other peer already in the room
       (d.peers||[]).forEach(p=>{
         if(p.id!==partyPeer.id&&!partyConns[p.id]){
-          partyPlayers[p.id]={name:p.name,isDM:p.isDM,color:_colorForPeer(p.id)};
+          partyPlayers[p.id]={name:p.name,isDM:p.isDM,color:p.color||_colorForPeer(p.id)};
           _setupConn(partyPeer.connect(p.id,{metadata:{name:partyMyName}}));
         }
       });
@@ -9136,7 +9137,7 @@ function _handleData(d,fromConn){
       if(!d.dmHash) document.getElementById('dm-unlock-row').style.display='none';
       break;
     case 'hello':
-      if(d.id) partyPlayers[d.id]={name:d.name,isDM:d.isDM,color:_colorForPeer(d.id)};
+      if(d.id) partyPlayers[d.id]={name:d.name,isDM:d.isDM,color:d.color||_colorForPeer(d.id)};
       _renderPlayers();
       // Re-send my char sheet to anyone who just said hello
       _partyBroadcastCharSheet(); break;
@@ -9152,7 +9153,7 @@ function _handleData(d,fromConn){
       Object.keys(partyCharSheets).forEach(pid=>{
         if(pid!==d.id&&partyCharSheets[pid]?.name===d.name) delete partyCharSheets[pid];
       });
-      partyPlayers[d.id]={name:d.name,isDM:false,color:_colorForPeer(d.id)};
+      partyPlayers[d.id]={name:d.name,isDM:false,color:d.color||_colorForPeer(d.id)};
       _renderPlayers();
       _partyBroadcastCharSheet(); break;
     case 'peer-leave':
@@ -9302,7 +9303,7 @@ function _joinInternal(code,name){
     myPlayerColor=_getChosenColor()||_colorForPeer(id);
     partyPlayers[id]={name,isDM:false,color:myPlayerColor};
     const sw=document.getElementById('vtc-swatch');if(sw)sw.style.background=myPlayerColor;
-    const conn=partyPeer.connect(_hubId(code),{metadata:{name}});
+    const conn=partyPeer.connect(_hubId(code),{metadata:{name,color:myPlayerColor}});
     _ptyHubId=_hubId(code);
     _setupConn(conn);
     _showRoom(code);
