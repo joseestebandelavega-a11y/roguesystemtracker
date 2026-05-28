@@ -8651,6 +8651,10 @@ function _setupConn(conn){
           delete partyPlayers[pid]; delete partyConns[pid]; delete partyCharSheets[pid];
         }
       });
+      // Also remove orphaned charSheet entries (old peer already removed from partyPlayers)
+      Object.keys(partyCharSheets).forEach(pid=>{
+        if(pid!==conn.peer&&partyCharSheets[pid]?.name===joinName) delete partyCharSheets[pid];
+      });
       _broadcast({type:'peer-join',id:conn.peer,name:joinName},conn.peer);
       partyPlayers[conn.peer]={name:joinName,isDM:false};
     }
@@ -8664,6 +8668,7 @@ function _setupConn(conn){
     const leftName=p?.name||'A player';
     delete partyConns[conn.peer];
     delete partyPlayers[conn.peer];
+    delete partyCharSheets[conn.peer];
     _sysMsg(leftName+' left the room');
     _renderPlayers();_partyStatus();
     if(partyIsHub) _broadcast({type:'peer-leave',id:conn.peer,name:leftName});
@@ -8707,6 +8712,10 @@ function _handleData(d,fromConn){
         if(pid!==d.id&&partyPlayers[pid].name===d.name){
           delete partyPlayers[pid]; delete partyConns[pid]; delete partyCharSheets[pid];
         }
+      });
+      // Also remove orphaned charSheet entries not yet in partyPlayers
+      Object.keys(partyCharSheets).forEach(pid=>{
+        if(pid!==d.id&&partyCharSheets[pid]?.name===d.name) delete partyCharSheets[pid];
       });
       partyPlayers[d.id]={name:d.name,isDM:false,color:_colorForPeer(d.id)};
       _renderPlayers();
