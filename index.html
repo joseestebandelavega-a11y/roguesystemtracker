@@ -8683,25 +8683,6 @@ function _cvHandleMsg(d){
         partyCharSheets[d.peerId]=d.data;
         _renderPartyCharSheet();
       } break;
-    case 'dm-sheet-edit':
-      if(partyPeer&&d.targetPeer===partyPeer.id&&d.changes){
-        const c=d.changes;
-        const curEl=document.getElementById('cs-hp-cur');
-        if(curEl&&c.hp!==undefined) curEl.value=c.hp;
-        const tmpEl=document.getElementById('cs-hp-temp');
-        if(tmpEl&&c.hpTemp!==undefined) tmpEl.value=c.hpTemp;
-        const acEl=document.getElementById('cs-ac');
-        if(acEl&&c.ac!==undefined) acEl.value=c.ac;
-        const spdEl=document.getElementById('cs-speed');
-        if(spdEl&&c.speed!==undefined) spdEl.value=c.speed;
-        if(c.deathSaves){
-          const suc=document.querySelectorAll('.cs-death-suc');
-          const fail=document.querySelectorAll('.cs-death-fail');
-          suc.forEach((el,i)=>el.classList.toggle('active',i<(c.deathSaves.s||0)));
-          fail.forEach((el,i)=>el.classList.toggle('active',i<(c.deathSaves.f||0)));
-        }
-        _partyBroadcastCharSheet();
-      } break;
   }
 }
 
@@ -8906,6 +8887,25 @@ function _handleData(d,fromConn){
     case 'hub-elected':
       _ptyHubId=d.hubId;
       _sysMsg('Room connection restored');break;
+    case 'dm-sheet-edit':
+      if(partyPeer&&d.targetPeer===partyPeer.id&&d.changes){
+        const c=d.changes;
+        const curEl=document.getElementById('cs-hp-cur');
+        if(curEl&&c.hp!==undefined) curEl.value=c.hp;
+        const tmpEl=document.getElementById('cs-hp-temp');
+        if(tmpEl&&c.hpTemp!==undefined) tmpEl.value=c.hpTemp;
+        const acEl=document.getElementById('cs-ac');
+        if(acEl&&c.ac!==undefined) acEl.value=c.ac;
+        const spdEl=document.getElementById('cs-speed');
+        if(spdEl&&c.speed!==undefined) spdEl.value=c.speed;
+        if(c.deathSaves){
+          const suc=document.querySelectorAll('.cs-death-suc');
+          const fail=document.querySelectorAll('.cs-death-fail');
+          suc.forEach((el,i)=>el.classList.toggle('active',i<(c.deathSaves.s||0)));
+          fail.forEach((el,i)=>el.classList.toggle('active',i<(c.deathSaves.f||0)));
+        }
+        _partyBroadcastCharSheet();
+      } break;
     default:
       if(d.type&&(d.type.startsWith('cv-')||d.type==='char-share')) _cvHandleMsg(d,fromConn);
       break;
