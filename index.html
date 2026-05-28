@@ -7745,7 +7745,12 @@ function _cvPMove(e){
     _cvTokens[_cvDragTokId]={..._cvTokens[_cvDragTokId],wx:w.x,wy:w.y};
     clearTimeout(_cvTokTimer);
     _cvTokTimer=setTimeout(()=>{
-      if(_cvDragTokId) _broadcast({type:'cv-token-move',peerId:_cvDragTokId,wx:_cvTokens[_cvDragTokId].wx,wy:_cvTokens[_cvDragTokId].wy});
+      if(!_cvDragTokId) return;
+      const _t=_cvTokens[_cvDragTokId];
+      if(!_t) return;
+      const msg={type:'cv-token-move',peerId:_cvDragTokId,wx:_t.wx,wy:_t.wy};
+      if(_t.isExtra||_t.isDmToken) msg.tokenData=_t;
+      _broadcast(msg);
     },50);
     return;
   }
@@ -7798,7 +7803,9 @@ function _cvPUp(e){
   if(_cvDragTokId){
     const tok=_cvTokens[_cvDragTokId];
     if(tok){ tok.wx=Math.round(tok.wx*2)/2; tok.wy=Math.round(tok.wy*2)/2;
-      _broadcast({type:'cv-token-move',peerId:_cvDragTokId,wx:tok.wx,wy:tok.wy}); }
+      const msg={type:'cv-token-move',peerId:_cvDragTokId,wx:tok.wx,wy:tok.wy};
+      if(tok.isExtra||tok.isDmToken) msg.tokenData=tok;
+      _broadcast(msg); }
     _cvDragTokId=null; return;
   }
 
@@ -8507,7 +8514,8 @@ function _cvHandleMsg(d){
     case 'cv-image-del':
       _cvImages=_cvImages.filter(i=>i.id!==d.id); break;
     case 'cv-token-move':
-      _cvTokens[d.peerId]={..._cvTokens[d.peerId]||{},wx:d.wx,wy:d.wy}; break;
+      if(d.tokenData) _cvTokens[d.peerId]={...d.tokenData,wx:d.wx,wy:d.wy};
+      else _cvTokens[d.peerId]={..._cvTokens[d.peerId]||{},wx:d.wx,wy:d.wy}; break;
     case 'cv-token-delete':
       delete _cvTokens[d.peerId]; break;
     case 'cv-ping':
