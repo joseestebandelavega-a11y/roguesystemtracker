@@ -1692,6 +1692,23 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .dm-inv-result{padding:5px 8px;cursor:pointer;border-bottom:.5px solid var(--border);display:flex;align-items:center}
 .dm-inv-result:last-child{border-bottom:none}
 .dm-inv-result:hover{background:var(--surface2)}
+.cv-type-picker{position:absolute;z-index:60;background:var(--surface2);border:1px solid var(--border-hi);border-radius:10px;padding:10px;display:none;flex-direction:column;gap:5px;min-width:148px;box-shadow:0 4px 20px rgba(0,0,0,.7)}
+.cv-type-picker.open{display:flex}
+.cv-type-btn{padding:6px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:12px;text-align:left;font-weight:600}
+.cv-type-btn:hover{background:var(--surface2)}
+.cv-type-btn.boss-btn{border-color:#6b0000;color:#ff7070}
+.cv-type-btn.boss-btn:hover{background:rgba(155,0,0,.2)}
+.cv-type-btn.unlock-btn{background:rgba(155,0,0,.15);border-color:#9b0000;color:#ff9999}
+.cv-type-btn.unlock-btn:hover{background:rgba(155,0,0,.3)}
+.boss-ability-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:2000}
+.boss-ability-ov.open{display:flex}
+.boss-ability-modal{background:var(--surface);border:2px solid #9b0000;border-radius:14px;padding:28px 26px;max-width:460px;width:90%;max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 0 40px rgba(155,0,0,.5)}
+.boss-ability-modal h2{color:#ff7070;font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px}
+.boss-ability-name{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px}
+.boss-ability-source{font-size:11px;color:var(--text-dim);margin-bottom:14px}
+.boss-ability-desc{font-size:13px;color:var(--text);line-height:1.6}
+.boss-ability-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:2px 6px}
+.boss-ability-close:hover{color:var(--text)}
 .pty-peer-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .pty-peer-stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;min-width:56px}
 .pty-peer-stat-k{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;display:block}
@@ -2469,6 +2486,8 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
               <button class="pty-btn ghost" onclick="_cvDenyToken()" style="flex:1;padding:4px 0;font-size:11px">Deny</button>
             </div>
           </div>
+          <!-- Room type picker (DM) -->
+          <div id="cv-type-picker" class="cv-type-picker"></div>
           <!-- Pin placement form -->
           <div id="vtc-pin-form" class="vtc-pin-form">
             <input id="vtc-pin-name" class="pty-inp" placeholder="Name…" maxlength="40" style="padding:5px 8px;font-size:12px"
@@ -7321,6 +7340,7 @@ const VTT_ROOM_TYPES=[
   {type:'shop',    label:'Shop',     color:'#5599d4'},
   {type:'healing', label:'Healing',  color:'#4a8c3a'},
   {type:'descent', label:'Descent',  color:'#7c3aed'},
+  {type:'boss',    label:'Secret Boss', color:'#9b0000'},
 ];
 function _vttRtDef(type){return VTT_ROOM_TYPES.find(t=>t.type===type)||null;}
 const TILE=40;  // base tile size in pixels at zoom=1
@@ -7547,11 +7567,38 @@ function _cvDrawRoom(ctx,r){
     const cx=bp.x+bw/2, cy=bp.y+bh/2;
     if(r.type){
       const rt=VTT_ROOM_TYPES.find(x=>x.type===r.type);
-      ctx.fillStyle=rt?rt.color:'#e8e4d9';
-      ctx.font='bold '+Math.min(13,bw/5)+'px sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      const icon=r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':r.type==='descent'?'🪜 ':'';
-      ctx.fillText(icon+r.label,cx,cy);
+      if(r.type==='boss'){
+        const fs=Math.min(13,bw/5);
+        ctx.font='bold '+fs+'px sans-serif';
+        ctx.fillStyle='#ff5555';
+        ctx.fillText('☠ Secret Boss',cx,cy-(bh>60?8:0));
+        if(bh>60){
+          const subFs=Math.min(10,bw/9);
+          ctx.font=subFs+'px sans-serif';
+          if(partyIsDM){
+            ctx.fillStyle=r.bossUnlocked?'#88ff88':'rgba(255,200,200,0.55)';
+            ctx.fillText(r.bossUnlocked?'🔓 Unlocked (click to edit)':'🔒 Locked (click to edit)',cx,cy+8);
+          } else if(r.bossUnlocked){
+            const rbw=Math.min(88,bw-8),rbh=Math.min(20,bh/3-2);
+            ctx.fillStyle='rgba(155,0,0,.3)';
+            ctx.beginPath();ctx.roundRect(cx-rbw/2,cy+5,rbw,rbh,3);ctx.fill();
+            ctx.strokeStyle='#e03333';ctx.lineWidth=1;
+            ctx.beginPath();ctx.roundRect(cx-rbw/2,cy+5,rbw,rbh,3);ctx.stroke();
+            ctx.fillStyle='#ffbbbb';
+            ctx.font='bold '+subFs+'px sans-serif';
+            ctx.fillText('✨ Draw Power',cx,cy+5+rbh/2);
+          } else {
+            ctx.fillStyle='rgba(255,80,80,.35)';
+            ctx.fillText('⬜ Locked',cx,cy+8);
+          }
+        }
+      } else {
+        ctx.fillStyle=rt?rt.color:'#e8e4d9';
+        ctx.font='bold '+Math.min(13,bw/5)+'px sans-serif';
+        const icon=r.type==='combat'?'⚔ ':r.type==='treasure'?'★ ':r.type==='shop'?'🏪 ':r.type==='healing'?'💚 ':r.type==='descent'?'🪜 ':'';
+        ctx.fillText(icon+r.label,cx,cy);
+      }
     } else if(partyIsDM&&_floorRoomQueue.length>0){
       const rbw=Math.min(80,bw-6),rbh=Math.min(24,bh-6);
       ctx.fillStyle='rgba(212,137,26,.15)';
@@ -7717,6 +7764,19 @@ function _cvPDown(e){
       if(Math.hypot(sx-tp.x,sy-tp.y)<r+6){ _cvDragTokId=pid; return; }
     }
 
+    // Player click on unlocked boss room → draw power
+    if(!partyIsDM){
+      const wb=_s2w(sx,sy);
+      for(const r of _cvRooms){
+        if(r.type==='boss'&&r.bossUnlocked){
+          const rects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
+          if(rects.some(rc=>wb.x>=rc.gx&&wb.x<=rc.gx+rc.gw&&wb.y>=rc.gy&&wb.y<=rc.gy+rc.gh)){
+            _cvBossDraw(); return;
+          }
+        }
+      }
+    }
+
     if(partyIsDM){
       const w=_s2w(sx,sy);
       // Room roll-button click (untyped rooms) — check all rects
@@ -7726,6 +7786,16 @@ function _cvPDown(e){
           const rects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
           if(rects.some(rc=>w.x>=rc.gx&&w.x<=rc.gx+rc.gw&&w.y>=rc.gy&&w.y<=rc.gy+rc.gh)){
             _cvDmRollRoom(r.id); return;
+          }
+        }
+      }
+      // DM clicks typed room → change type / toggle boss lock
+      for(const r of _cvRooms){
+        const isHall=r.gw===1||r.gh===1;
+        if(!isHall&&r.type){
+          const rects=r.rects||[{gx:r.gx,gy:r.gy,gw:r.gw,gh:r.gh}];
+          if(rects.some(rc=>w.x>=rc.gx&&w.x<=rc.gx+rc.gw&&w.y>=rc.gy&&w.y<=rc.gy+rc.gh)){
+            _cvShowRoomTypePicker(r.id,sx,sy); return;
           }
         }
       }
@@ -7760,7 +7830,8 @@ function _cvPDown(e){
       _cvSelImgId=null;
     }
 
-    // Nothing interactive hit → start panning
+    // Nothing interactive hit → close type picker + start panning
+    _cvCloseTypePicker();
     _cvPanSX=sx;_cvPanSY=sy;_cvPanOX=_cvOX;_cvPanOY=_cvOY;
     _cvCvs.style.cursor='grabbing'; return;
   }
@@ -8194,6 +8265,127 @@ function _cvDmRollRoom(roomId){
   _renderFloorCounter();
   _sysMsg('Room revealed: '+room.label);
   if(room.type==='shop') setTimeout(_cvOpenShop, 300);
+}
+
+let _cvTypePickerRoomId=null;
+
+function _cvShowRoomTypePicker(roomId,sx,sy){
+  const picker=document.getElementById('cv-type-picker');
+  if(!picker) return;
+  _cvTypePickerRoomId=roomId;
+  const room=_cvRooms.find(r=>r.id===roomId);
+  if(!room) return;
+  picker.innerHTML='';
+  const lbl=document.createElement('div');
+  lbl.style.cssText='font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:2px;padding:0 2px';
+  lbl.textContent='Change Room Type';
+  picker.appendChild(lbl);
+  for(const rt of VTT_ROOM_TYPES){
+    const btn=document.createElement('button');
+    btn.className='cv-type-btn'+(rt.type==='boss'?' boss-btn':'');
+    const icon=rt.type==='combat'?'⚔ ':rt.type==='treasure'?'★ ':rt.type==='shop'?'🏪 ':rt.type==='healing'?'💚 ':rt.type==='descent'?'🪜 ':rt.type==='boss'?'☠ ':'';
+    btn.textContent=icon+rt.label+(room.type===rt.type?' ✓':'');
+    btn.onclick=()=>{ _cvSetRoomType(roomId,rt.type); _cvCloseTypePicker(); };
+    picker.appendChild(btn);
+  }
+  if(room.type==='boss'){
+    const sep=document.createElement('hr');
+    sep.style.cssText='border:none;border-top:1px solid var(--border);margin:4px 0';
+    picker.appendChild(sep);
+    const lockBtn=document.createElement('button');
+    lockBtn.className='cv-type-btn unlock-btn';
+    lockBtn.textContent=room.bossUnlocked?'🔒 Lock for Players':'🔓 Unlock for Players';
+    lockBtn.onclick=()=>{ _cvToggleBossLock(roomId); _cvCloseTypePicker(); };
+    picker.appendChild(lockBtn);
+  }
+  const cancelBtn=document.createElement('button');
+  cancelBtn.className='cv-type-btn';
+  cancelBtn.style.cssText='color:var(--text-dim);font-size:10px;margin-top:2px';
+  cancelBtn.textContent='Cancel';
+  cancelBtn.onclick=_cvCloseTypePicker;
+  picker.appendChild(cancelBtn);
+  const cont=document.getElementById('vtc-cont');
+  const cw=cont?cont.offsetWidth:800, ch=cont?cont.offsetHeight:500;
+  picker.style.left=Math.min(sx+8,cw-160)+'px';
+  picker.style.top=Math.min(sy+8,ch-300)+'px';
+  picker.classList.add('open');
+}
+
+function _cvCloseTypePicker(){
+  document.getElementById('cv-type-picker')?.classList.remove('open');
+  _cvTypePickerRoomId=null;
+}
+
+function _cvSetRoomType(roomId,newType){
+  const room=_cvRooms.find(r=>r.id===roomId);
+  if(!room) return;
+  const rt=VTT_ROOM_TYPES.find(x=>x.type===newType);
+  if(!rt) return;
+  const prevType=room.type;
+  if(prevType==='healing') _healingCount=Math.max(0,_healingCount-1);
+  if(prevType&&prevType!=='boss'&&prevType!==newType) _floorRoomQueue.push(prevType);
+  room.type=newType; room.label=rt.label; room.color=rt.color;
+  if(newType==='boss'){room.bossUnlocked=false;}
+  else{delete room.bossUnlocked;}
+  if(newType==='healing') _healingCount++;
+  if(newType==='descent') _cvDescentCell={gx:room.gx+Math.floor(room.gw/2),gy:room.gy+Math.floor(room.gh/2)};
+  _broadcast({type:'cv-room-type-change',id:roomId,rtype:newType,label:rt.label,color:rt.color,bossUnlocked:room.bossUnlocked||false});
+  _broadcast({type:'cv-queue-update',queue:_floorRoomQueue});
+  _sysMsg('Room changed to: '+rt.label);
+  if(newType==='shop') setTimeout(_cvOpenShop,300);
+}
+
+function _cvToggleBossLock(roomId){
+  const room=_cvRooms.find(r=>r.id===roomId);
+  if(!room||room.type!=='boss') return;
+  room.bossUnlocked=!room.bossUnlocked;
+  _broadcast({type:'cv-boss-unlock',id:roomId,unlocked:room.bossUnlocked});
+  showToast(room.bossUnlocked?'⚔ Boss room unlocked for players!':'🔒 Boss room locked');
+}
+
+function _buildBossAbilityPool(maxLevel){
+  const pool=[],seen=new Set();
+  function add(f,source){
+    if(!f||!f.name||seen.has(f.name)||(f.level||1)>maxLevel) return;
+    seen.add(f.name);
+    pool.push({name:f.name,type:f.type||'p',desc:f.desc||'',level:f.level||1,source});
+  }
+  const generals=[['Fighter',GENERAL],['Barbarian',BARBARIAN_GENERAL],['Wizard',WIZARD_GENERAL],
+    ['Paladin',PALADIN_GENERAL],['Warlock',WARLOCK_GENERAL],['Rogue',ROGUE_GENERAL],
+    ['Druid',DRUID_GENERAL],['Cleric',CLERIC_GENERAL]];
+  for(const[cls,arr]of generals) for(const f of(arr||[]))add(f,cls);
+  const subsets=[SUBCLASS_CARDS,BARBARIAN_SUBCLASS_CARDS,WIZARD_SUBCLASS_CARDS,
+    PALADIN_SUBCLASS_CARDS,WARLOCK_SUBCLASS_CARDS,ROGUE_SUBCLASS_CARDS,
+    DRUID_SUBCLASS_CARDS,CLERIC_SUBCLASS_CARDS];
+  for(const set of subsets) for(const key of Object.keys(set||{})) for(const f of(set[key]||[]))add(f,'Subclass');
+  for(const cls of Object.keys(CLASS_STARTING_FEATURES||{})) for(const f of(CLASS_STARTING_FEATURES[cls]||[]))add(f,cls+' class');
+  for(const rk of Object.keys(RACE_DATA||{})){
+    if(rk==='none') continue;
+    const race=RACE_DATA[rk];
+    for(const t of(race.traits||[]))add({name:t.name,desc:t.desc,level:1,type:'p'},'Race: '+race.name);
+  }
+  return pool;
+}
+
+function _cvBossDraw(){
+  const lvl=typeof currentLevel!=='undefined'?currentLevel:1;
+  const pool=_buildBossAbilityPool(lvl);
+  if(!pool.length){showToast('No abilities available at your level');return;}
+  const ability=pool[Math.floor(Math.random()*pool.length)];
+  const ov=document.getElementById('boss-ability-ov');
+  const card=document.getElementById('boss-ability-content');
+  if(!ov||!card) return;
+  const typeLabel={p:'Passive',c:'Active / Charge',b:'Bonus Action',r:'Reaction'}[ability.type]||'Ability';
+  card.innerHTML=`
+    <div class="boss-ability-name">${_escH(ability.name)}</div>
+    <div class="boss-ability-source">${_escH(ability.source)} &nbsp;·&nbsp; Level ${ability.level} &nbsp;·&nbsp; ${typeLabel}</div>
+    <div class="boss-ability-desc">${_escH(ability.desc)}</div>
+  `;
+  ov.classList.add('open');
+}
+
+function closeBossAbilityModal(){
+  document.getElementById('boss-ability-ov')?.classList.remove('open');
 }
 
 function _cvOpenShop(){
@@ -8671,6 +8863,16 @@ function _cvHandleMsg(d){
       { const rr=_cvRooms.find(r=>r.id===d.id);
         if(rr){rr.type=d.rtype;rr.label=d.label;rr.color=d.color;}
         if(d.rtype==='healing') _healingCount++; } break;
+    case 'cv-room-type-change':
+      { const rtcr=_cvRooms.find(r=>r.id===d.id);
+        if(rtcr){rtcr.type=d.rtype;rtcr.label=d.label;rtcr.color=d.color;
+          if(d.rtype==='boss') rtcr.bossUnlocked=d.bossUnlocked||false;
+          else delete rtcr.bossUnlocked;
+          if(d.rtype==='healing') _healingCount++;} } break;
+    case 'cv-boss-unlock':
+      { const bur=_cvRooms.find(r=>r.id===d.id);
+        if(bur){bur.bossUnlocked=!!d.unlocked;
+          if(d.unlocked) _sysMsg('☠ The Secret Boss Room has been unlocked! Click it to draw a power.');} } break;
     case 'cv-room-del':
       _cvRooms=_cvRooms.filter(r=>r.id!==d.id); break;
     case 'cv-queue-update':
@@ -9369,6 +9571,15 @@ if(_navRight)_navRight.appendChild(_saveBtn);
 </div>
 
 <!-- Item Detail Modal -->
+<!-- Boss ability draw modal -->
+<div class="boss-ability-ov" id="boss-ability-ov" onclick="if(event.target===this)closeBossAbilityModal()">
+  <div class="boss-ability-modal">
+    <button class="boss-ability-close" onclick="closeBossAbilityModal()">✕</button>
+    <h2>☠ Secret Power Awakened</h2>
+    <div id="boss-ability-content"></div>
+    <button onclick="closeBossAbilityModal()" style="margin-top:18px;width:100%;padding:9px;background:rgba(155,0,0,.25);border:1px solid #9b0000;border-radius:7px;color:#ff9999;cursor:pointer;font-size:13px;font-weight:700">Claim This Power</button>
+  </div>
+</div>
 <div class="item-detail-ov" id="item-detail-ov" onclick="if(event.target===this)closeItemDetail()">
   <div class="item-detail-modal">
     <button class="item-detail-close" onclick="closeItemDetail()">✕</button>
