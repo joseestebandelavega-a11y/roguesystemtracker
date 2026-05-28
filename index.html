@@ -437,6 +437,8 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   cursor:pointer;transition:color .15s}
 .inv-item-name:hover{color:var(--cc)}
 .inv-item-stat{font-size:10px;color:var(--text-dim);white-space:nowrap}
+.inv-equip-btn{background:none;border:none;font-size:14px;cursor:pointer;color:var(--text-muted);padding:0 2px;line-height:1;transition:color .15s}
+.inv-equip-btn:hover,.inv-equip-btn.active{color:var(--cc)}
 .inv-qty-row{display:flex;align-items:center;gap:4px}
 .inv-qty-btn{background:var(--s3);border:.5px solid var(--border-hi);
   border-radius:3px;color:var(--text-dim);width:18px;height:18px;font-size:13px;
@@ -538,6 +540,17 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .item-desc{font-size:11px;color:var(--text-dim);line-height:1.4;margin-top:5px}
 .inv-desc-btn{background:none;border:none;color:var(--text-muted);font-size:10px;cursor:pointer;padding:1px 0;margin-top:2px;text-align:left}
 .inv-desc-btn:hover{color:var(--text-dim)}
+.item-detail-ov{display:none;position:fixed;inset:0;background:rgba(4,6,12,.88);z-index:9000;align-items:center;justify-content:center;padding:16px}
+.item-detail-ov.open{display:flex}
+.item-detail-modal{background:var(--surface);border:1px solid var(--border-hi);border-radius:12px;padding:22px 24px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto;position:relative}
+.item-detail-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px}
+.item-detail-close:hover{color:var(--text)}
+.item-detail-name{font-size:20px;font-weight:700;color:var(--text);font-family:Georgia,serif;margin-bottom:4px}
+.item-detail-sub{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.item-detail-stat{font-size:16px;font-weight:700;color:var(--cc);font-family:Georgia,serif;margin-bottom:10px}
+.item-detail-desc{font-size:13px;color:var(--text-dim);line-height:1.65;margin-bottom:12px}
+.item-detail-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:10px}
+.inv-item-name{cursor:pointer}
 .cs-stat-reroll{position:absolute;top:2px;right:2px;background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;padding:2px;line-height:1;opacity:0;transition:opacity .15s}
 .cs-stat:hover .cs-stat-reroll{opacity:1}
 .pty-dice-formula{font-size:11px;color:var(--cc);min-height:18px;margin:4px 0 2px;text-align:center;font-weight:600;letter-spacing:.03em}
@@ -5995,12 +6008,11 @@ const invEl=document.getElementById('inv-list');
   if(invEl){
     invEl.innerHTML=inventory.map(item=>
       `<div class="inv-item${item.equipped?' equipped':''}">
-        <div style="flex:1;min-width:0">
-          <div class="inv-item-name" onclick="toggleEquipped('${item.id}')" title="Click to toggle equipped">${item.name}</div>
-          <div class="inv-item-stat">${item.stat} · ${item.wt} lb${item.equipped?' · <span style="color:var(--cc)">Equipped</span>':''}</div>
-          ${item.desc?`<div class="item-desc" id="idesc-${item.id}" style="display:none">${item.desc}</div>
-          <button class="inv-desc-btn" id="idbtn-${item.id}" onclick="toggleItemDesc('${item.id}')">▾ Info</button>`:''}
+        <div style="flex:1;min-width:0;cursor:pointer" onclick="showItemDetail('${item.id}')">
+          <div class="inv-item-name">${item.name}</div>
+          <div class="inv-item-stat">${item.stat||''} · ${item.wt} lb</div>
         </div>
+        <button class="inv-equip-btn${item.equipped?' active':''}" onclick="toggleEquipped('${item.id}')" title="${item.equipped?'Unequip':'Equip'}">${item.equipped?'★':'☆'}</button>
         <div class="inv-qty-row">
           <button class="inv-qty-btn" onclick="changeQty('${item.id}',-1)">−</button>
           <div class="inv-qty-num">${item.qty}</div>
@@ -6637,6 +6649,38 @@ function toggleItemDesc(id){
   d.style.display=shown?'none':'block';
   if(b) b.textContent=shown?'▾ Info':'▴ Hide';
 }
+
+function showItemDetail(itemId){
+  const item=inventory.find(i=>i.id===itemId)||(EQUIP_ITEMS||[]).find(i=>i.id===itemId);
+  if(!item) return;
+  const ov=document.getElementById('item-detail-ov');
+  const content=document.getElementById('item-detail-content');
+  if(!ov||!content) return;
+  const rarity=item.rarity||'Common';
+  const rarityColors={Common:'#aaa',Uncommon:'#5ab85a',Rare:'#5577cc','Very Rare':'#aa55dd',Legendary:'#ddaa22'};
+  const col=rarityColors[rarity]||'#aaa';
+  const propsHtml=(item.props||[]).map(p=>`<span class="irm-prop">${_escH(p)}</span>`).join('');
+  const invItem=inventory.find(i=>i.id===itemId);
+  content.innerHTML=`
+    <div style="margin-bottom:14px">
+      <div style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:${col};font-weight:700;margin-bottom:5px">${_escH(rarity)}</div>
+      <div class="item-detail-name">${_escH(item.name)}</div>
+      <div class="item-detail-sub">${item.cat?_escH(item.cat.replace(/-/g,' ')):(item.statType?_escH(item.statType):'')}</div>
+    </div>
+    ${item.stat?`<div class="item-detail-stat">${_escH(item.stat)}${item.statType?` <span style="font-size:11px;color:var(--text-dim)">${_escH(item.statType)}</span>`:''}</div>`:''}
+    ${propsHtml?`<div class="irm-card-props" style="margin-bottom:12px">${propsHtml}</div>`:''}
+    ${item.desc?`<div class="item-detail-desc">${_escH(item.desc)}</div>`:'<div class="item-detail-desc" style="font-style:italic">No description available.</div>'}
+    <div class="item-detail-meta">
+      ${item.wt?`<span>⚖ ${item.wt} lb</span>`:''}
+      ${item.cost?`<span>💰 ${item.cost}</span>`:''}
+      ${invItem&&(invItem.qty||1)>1?`<span>×${invItem.qty} in inventory</span>`:''}
+      ${invItem?.equipped?`<span style="color:var(--cc)">★ Equipped</span>`:''}
+    </div>`;
+  ov.classList.add('open');
+}
+function closeItemDetail(){
+  document.getElementById('item-detail-ov')?.classList.remove('open');
+}
 function rollAbility(name,type){
   const passive=['p'].includes(type);
   if(passive){
@@ -6932,7 +6976,7 @@ function renderCSInventory(){
     const equipLabel=item.equipped?'Unequip':'Equip';
     const equipColor=item.equipped?'var(--cc)':'var(--text-dim)';
     return`<div style="padding:5px 10px;border-bottom:.5px solid rgba(212,137,26,.1);display:flex;gap:8px;align-items:center">
-      <div style="flex:1;min-width:0">
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="showItemDetail('${item.id}')">
         <div style="font-size:12px;font-weight:600;color:var(--text)">${item.name}${(item.qty||1)>1?' ×'+(item.qty||1):''}${item.equipped?'<span style="color:var(--cc);font-size:9px;margin-left:5px;text-transform:uppercase;letter-spacing:.08em">Equipped</span>':''}</div>
         <div style="font-size:10px;color:var(--text-dim)">${item.stat||''}${propsStr?' · '+propsStr:''}</div>
       </div>
@@ -9249,6 +9293,14 @@ if(_navRight)_navRight.appendChild(_saveBtn);
     <div class="irm-cards" id="irm-cards"></div>
     <div class="irm-hint" id="irm-hint">Click an item to add it to your inventory</div>
     <button class="irm-done-btn" id="irm-done-btn" onclick="closeItemRoll()">Close</button>
+  </div>
+</div>
+
+<!-- Item Detail Modal -->
+<div class="item-detail-ov" id="item-detail-ov" onclick="if(event.target===this)closeItemDetail()">
+  <div class="item-detail-modal">
+    <button class="item-detail-close" onclick="closeItemDetail()">✕</button>
+    <div id="item-detail-content"></div>
   </div>
 </div>
 
