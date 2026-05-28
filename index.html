@@ -437,6 +437,8 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   cursor:pointer;transition:color .15s}
 .inv-item-name:hover{color:var(--cc)}
 .inv-item-stat{font-size:10px;color:var(--text-dim);white-space:nowrap}
+.inv-equip-btn{background:none;border:none;font-size:14px;cursor:pointer;color:var(--text-muted);padding:0 2px;line-height:1;transition:color .15s}
+.inv-equip-btn:hover,.inv-equip-btn.active{color:var(--cc)}
 .inv-qty-row{display:flex;align-items:center;gap:4px}
 .inv-qty-btn{background:var(--s3);border:.5px solid var(--border-hi);
   border-radius:3px;color:var(--text-dim);width:18px;height:18px;font-size:13px;
@@ -538,6 +540,17 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .item-desc{font-size:11px;color:var(--text-dim);line-height:1.4;margin-top:5px}
 .inv-desc-btn{background:none;border:none;color:var(--text-muted);font-size:10px;cursor:pointer;padding:1px 0;margin-top:2px;text-align:left}
 .inv-desc-btn:hover{color:var(--text-dim)}
+.item-detail-ov{display:none;position:fixed;inset:0;background:rgba(4,6,12,.88);z-index:9000;align-items:center;justify-content:center;padding:16px}
+.item-detail-ov.open{display:flex}
+.item-detail-modal{background:var(--surface);border:1px solid var(--border-hi);border-radius:12px;padding:22px 24px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto;position:relative}
+.item-detail-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px}
+.item-detail-close:hover{color:var(--text)}
+.item-detail-name{font-size:20px;font-weight:700;color:var(--text);font-family:Georgia,serif;margin-bottom:4px}
+.item-detail-sub{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.item-detail-stat{font-size:16px;font-weight:700;color:var(--cc);font-family:Georgia,serif;margin-bottom:10px}
+.item-detail-desc{font-size:13px;color:var(--text-dim);line-height:1.65;margin-bottom:12px}
+.item-detail-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:10px}
+.inv-item-name{cursor:pointer}
 .cs-stat-reroll{position:absolute;top:2px;right:2px;background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;padding:2px;line-height:1;opacity:0;transition:opacity .15s}
 .cs-stat:hover .cs-stat-reroll{opacity:1}
 .pty-dice-formula{font-size:11px;color:var(--cc);min-height:18px;margin:4px 0 2px;text-align:center;font-weight:600;letter-spacing:.03em}
@@ -1669,6 +1682,13 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 .pty-peer-name{font-size:20px;font-weight:700;font-family:Georgia,serif;color:var(--text)}
 .pty-peer-sub{font-size:12px;color:var(--text-dim)}
 .pty-peer-ro-badge{font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 7px;color:var(--text-muted);margin-left:auto;text-transform:uppercase;letter-spacing:.08em}
+.pty-dm-edit-badge{font-size:9px;background:rgba(124,58,237,.15);border:1px solid #7c3aed;border-radius:3px;padding:2px 7px;color:#c084fc;margin-left:auto;text-transform:uppercase;letter-spacing:.08em}
+.dm-edit-inp{background:var(--surface2);border:1px solid var(--border-hi);border-radius:4px;color:var(--text);font-size:14px;padding:3px 4px;outline:none;font-family:Georgia,serif;font-weight:700}
+.dm-edit-inp:focus{border-color:#7c3aed}
+.dm-hp-btn{background:var(--surface2);border:1px solid var(--border-hi);border-radius:4px;color:var(--text);font-size:16px;font-weight:700;width:26px;height:26px;cursor:pointer;line-height:1}
+.dm-hp-btn:hover{background:var(--surface3,#2a2540);border-color:#7c3aed;color:#c084fc}
+.dm-apply-btn{margin-top:10px;width:100%;padding:8px;background:rgba(124,58,237,.2);border:1px solid #7c3aed;border-radius:6px;color:#c084fc;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em}
+.dm-apply-btn:hover{background:rgba(124,58,237,.35);color:#e9d5ff}
 .pty-peer-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .pty-peer-stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;min-width:56px}
 .pty-peer-stat-k{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;display:block}
@@ -1816,6 +1836,162 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
 
 /* Image resize handle on canvas */
 .vtc-resize-cursor{cursor:nwse-resize!important}
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE UI  ≤ 480 px
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  /* ── Global ─────────────────────────────────────────────────────────────── */
+  * { -webkit-tap-highlight-color: transparent; }
+  body { overflow-x: hidden; }
+
+  /* ── Navigation tabs ────────────────────────────────────────────────────── */
+  .tabs-inner { padding: 0 2px; }
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-wrap: nowrap; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex-shrink: 0; white-space: nowrap; padding: 0 14px; font-size: 10px; min-height: 46px; display: flex; align-items: center; }
+  .info-btn, .nav-secret-btn { flex-shrink: 0; min-height: 46px; padding: 0 10px; }
+
+  /* ── Content ────────────────────────────────────────────────────────────── */
+  .content { padding: 8px 8px 64px; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     CHARACTER SHEET
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* Identity fields: stack vertically so nothing wraps out of view */
+  .cs-id { flex-direction: column; }
+  .cs-id-f { border-right: none !important; border-bottom: 0.5px solid var(--border); min-width: 0; padding: 8px 12px; }
+  .cs-id-f:last-child { border-bottom: none; }
+  .cs-id-inp, .cs-id-sel { font-size: 14px; }
+
+  /* Stats: tighter shells so all 6 fit in one row (6×52 + 5×4 = 332px < 374px) */
+  .cs-stat-row { justify-content: center; gap: 4px; }
+  .cs-stat-shell { width: 52px !important; }
+  .cs-stat-mod { font-size: 19px; }
+  .cs-stat-val { font-size: 13px !important; }
+  .cs-stat-lbl { font-size: 7px !important; letter-spacing: .06em; }
+
+  /* Body grid: minmax(0,1fr) prevents auto-minimum from expanding column past viewport */
+  .cs-body { grid-template-columns: minmax(0, 1fr) !important; }
+  .cs-body > * { min-width: 0; }
+
+  /* HP block: drop the large min-width that forces horizontal scroll */
+  .cs-hp-block { min-width: 0 !important; }
+
+  /* Quick stats (Prof / Init / Speed) */
+  .cs-quick-row { gap: 6px; }
+  .cs-quick { padding: 6px 8px; min-width: 60px; }
+  .cs-quick-val { font-size: 18px; }
+
+  /* Sub-tabs (Actions / Abilities / etc) — horizontal scroll, never wrap */
+  .cs-rtabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-wrap: nowrap !important; }
+  .cs-rtabs::-webkit-scrollbar { display: none; }
+  .cs-rtab { flex-shrink: 0; white-space: nowrap; padding: 10px 14px; font-size: 11px; min-height: 42px; display: flex; align-items: center; }
+
+  /* Saving throws / skills — generous tap height */
+  .cs-save-row, .cs-skill-row { min-height: 38px; display: flex; align-items: center; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     EQUIPMENT TAB
+     (container is .equip-page, not .equip-layout — was targeting wrong class)
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* Stack sidebar above the grid.
+     minmax(0,1fr) forces the column ≤ container width regardless of content size. */
+  .equip-page { grid-template-columns: minmax(0, 1fr) !important; gap: 0 !important; }
+
+  /* Sidebar: full-width bar, clip content so children scroll inside */
+  .equip-sidebar {
+    position: static !important;
+    top: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  .equip-main { min-width: 0; }
+
+  /* Filter panel: tighter padding */
+  .equip-filter-panel { border-radius: 0 !important; border: none !important; border-bottom: 1px solid var(--border) !important; }
+  .equip-filter-hd { padding: 7px 12px; }
+
+  /* Category buttons: horizontal scrollable pill row */
+  .equip-cats {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px !important;
+    padding: 8px 10px !important;
+  }
+  .equip-cats::-webkit-scrollbar { display: none; }
+  .equip-cat-btn { flex-shrink: 0 !important; white-space: nowrap; padding: 9px 14px !important; font-size: 12px !important; min-height: 40px; gap: 0 !important; }
+  .equip-cat-icon { display: none !important; }
+  .equip-cat-count { display: none !important; }
+
+  /* Class proficiency filter: horizontal scroll */
+  .class-prof-filter { padding: 6px 10px 8px !important; display: flex; flex-direction: column; gap: 4px; }
+  .cpf-lbl { margin-bottom: 2px; }
+  .class-prof-filter > .cpf-btn,
+  .class-prof-filter .cpf-btn { display: inline-block; }
+
+  /* Wrap the cpf buttons in a scroll container via CSS */
+  .class-prof-filter { overflow-x: auto; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center; -webkit-overflow-scrolling: touch; }
+  .class-prof-filter::-webkit-scrollbar { display: none; }
+  .cpf-lbl { display: none; }
+  .cpf-btn { flex-shrink: 0; white-space: nowrap; padding: 7px 12px !important; font-size: 11px !important; min-height: 36px; margin: 0 !important; }
+
+  /* Inventory panel: compact */
+  .inv-panel { border-radius: 0 !important; border-left: none !important; border-right: none !important; border-top: none !important; }
+  .inv-hd { padding: 8px 12px; }
+  .inv-list { max-height: 140px; }
+
+  /* Main content area */
+  .equip-main { padding: 0 !important; }
+
+  /* Search + roll + rarity row: stack into 2 rows */
+  .equip-search-row { flex-wrap: wrap !important; gap: 6px; padding: 8px; margin-bottom: 0 !important; }
+  .equip-search { width: 100% !important; font-size: 14px !important; order: -1; }
+  .draw-btn { font-size: 12px !important; min-height: 40px; }
+
+  /* Rarity filters: horizontal scroll row */
+  .rarity-filter { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; width: 100%; }
+  .rarity-filter::-webkit-scrollbar { display: none; }
+  .rf-btn { flex-shrink: 0; white-space: nowrap; padding: 7px 12px !important; font-size: 11px !important; min-height: 36px; }
+
+  /* Grid: single-column full-width cards */
+  .equip-grid { padding: 8px !important; gap: 8px !important; }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     ABILITY DECK / PARTY / MODALS
+     ───────────────────────────────────────────────────────────────────────── */
+
+  .decks-row { grid-template-columns: 1fr !important; }
+
+  .pty-row { flex-direction: column !important; }
+  .pty-cs-col, .pty-tools-col { width: 100% !important; flex: none !important; }
+  .pty-tools-scroll { max-height: none; }
+  .pty-dice-btn { min-height: 40px; min-width: 40px; }
+
+  .cs-roll-box { padding: 20px 16px; min-width: 260px; max-width: 90vw; }
+  .cs-roll-d20 { font-size: 64px !important; }
+
+  .item-roll-modal { width: 96vw; max-height: 88vh; overflow-y: auto; padding: 12px; }
+  .irm-head { padding: 12px 14px 8px; }
+  .irm-done-btn { width: 100%; min-height: 44px; }
+
+  .draw-modal { width: 96vw; max-height: 90vh; overflow-y: auto; padding: 16px; }
+  .info-modal { width: 100vw; max-width: 100vw; border-radius: 0; max-height: 100dvh; overflow: hidden; }
+  .info-modal-body { max-height: calc(100dvh - 56px); padding: 16px; }
+  .info-modal-tab { padding: 10px 12px; font-size: 10px; }
+}
 </style>
 </head>
 <body>
@@ -2256,7 +2432,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
             </label>
             <button class="vtc-btn" onclick="_cvDmDeleteSelImg()" title="Delete selected image">✖ Img</button>
             <button class="vtc-btn vtc-btn-danger" onclick="_cvDmClearDrawings()" title="Erase all player drawings">🗑 Drawings</button>
-            <button class="vtc-btn" id="vtc-pin" onclick="_cvSetTool('pin')" title="Drop a named pin (enemy/NPC)">📍 Pin</button>
+            <button class="vtc-btn" id="vtc-pin" onclick="_cvSetTool('pin')" title="Drop a named token (enemy/NPC/marker)">🪙 Token</button>
             <button class="vtc-btn" id="vtc-go-up" onclick="_cvDmGoUpFloor()" style="display:none" title="Go up to previous floor">⬆ Up</button>
             <button class="vtc-btn" id="vtc-go-down" onclick="_cvDmNewFloor()" title="Descend to next floor">⬇ Down</button>
             <button class="vtc-btn" onclick="_cvExportSession()" title="Save session to file">💾 Save</button>
@@ -2297,6 +2473,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
             <select id="vtc-pin-type" class="pty-inp" style="padding:5px 8px;font-size:12px;cursor:pointer">
               <option value="enemy">⚔ Enemy</option>
               <option value="npc">💬 NPC</option>
+              <option value="marker">📍 Marker</option>
             </select>
             <div style="display:flex;gap:6px">
               <button class="pty-btn" onclick="_cvConfirmPin()" style="flex:1;padding:5px 0;font-size:11px">Place</button>
@@ -2363,31 +2540,142 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
     <div class="info-modal-head">
       <div class="info-modal-tabs">
         <div class="info-modal-tab active" onclick="switchInfoTab('overview',this)">System</div>
+        <div class="info-modal-tab" onclick="switchInfoTab('combat',this)">Combat</div>
+        <div class="info-modal-tab" onclick="switchInfoTab('loot',this)">Loot</div>
         <div class="info-modal-tab" onclick="switchInfoTab('classref',this)">Classes</div>
         <div class="info-modal-tab" onclick="switchInfoTab('subclasses',this)">Subclasses</div>
       </div>
       <button class="info-modal-close" onclick="closeInfo()">&#x2715;</button>
     </div>
     <div class="info-modal-body">
+
+      <!-- ── SYSTEM ─────────────────────────────────────────────────────────── -->
       <div class="info-section active" id="info-overview">
   <div class="sec-heading">Campaign Structure</div>
   <div class="features-grid" style="grid-template-columns:1fr 1fr 1fr">
-    <div class="fc"><div class="fc-head"><div class="flv">12</div><div class="fname">Floors</div></div><div class="fdesc">12-floor dungeon. Boss fights every 3 floors. Floor Descent Rooms can be revisited.</div></div>
-    <div class="fc"><div class="fc-head"><div class="flv">14</div><div class="fname">Rooms/Floor</div></div><div class="fdesc">Max 14 rooms per floor. Healing rooms average every 2 floors. Combat rooms are brutally dangerous.</div></div>
-    <div class="fc"><div class="fc-head"><div class="flv">XP</div><div class="fname">Leveling</div></div><div class="fdesc">XP-based leveling. Level-ups unlock new deck cards — but you still must find them in a Treasure Room.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv">12</div><div class="fname">Floors</div></div><div class="fdesc">12-floor dungeon. Boss fights every 3 floors. You can ascend back to a previous floor at any time.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv">15–26</div><div class="fname">Rooms/Floor</div></div><div class="fdesc">Room count is randomized per floor: ~66% combat, ~23% treasure, ~9% shop, ~2% healing, 1 descent always.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv">XP</div><div class="fname">Leveling</div></div><div class="fdesc">Standard 5e XP thresholds. Level-ups unlock new deck cards, but you still must draw them at a Treasure Room.</div></div>
   </div>
-  <div class="sec-heading" style="margin-top:14px">Room Types</div>
-  <div class="features-grid" style="grid-template-columns:1fr 1fr 1fr">
-    <div class="fc"><div class="fc-head"><div class="flv" style="background:var(--red-bg);color:var(--red)">⚔</div><div class="fname">Combat</div></div><div class="fdesc">Lethal encounters. Players will often finish near death. Failure is a real possibility.</div></div>
-    <div class="fc"><div class="fc-head"><div class="flv" style="background:var(--green-bg);color:var(--green)">★</div><div class="fname">Treasure</div></div><div class="fdesc">Roll d20: 1–7 weak deck, 8–14 middle deck, 15–20 best deck. Draw 3, keep 1. Equipment can also be rolled here.</div></div>
-    <div class="fc"><div class="fc-head"><div class="flv" style="background:var(--blue-bg);color:var(--blue)">↓</div><div class="fname">Descent</div></div><div class="fdesc">Advance to the next floor. Can be returned to. Minotaurs sense direction after 9 rooms explored.</div></div>
+
+  <div class="sec-heading" style="margin-top:16px">Room Types</div>
+  <div class="features-grid" style="grid-template-columns:1fr 1fr">
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(196,64,64,.15);color:#c44040">⚔</div><div class="fname">Combat</div></div><div class="fdesc">Lethal encounters. Players will regularly finish near death. Award XP equal to monster CR × 200 as a baseline.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(74,140,58,.12);color:#4a8c3a">★</div><div class="fname">Treasure</div></div><div class="fdesc">Roll d20 → 1–7 weak deck, 8–14 middle deck, 15–20 best deck. Draw 3, keep 1. Also roll equipment at floor rarity.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(42,114,181,.15);color:#5599d4">🏪</div><div class="fname">Shop</div></div><div class="fdesc">3 items appear, rarity scaled to the current floor. One item has a 10% chance to bump up one rarity tier. Purchase at listed gold cost.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(74,140,58,.12);color:#4a8c3a">♥</div><div class="fname">Healing</div></div><div class="fdesc">Short rest. Spend Hit Dice to recover HP; restore short-rest abilities. Guaranteed at least once every two floors.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(124,58,237,.15);color:#9d72ef">↓</div><div class="fname">Descent</div></div><div class="fdesc">Advance to the next floor. One per floor, always present. The DM can ascend back with the ↑ button. Minotaurs track direction after 9 rooms.</div></div>
   </div>
-  <div class="sec-heading" style="margin-top:14px">OSR Rule Changes</div>
+
+  <div class="sec-heading" style="margin-top:16px">OSR Rule Changes</div>
   <div class="mbox">
-    <div class="mnote"><strong>HP is halved (round up)</strong> from standard 5e. Roll hit die, halve it, add CON modifier. This makes every hit meaningful and healing precious. CON changes automatically recalculate all rolled HP levels.</div>
-    <div class="mnote" style="margin-top:8px"><strong>Ability deck:</strong> All class features — including spells — are drawn at Treasure Rooms. Only the first 1–2 core features are free. Level gating applies: cards only appear once you reach the required level.</div>
+    <div class="mnote"><strong>HP is halved (round up)</strong> from standard 5e. Roll hit die, halve the result, then add CON modifier. Every hit is meaningful and healing is precious. The app recalculates HP automatically whenever CON changes.</div>
+    <div class="mnote" style="margin-top:8px"><strong>Ability deck:</strong> All class features — including spells — are drawn at Treasure Rooms. Only the first 1–2 core features (e.g. Fighting Style, Spellcasting) are granted free. Cards are level-gated and only appear once you meet the required level.</div>
+    <div class="mnote" style="margin-top:8px"><strong>Weapon damage:</strong> Click any equipped weapon in your inventory to roll damage. The roll shows dice + ability modifier — no separate to-hit d20 (assume the hit is already resolved in the narrative).</div>
+  </div>
+
+  <div class="sec-heading" style="margin-top:16px">XP Thresholds</div>
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px;font-size:11px;text-align:center">
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 1→2</div><div style="font-weight:700;color:var(--text)">300</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 2→3</div><div style="font-weight:700;color:var(--text)">900</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 3→4</div><div style="font-weight:700;color:var(--text)">2,700</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 4→5</div><div style="font-weight:700;color:var(--text)">6,500</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 5→6</div><div style="font-weight:700;color:var(--text)">14,000</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 6→7</div><div style="font-weight:700;color:var(--text)">23,000</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 7→8</div><div style="font-weight:700;color:var(--text)">34,000</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 8→9</div><div style="font-weight:700;color:var(--text)">48,000</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 9→10</div><div style="font-weight:700;color:var(--text)">64,000</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 10→11</div><div style="font-weight:700;color:var(--text)">85,000</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 11→12</div><div style="font-weight:700;color:var(--text)">100,000</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:6px 4px"><div style="color:var(--text-dim);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">LV 12+</div><div style="font-weight:700;color:var(--fighter)">standard</div></div>
   </div>
 </div>
+
+      <!-- ── COMBAT ─────────────────────────────────────────────────────────── -->
+      <div class="info-section" id="info-combat">
+  <div class="sec-heading">Ability Card Types</div>
+  <div class="features-grid" style="grid-template-columns:1fr 1fr">
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(80,80,80,.25);color:#888;font-size:11px;font-weight:800">P</div><div class="fname">Passive</div></div><div class="fdesc">Always active once acquired. No action required. Automatically applied to all relevant rolls or situations.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(42,114,181,.2);color:#5599d4;font-size:11px;font-weight:800">B</div><div class="fname">Bonus Action</div></div><div class="fdesc">Costs your bonus action on your turn. You have one bonus action per turn; you cannot use two bonus-action abilities in the same turn.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(180,120,20,.2);color:#c8900a;font-size:11px;font-weight:800">R</div><div class="fname">Reaction</div></div><div class="fdesc">Used in response to a trigger (e.g. being hit, an ally taking damage). One reaction per round; resets at the start of your next turn.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(196,64,64,.2);color:#c44040;font-size:11px;font-weight:800">C</div><div class="fname">Active / Combat</div></div><div class="fdesc">Costs your action, or is used as part of your Attack action. Often has a uses-per-rest limit. Check the card description carefully.</div></div>
+  </div>
+
+  <div class="sec-heading" style="margin-top:16px">Weapon Damage Rolls</div>
+  <div class="mbox">
+    <div class="mnote"><strong>Click any equipped weapon</strong> in your Character Sheet inventory to open the damage roller. It uses the weapon's listed dice (e.g. 1d8 for a longsword) and adds your relevant ability modifier automatically.</div>
+    <div class="mnote" style="margin-top:8px"><strong>Versatile weapons</strong> (e.g. longsword, spear) show two dice separated by /. The app rolls the first die by default — switch to two-handed in the narrative if you want the larger die.</div>
+    <div class="mnote" style="margin-top:8px"><strong>No to-hit d20 is rolled here.</strong> The OSR assumption is that combat narration handles the hit; use the standard d20 + attack modifier vs AC at the table, then click the weapon to resolve damage.</div>
+  </div>
+
+  <div class="sec-heading" style="margin-top:16px">Death Saving Throws</div>
+  <div class="features-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:var(--green-bg);color:var(--green)">3✓</div><div class="fname">Stabilize</div></div><div class="fdesc">3 successes before 3 failures: stabilize at 0 HP (unconscious, no longer dying).</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:var(--red-bg);color:var(--red)">3✗</div><div class="fname">Dead</div></div><div class="fdesc">3 failures before 3 successes: the character dies. Allies can attempt Medicine checks (DC 10) to stabilize before the third failure.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:var(--note-bg);color:var(--note)">20</div><div class="fname">Nat 20</div></div><div class="fdesc">Natural 20 on a death save: immediately regain 1 HP and stand up (no longer unconscious). Natural 1 counts as two failures.</div></div>
+  </div>
+
+  <div class="sec-heading" style="margin-top:16px">Rests</div>
+  <div class="features-grid" style="grid-template-columns:1fr 1fr">
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(42,114,181,.15);color:#5599d4;font-size:13px">~1h</div><div class="fname">Short Rest</div></div><div class="fdesc">Triggered by a Healing Room. Spend any number of Hit Dice to recover HP (roll die + CON mod per die spent). Restores short-rest abilities (e.g. Battlemaster dice, Warlock spell slots, Channel Divinity).</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="background:rgba(180,120,20,.1);color:#cc9944;font-size:13px">8h</div><div class="fname">Long Rest</div></div><div class="fdesc">At DM discretion — typically at the end of a session or at a safe camp between floors. Restores all HP (up to max), all spent Hit Dice (up to half max), and all long-rest ability uses. Resets death saves.</div></div>
+  </div>
+
+  <div class="sec-heading" style="margin-top:16px">Proficiency Bonus by Level</div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;font-size:11px;text-align:center">
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:5px 3px"><div style="color:var(--text-dim);font-size:9px;margin-bottom:1px">LV 1–4</div><div style="font-weight:700">+2</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:5px 3px"><div style="color:var(--text-dim);font-size:9px;margin-bottom:1px">LV 5–8</div><div style="font-weight:700">+3</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:5px 3px"><div style="color:var(--text-dim);font-size:9px;margin-bottom:1px">LV 9–12</div><div style="font-weight:700">+4</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:5px 3px"><div style="color:var(--text-dim);font-size:9px;margin-bottom:1px">LV 13–16</div><div style="font-weight:700">+5</div></div>
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:5px 3px"><div style="color:var(--text-dim);font-size:9px;margin-bottom:1px">LV 17–20</div><div style="font-weight:700">+6</div></div>
+  </div>
+</div>
+
+      <!-- ── LOOT ───────────────────────────────────────────────────────────── -->
+      <div class="info-section" id="info-loot">
+  <div class="sec-heading">Rarity by Floor</div>
+  <div style="overflow-x:auto;margin-bottom:16px">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:460px">
+      <thead>
+        <tr style="background:var(--surface2)">
+          <th style="padding:6px 10px;text-align:left;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);border-bottom:0.5px solid var(--border);font-weight:600">Floor</th>
+          <th style="padding:6px 8px;text-align:center;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#888;border-bottom:0.5px solid var(--border);font-weight:600">Common</th>
+          <th style="padding:6px 8px;text-align:center;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5599d4;border-bottom:0.5px solid var(--border);font-weight:600">Uncommon</th>
+          <th style="padding:6px 8px;text-align:center;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#4a8c3a;border-bottom:0.5px solid var(--border);font-weight:600">Rare</th>
+          <th style="padding:6px 8px;text-align:center;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#9d72ef;border-bottom:0.5px solid var(--border);font-weight:600">Very Rare</th>
+          <th style="padding:6px 8px;text-align:center;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#d4891a;border-bottom:0.5px solid var(--border);font-weight:600">Legendary</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:0.5px solid var(--border)"><td style="padding:5px 10px;color:var(--text-dim)">1–2</td><td style="padding:5px 8px;text-align:center">70%</td><td style="padding:5px 8px;text-align:center;color:#5599d4">29%</td><td style="padding:5px 8px;text-align:center;color:#4a8c3a">1%</td><td style="padding:5px 8px;text-align:center;color:var(--text-muted)">—</td><td style="padding:5px 8px;text-align:center;color:var(--text-muted)">—</td></tr>
+        <tr style="border-bottom:0.5px solid var(--border);background:rgba(255,255,255,.02)"><td style="padding:5px 10px;color:var(--text-dim)">3–4</td><td style="padding:5px 8px;text-align:center">40%</td><td style="padding:5px 8px;text-align:center;color:#5599d4">40%</td><td style="padding:5px 8px;text-align:center;color:#4a8c3a">18%</td><td style="padding:5px 8px;text-align:center;color:#9d72ef">2%</td><td style="padding:5px 8px;text-align:center;color:var(--text-muted)">—</td></tr>
+        <tr style="border-bottom:0.5px solid var(--border)"><td style="padding:5px 10px;color:var(--text-dim)">5–6</td><td style="padding:5px 8px;text-align:center">15%</td><td style="padding:5px 8px;text-align:center;color:#5599d4">30%</td><td style="padding:5px 8px;text-align:center;color:#4a8c3a">40%</td><td style="padding:5px 8px;text-align:center;color:#9d72ef">14%</td><td style="padding:5px 8px;text-align:center;color:#d4891a">1%</td></tr>
+        <tr style="border-bottom:0.5px solid var(--border);background:rgba(255,255,255,.02)"><td style="padding:5px 10px;color:var(--text-dim)">7–8</td><td style="padding:5px 8px;text-align:center">5%</td><td style="padding:5px 8px;text-align:center;color:#5599d4">15%</td><td style="padding:5px 8px;text-align:center;color:#4a8c3a">40%</td><td style="padding:5px 8px;text-align:center;color:#9d72ef">35%</td><td style="padding:5px 8px;text-align:center;color:#d4891a">5%</td></tr>
+        <tr style="border-bottom:0.5px solid var(--border)"><td style="padding:5px 10px;color:var(--text-dim)">9–10</td><td style="padding:5px 8px;text-align:center">2%</td><td style="padding:5px 8px;text-align:center;color:#5599d4">8%</td><td style="padding:5px 8px;text-align:center;color:#4a8c3a">25%</td><td style="padding:5px 8px;text-align:center;color:#9d72ef">55%</td><td style="padding:5px 8px;text-align:center;color:#d4891a">10%</td></tr>
+        <tr style="background:rgba(255,255,255,.02)"><td style="padding:5px 10px;color:var(--text-dim)">11+</td><td style="padding:5px 8px;text-align:center">1%</td><td style="padding:5px 8px;text-align:center;color:#5599d4">4%</td><td style="padding:5px 8px;text-align:center;color:#4a8c3a">15%</td><td style="padding:5px 8px;text-align:center;color:#9d72ef">45%</td><td style="padding:5px 8px;text-align:center;color:#d4891a">35%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec-heading">How Loot Draws Work</div>
+  <div class="mbox" style="margin-bottom:14px">
+    <div class="mnote"><strong>Two-step draw:</strong> First, a category is randomly selected using weighted probabilities (gear and consumables draw more often than scrolls or magic weapons). Then one item is picked uniformly from that category. This prevents any single large category from flooding every roll.</div>
+    <div class="mnote" style="margin-top:8px"><strong>Treasure Room:</strong> Roll the rarity using the floor table above, then draw one item. Equipment and ability cards are separate draws — both happen at a Treasure Room.</div>
+    <div class="mnote" style="margin-top:8px"><strong>Shop:</strong> 3 items appear at floor-scaled rarity. Each item has a 10% chance to be bumped up one tier (e.g. Rare → Very Rare). Purchase at the listed gold cost. Items are not re-stocked once the shop is visited.</div>
+  </div>
+
+  <div class="sec-heading">Item Categories</div>
+  <div class="features-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="fc"><div class="fc-head"><div class="flv" style="font-size:14px">⚔</div><div class="fname">Weapons</div></div><div class="fdesc">Simple &amp; martial melee, simple &amp; martial ranged, and magic weapons. Click any equipped weapon to roll damage.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="font-size:14px">🛡</div><div class="fname">Armor &amp; Shields</div></div><div class="fdesc">Light, medium, and heavy armor; shields; and magic armor variants. Equip to update your Armor Class automatically.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="font-size:14px">🎒</div><div class="fname">Gear</div></div><div class="fdesc">Adventuring equipment: tools, rope, lanterns, thieves' tools, and other general items. Weighted to appear frequently.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="font-size:14px">🧪</div><div class="fname">Potions &amp; Misc</div></div><div class="fdesc">Consumables: healing potions of all tiers, antitoxins, oils, elixirs, and other single-use items. Highest draw weight.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="font-size:14px">📜</div><div class="fname">Scrolls</div></div><div class="fdesc">Spell scrolls for all levels. Draw-weighted to prevent scroll floods despite a large item pool. Single-use.</div></div>
+    <div class="fc"><div class="fc-head"><div class="flv" style="font-size:14px">✨</div><div class="fname">Wondrous Items</div></div><div class="fdesc">Miscellaneous magic items: rings, cloaks, bags, rods, and other unique equipment. High draw weight.</div></div>
+  </div>
+</div>
+
+      <!-- ── CLASSES ─────────────────────────────────────────────────────────── -->
       <div class="info-section" id="info-classref">
   <div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px" id="classref-btns">
     <button class="sc-btn" onclick="showClassRef('fighter')">⚔ Fighter</button>
@@ -2401,6 +2689,8 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
   </div>
   <div id="classref-display" style="font-size:12px;color:var(--text-dim)">Select a class above to view its stats, proficiencies, free features, and spell slots.</div>
 </div>
+
+      <!-- ── SUBCLASSES ──────────────────────────────────────────────────────── -->
       <div class="info-section" id="info-subclasses">
   <p class="sub-intro">Click a class to browse its subclasses. Cards enter your deck pool when you reach the required level.</p>
   <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px" id="sc-class-filter-btns">
@@ -2417,6 +2707,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
     <!-- populated by filterSubclassView() -->
   </div>
 </div>
+
     </div>
   </div>
 </div>
@@ -5717,12 +6008,11 @@ const invEl=document.getElementById('inv-list');
   if(invEl){
     invEl.innerHTML=inventory.map(item=>
       `<div class="inv-item${item.equipped?' equipped':''}">
-        <div style="flex:1;min-width:0">
-          <div class="inv-item-name" onclick="toggleEquipped('${item.id}')" title="Click to toggle equipped">${item.name}</div>
-          <div class="inv-item-stat">${item.stat} · ${item.wt} lb${item.equipped?' · <span style="color:var(--cc)">Equipped</span>':''}</div>
-          ${item.desc?`<div class="item-desc" id="idesc-${item.id}" style="display:none">${item.desc}</div>
-          <button class="inv-desc-btn" id="idbtn-${item.id}" onclick="toggleItemDesc('${item.id}')">▾ Info</button>`:''}
+        <div style="flex:1;min-width:0;cursor:pointer" onclick="showItemDetail('${item.id}')">
+          <div class="inv-item-name">${item.name}</div>
+          <div class="inv-item-stat">${item.stat||''} · ${item.wt} lb</div>
         </div>
+        <button class="inv-equip-btn${item.equipped?' active':''}" onclick="toggleEquipped('${item.id}')" title="${item.equipped?'Unequip':'Equip'}">${item.equipped?'★':'☆'}</button>
         <div class="inv-qty-row">
           <button class="inv-qty-btn" onclick="changeQty('${item.id}',-1)">−</button>
           <div class="inv-qty-num">${item.qty}</div>
@@ -5818,15 +6108,37 @@ function rollForEquipment(){
   openItemRoll(chosen);
 }
 
-function openItemRoll(items){
-  _irmChosen = false;
+function openItemRoll(items, dmMode){
+  _irmChosen = dmMode ? true : false;
   const ov = document.getElementById('item-roll-ov');
   const cards = document.getElementById('irm-cards');
   const hint = document.getElementById('irm-hint');
   const doneBtn = document.getElementById('irm-done-btn');
   const sub = document.getElementById('irm-sub');
   if(!ov||!cards) return;
-  
+
+  if(dmMode){
+    hint.textContent = 'DM view — discuss with players which item they want to buy';
+    doneBtn.className = 'irm-done-btn visible';
+    doneBtn.textContent = 'Close';
+    cards.innerHTML = items.map((item) => {
+      const rarity = item.rarity || 'Common';
+      const cost = item.cost || '—';
+      const propsHtml = (item.props||[]).slice(0,3).map(p=>`<span class="irm-prop">${p}</span>`).join('');
+      return `<div class="irm-card rarity-${rarity.replace(' ','_')}" style="cursor:default;pointer-events:none" data-item-id="${item.id}">
+        <div class="irm-rarity rarity-${rarity}">${rarity}</div>
+        <div class="irm-card-name">${item.name}</div>
+        <div class="irm-card-type">${item.cat ? item.cat.replace(/-/g,' ') : item.statType || ''}</div>
+        ${item.stat ? `<div class="irm-card-stat">${item.stat}${item.statType?' '+item.statType:''}</div>` : ''}
+        ${propsHtml ? `<div class="irm-card-props">${propsHtml}</div>` : ''}
+        <div class="irm-card-desc">${(item.desc||'').slice(0,120)}${item.desc&&item.desc.length>120?'…':''}</div>
+        <div style="margin-top:8px;font-size:12px;color:#d4a845;font-weight:600">💰 ${cost}</div>
+      </div>`;
+    }).join('');
+    ov.classList.add('open');
+    return;
+  }
+
   sub.textContent = 'Three items appear before you. Choose one to take.';
   // Show floor-based rarity odds
   const oddsEl = document.getElementById('irm-odds');
@@ -6337,6 +6649,38 @@ function toggleItemDesc(id){
   d.style.display=shown?'none':'block';
   if(b) b.textContent=shown?'▾ Info':'▴ Hide';
 }
+
+function showItemDetail(itemId){
+  const item=inventory.find(i=>i.id===itemId)||(EQUIP_ITEMS||[]).find(i=>i.id===itemId);
+  if(!item) return;
+  const ov=document.getElementById('item-detail-ov');
+  const content=document.getElementById('item-detail-content');
+  if(!ov||!content) return;
+  const rarity=item.rarity||'Common';
+  const rarityColors={Common:'#aaa',Uncommon:'#5ab85a',Rare:'#5577cc','Very Rare':'#aa55dd',Legendary:'#ddaa22'};
+  const col=rarityColors[rarity]||'#aaa';
+  const propsHtml=(item.props||[]).map(p=>`<span class="irm-prop">${_escH(p)}</span>`).join('');
+  const invItem=inventory.find(i=>i.id===itemId);
+  content.innerHTML=`
+    <div style="margin-bottom:14px">
+      <div style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:${col};font-weight:700;margin-bottom:5px">${_escH(rarity)}</div>
+      <div class="item-detail-name">${_escH(item.name)}</div>
+      <div class="item-detail-sub">${item.cat?_escH(item.cat.replace(/-/g,' ')):(item.statType?_escH(item.statType):'')}</div>
+    </div>
+    ${item.stat?`<div class="item-detail-stat">${_escH(item.stat)}${item.statType?` <span style="font-size:11px;color:var(--text-dim)">${_escH(item.statType)}</span>`:''}</div>`:''}
+    ${propsHtml?`<div class="irm-card-props" style="margin-bottom:12px">${propsHtml}</div>`:''}
+    ${item.desc?`<div class="item-detail-desc">${_escH(item.desc)}</div>`:'<div class="item-detail-desc" style="font-style:italic">No description available.</div>'}
+    <div class="item-detail-meta">
+      ${item.wt?`<span>⚖ ${item.wt} lb</span>`:''}
+      ${item.cost?`<span>💰 ${item.cost}</span>`:''}
+      ${invItem&&(invItem.qty||1)>1?`<span>×${invItem.qty} in inventory</span>`:''}
+      ${invItem?.equipped?`<span style="color:var(--cc)">★ Equipped</span>`:''}
+    </div>`;
+  ov.classList.add('open');
+}
+function closeItemDetail(){
+  document.getElementById('item-detail-ov')?.classList.remove('open');
+}
 function rollAbility(name,type){
   const passive=['p'].includes(type);
   if(passive){
@@ -6632,7 +6976,7 @@ function renderCSInventory(){
     const equipLabel=item.equipped?'Unequip':'Equip';
     const equipColor=item.equipped?'var(--cc)':'var(--text-dim)';
     return`<div style="padding:5px 10px;border-bottom:.5px solid rgba(212,137,26,.1);display:flex;gap:8px;align-items:center">
-      <div style="flex:1;min-width:0">
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="showItemDetail('${item.id}')">
         <div style="font-size:12px;font-weight:600;color:var(--text)">${item.name}${(item.qty||1)>1?' ×'+(item.qty||1):''}${item.equipped?'<span style="color:var(--cc);font-size:9px;margin-left:5px;text-transform:uppercase;letter-spacing:.08em">Equipped</span>':''}</div>
         <div style="font-size:10px;color:var(--text-dim)">${item.stat||''}${propsStr?' · '+propsStr:''}</div>
       </div>
@@ -6982,7 +7326,7 @@ let _cvTokTimer=null;
 // Offscreen canvas for strokes (so eraser only erases drawings, not map)
 let _cvStrokeCvs=null,_cvStrokeCtx=null;
 // Named pins
-let _cvPins=[],_cvPinPending=null;
+let _cvPinPending=null;
 let _cvMapPings=[];
 // Image resize state
 let _cvResizingImg=null; // {id,corner,origWW,origWH,origWX,origWY,startSX,startSY}
@@ -7086,29 +7430,6 @@ function _cvRender(){
 
   // Tokens
   Object.entries(_cvTokens).forEach(([pid,tok])=>_cvDrawToken(ctx,pid,tok));
-
-  // Pins
-  _cvPins.forEach(p=>{
-    const s=_w2s(p.wx,p.wy);
-    const col=p.type==='enemy'?'#e05252':'#52b4e0';
-    ctx.save();
-    ctx.translate(s.x,s.y);
-    ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=4;
-    ctx.beginPath();ctx.arc(0,-2,9,0,Math.PI*2);
-    ctx.fillStyle=col;ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.stroke();
-    ctx.shadowBlur=0;
-    ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(p.type==='enemy'?'E':'N',0,-2);
-    const tw=ctx.measureText(p.name).width;
-    ctx.fillStyle='rgba(0,0,0,.65)';
-    ctx.beginPath();ctx.roundRect(-tw/2-4,9,tw+8,15,3);ctx.fill();
-    ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';
-    ctx.textBaseline='top';
-    ctx.fillText(p.name,0,11);
-    ctx.restore();
-  });
 
   // Map pings (shift+click beacons)
   const _now=Date.now();
@@ -7274,7 +7595,6 @@ function _cvDrawStroke(ctx,s){
 function _cvDrawToken(ctx,pid,tok){
   const p=_w2s(tok.wx,tok.wy);
   const pl=partyPlayers[pid];
-  // Extra tokens carry label/color directly; player tokens look up partyPlayers
   const color=tok.color||pl?.color||'#d4891a';
   const name=tok.label||pl?.name||'?';
   const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
@@ -7282,15 +7602,28 @@ function _cvDrawToken(ctx,pid,tok){
   ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=7;
   ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
   ctx.fillStyle=color; ctx.fill();
-  // Extra tokens: dashed outline to distinguish from main player token
   if(tok.isExtra){ctx.setLineDash([3,2]);ctx.strokeStyle='rgba(255,255,255,.9)';}
+  else if(tok.isDmToken){ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2.5;}
   else {ctx.strokeStyle='rgba(255,255,255,.75)';}
-  ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
+  ctx.lineWidth=tok.isDmToken?2.5:2; ctx.stroke(); ctx.setLineDash([]);
   ctx.shadowBlur=0;
+  // Icon letter inside circle
+  const icon=tok.isDmToken?(tok.type==='enemy'?'E':tok.type==='npc'?'N':'M'):name.slice(0,2).toUpperCase();
   ctx.fillStyle='#fff';
   ctx.font='bold '+Math.floor(r*0.85)+'px sans-serif';
   ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(name.slice(0,2).toUpperCase(),p.x,p.y);
+  ctx.fillText(icon,p.x,p.y);
+  // DM tokens: draw full name label below circle
+  if(tok.isDmToken){
+    ctx.font='bold 10px sans-serif';
+    const tw=ctx.measureText(name).width;
+    const lx=p.x, ly=p.y+r+3;
+    ctx.fillStyle='rgba(0,0,0,.7)';
+    ctx.beginPath();ctx.roundRect(lx-tw/2-4,ly,tw+8,14,3);ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.textBaseline='top';
+    ctx.fillText(name,lx,ly+2);
+  }
   ctx.restore();
 }
 
@@ -7319,16 +7652,6 @@ function _cvAttachEvents(){
       }
     }
     if(_cvTool==='cursor') return;
-    // Right-click on a pin: delete it
-    for(let i=_cvPins.length-1;i>=0;i--){
-      const p=_cvPins[i];
-      const ps=_w2s(p.wx,p.wy);
-      if(Math.hypot(sx-ps.x,sy-(ps.y-2))<14){
-        _cvPins.splice(i,1);
-        _broadcast({type:'cv-pin-del',id:p.id});
-        return;
-      }
-    }
     _cvDmDeleteRoomAt(sx,sy);
   });
 }
@@ -7470,10 +7793,15 @@ function _cvPMove(e){
 
   if(_cvPtrDown&&_cvDragTokId){
     const w=_s2w(sx,sy);
-    _cvTokens[_cvDragTokId]={wx:w.x,wy:w.y};
+    _cvTokens[_cvDragTokId]={..._cvTokens[_cvDragTokId],wx:w.x,wy:w.y};
     clearTimeout(_cvTokTimer);
     _cvTokTimer=setTimeout(()=>{
-      if(_cvDragTokId) _broadcast({type:'cv-token-move',peerId:_cvDragTokId,wx:_cvTokens[_cvDragTokId].wx,wy:_cvTokens[_cvDragTokId].wy});
+      if(!_cvDragTokId) return;
+      const _t=_cvTokens[_cvDragTokId];
+      if(!_t) return;
+      const msg={type:'cv-token-move',peerId:_cvDragTokId,wx:_t.wx,wy:_t.wy};
+      if(_t.isExtra||_t.isDmToken) msg.tokenData=_t;
+      _broadcast(msg);
     },50);
     return;
   }
@@ -7526,7 +7854,9 @@ function _cvPUp(e){
   if(_cvDragTokId){
     const tok=_cvTokens[_cvDragTokId];
     if(tok){ tok.wx=Math.round(tok.wx*2)/2; tok.wy=Math.round(tok.wy*2)/2;
-      _broadcast({type:'cv-token-move',peerId:_cvDragTokId,wx:tok.wx,wy:tok.wy}); }
+      const msg={type:'cv-token-move',peerId:_cvDragTokId,wx:tok.wx,wy:tok.wy};
+      if(tok.isExtra||tok.isDmToken) msg.tokenData=tok;
+      _broadcast(msg); }
     _cvDragTokId=null; return;
   }
 
@@ -7626,12 +7956,15 @@ function _cvConfirmPin(){
   const name=(document.getElementById('vtc-pin-name')?.value||'').trim();
   if(!name){document.getElementById('vtc-pin-name')?.focus();return;}
   const type=document.getElementById('vtc-pin-type')?.value||'enemy';
-  const pin={id:'pin'+Date.now(),wx:_cvPinPending.wx,wy:_cvPinPending.wy,name,type};
-  _cvPins.push(pin);
-  _broadcast({type:'cv-pin-add',pin});
+  const color=type==='enemy'?'#e05252':type==='npc'?'#52b4e0':'#d4891a';
+  const tokenId='dm_'+Date.now();
+  const tok={wx:_cvPinPending.wx,wy:_cvPinPending.wy,label:name,type,color,isDmToken:true};
+  _cvTokens[tokenId]=tok;
+  _broadcast({type:'cv-dm-token-add',tokenId,tok});
   _cvPinPending=null;
   const form=document.getElementById('vtc-pin-form');
   if(form) form.style.display='none';
+  _cvRedraw();
 }
 
 function _cvCancelPin(){
@@ -7871,8 +8204,8 @@ function _cvOpenShop(){
   const titleEl = ov ? ov.querySelector('.irm-title') : null;
   const subEl = document.getElementById('irm-sub');
   if(titleEl) titleEl.textContent = '🏪 Shop — Floor ' + floor + ' Wares';
-  if(subEl) subEl.textContent = 'The shopkeeper displays three items. Players may purchase at listed cost.';
-  openItemRoll(items);
+  if(subEl) subEl.textContent = 'Shop inventory — present these items to your players for purchase.';
+  openItemRoll(items, true);
 }
 
 function _renderFloorCounter(){
@@ -8005,7 +8338,8 @@ function _partyBroadcastCharSheet(){
   if(!partyPeer) return;
   const data=_getPartyCharData();
   partyCharSheets[partyPeer.id]=data;
-  _broadcast({type:'char-share',peerId:partyPeer.id,data});
+  // DM keeps their sheet locally but doesn't share it with players
+  if(!partyIsDM) _broadcast({type:'char-share',peerId:partyPeer.id,data});
   _renderPartyCharSheet();
 }
 
@@ -8099,6 +8433,7 @@ function _renderPeerSheet(data,peerId){
   const col=partyPlayers[peerId]?.color||'var(--fighter)';
   const hpPct=data.maxHp>0?Math.max(0,Math.min(100,Math.round(data.hp/data.maxHp*100))):0;
   const hpColor=hpPct>50?'var(--green)':hpPct>25?'#d4891a':'var(--red)';
+  const eid=_escH(peerId).replace(/[^a-z0-9]/gi,'_');
 
   const statOrder=['str','dex','con','int','wis','cha'];
   const statHtml=statOrder.map(k=>{
@@ -8113,7 +8448,6 @@ function _renderPeerSheet(data,peerId){
 
   const equipped=(data.inventory||[]).filter(i=>i.equipped);
   const unequipped=(data.inventory||[]).filter(i=>!i.equipped);
-
   const invHtml=[...equipped,...unequipped].map(i=>`
     <div class="pty-peer-inv-row">
       <span class="pty-peer-inv-name">${_escH(i.name)}${(i.qty||1)>1?' ×'+(i.qty||1):''}</span>
@@ -8121,36 +8455,100 @@ function _renderPeerSheet(data,peerId){
       <span style="font-size:10px;color:var(--text-dim)">${i.stat||''}</span>
     </div>`).join('');
 
-  el.innerHTML=`
-    <div class="pty-peer-hd">
-      <div>
-        <div class="pty-peer-name" style="color:${col}">${_escH(data.charName||data.name)}</div>
-        <div class="pty-peer-sub">Level ${data.level||1} ${_escH(data.className||'')}${data.subclass?' — '+_escH(data.subclass):''} · Prof +${pb}</div>
+  if(partyIsDM){
+    const ds=data.deathSaves||{s:0,f:0};
+    const dsHtml=`<div style="margin-top:6px;font-size:11px;color:var(--text-dim)">Death Saves &nbsp;
+      Suc: <input type="number" id="dme-ds-s-${eid}" class="dm-edit-inp" value="${ds.s}" min="0" max="3" style="width:36px">
+      &nbsp;Fail: <input type="number" id="dme-ds-f-${eid}" class="dm-edit-inp" value="${ds.f}" min="0" max="3" style="width:36px">
+    </div>`;
+    el.innerHTML=`
+      <div class="pty-peer-hd">
+        <div>
+          <div class="pty-peer-name" style="color:${col}">${_escH(data.charName||data.name)}</div>
+          <div class="pty-peer-sub">Level ${data.level||1} ${_escH(data.className||'')}${data.subclass?' — '+_escH(data.subclass):''} · Prof +${pb}</div>
+        </div>
+        <span class="pty-dm-edit-badge">DM Edit</span>
       </div>
-      <span class="pty-peer-ro-badge">Read-Only</span>
-    </div>
-    <div class="pty-peer-stats">${statHtml}</div>
-    <div class="pty-peer-row">
-      <div class="pty-peer-box">
-        <div class="pty-peer-box-lbl">Hit Points</div>
-        <div class="pty-peer-box-val" style="color:${hpColor}">${data.hp}<span style="font-size:14px;color:var(--text-dim)">/${data.maxHp}</span>${data.hpTemp?'<span style="font-size:13px;color:var(--blue)"> +'+data.hpTemp+'t</span>':''}</div>
-        <div class="pty-peer-hp-bar"><div class="pty-peer-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>
+      <div class="pty-peer-stats">${statHtml}</div>
+      <div class="pty-peer-row">
+        <div class="pty-peer-box">
+          <div class="pty-peer-box-lbl">HP <span style="font-size:10px;color:var(--text-dim)">/ ${data.maxHp}</span></div>
+          <div style="display:flex;align-items:center;gap:4px;margin-top:4px">
+            <button class="dm-hp-btn" onclick="_dmAdjHp('${peerId}','${eid}',-1)">−</button>
+            <input type="number" id="dme-hp-${eid}" class="dm-edit-inp" value="${data.hp}" min="0" max="${data.maxHp}" style="width:52px;font-size:18px;text-align:center">
+            <button class="dm-hp-btn" onclick="_dmAdjHp('${peerId}','${eid}',1)">+</button>
+          </div>
+        </div>
+        <div class="pty-peer-box">
+          <div class="pty-peer-box-lbl">Temp HP</div>
+          <input type="number" id="dme-tmp-${eid}" class="dm-edit-inp" value="${data.hpTemp||0}" min="0" style="width:52px;font-size:18px;text-align:center;margin-top:4px">
+        </div>
+        <div class="pty-peer-box">
+          <div class="pty-peer-box-lbl">AC</div>
+          <input type="number" id="dme-ac-${eid}" class="dm-edit-inp" value="${data.ac||10}" min="0" style="width:52px;font-size:18px;text-align:center;margin-top:4px">
+        </div>
+        <div class="pty-peer-box">
+          <div class="pty-peer-box-lbl">Speed</div>
+          <input type="number" id="dme-spd-${eid}" class="dm-edit-inp" value="${data.speed||30}" min="0" style="width:52px;font-size:18px;text-align:center;margin-top:4px">
+        </div>
       </div>
-      <div class="pty-peer-box">
-        <div class="pty-peer-box-lbl">Armor Class</div>
-        <div class="pty-peer-box-val">${data.ac||10}</div>
+      ${dsHtml}
+      <button class="dm-apply-btn" onclick="_dmApplySheetEdit('${peerId}','${eid}')">Apply Changes to ${_escH(data.name)}</button>
+      ${data.inventory?.length?`<div class="pty-peer-section-hd" style="margin-top:12px">Inventory (${data.inventory.length} items)</div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;max-height:180px;overflow-y:auto">${invHtml}</div>`:''}
+    `;
+  } else {
+    el.innerHTML=`
+      <div class="pty-peer-hd">
+        <div>
+          <div class="pty-peer-name" style="color:${col}">${_escH(data.charName||data.name)}</div>
+          <div class="pty-peer-sub">Level ${data.level||1} ${_escH(data.className||'')}${data.subclass?' — '+_escH(data.subclass):''} · Prof +${pb}</div>
+        </div>
+        <span class="pty-peer-ro-badge">Read-Only</span>
       </div>
-      <div class="pty-peer-box">
-        <div class="pty-peer-box-lbl">Initiative</div>
-        <div class="pty-peer-box-val">${data.init||'+0'}</div>
+      <div class="pty-peer-stats">${statHtml}</div>
+      <div class="pty-peer-row">
+        <div class="pty-peer-box">
+          <div class="pty-peer-box-lbl">Hit Points</div>
+          <div class="pty-peer-box-val" style="color:${hpColor}">${data.hp}<span style="font-size:14px;color:var(--text-dim)">/${data.maxHp}</span>${data.hpTemp?'<span style="font-size:13px;color:var(--blue)"> +'+data.hpTemp+'t</span>':''}</div>
+          <div class="pty-peer-hp-bar"><div class="pty-peer-hp-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>
+        </div>
+        <div class="pty-peer-box">
+          <div class="pty-peer-box-lbl">Armor Class</div>
+          <div class="pty-peer-box-val">${data.ac||10}</div>
+        </div>
+        <div class="pty-peer-box">
+          <div class="pty-peer-box-lbl">Initiative</div>
+          <div class="pty-peer-box-val">${data.init||'+0'}</div>
+        </div>
+        <div class="pty-peer-box">
+          <div class="pty-peer-box-lbl">Speed</div>
+          <div class="pty-peer-box-val">${data.speed||30}<span style="font-size:12px;color:var(--text-dim)"> ft</span></div>
+        </div>
       </div>
-      <div class="pty-peer-box">
-        <div class="pty-peer-box-lbl">Speed</div>
-        <div class="pty-peer-box-val">${data.speed||30}<span style="font-size:12px;color:var(--text-dim)"> ft</span></div>
-      </div>
-    </div>
-    ${data.inventory?.length?`<div class="pty-peer-section-hd">Inventory (${data.inventory.length} items)</div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;max-height:220px;overflow-y:auto">${invHtml}</div>`:''}
-  `;
+      ${data.inventory?.length?`<div class="pty-peer-section-hd">Inventory (${data.inventory.length} items)</div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;max-height:220px;overflow-y:auto">${invHtml}</div>`:''}
+    `;
+  }
+}
+
+function _dmAdjHp(peerId,eid,delta){
+  const inp=document.getElementById('dme-hp-'+eid);
+  if(!inp) return;
+  const maxHp=partyCharSheets[peerId]?.maxHp||999;
+  inp.value=Math.max(0,Math.min(maxHp,(parseInt(inp.value)||0)+delta));
+}
+
+function _dmApplySheetEdit(peerId,eid){
+  const hp=parseInt(document.getElementById('dme-hp-'+eid)?.value)||0;
+  const hpTemp=parseInt(document.getElementById('dme-tmp-'+eid)?.value)||0;
+  const ac=parseInt(document.getElementById('dme-ac-'+eid)?.value)||10;
+  const speed=parseInt(document.getElementById('dme-spd-'+eid)?.value)||30;
+  const dsS=Math.max(0,Math.min(3,parseInt(document.getElementById('dme-ds-s-'+eid)?.value)||0));
+  const dsF=Math.max(0,Math.min(3,parseInt(document.getElementById('dme-ds-f-'+eid)?.value)||0));
+  const changes={hp,hpTemp,ac,speed,deathSaves:{s:dsS,f:dsF}};
+  if(partyCharSheets[peerId]) Object.assign(partyCharSheets[peerId],changes);
+  _broadcast({type:'dm-sheet-edit',targetPeer:peerId,changes});
+  showToast('Sheet updated for '+(partyCharSheets[peerId]?.name||'player'));
+  _renderPartyCharSheet();
 }
 
 function _partySetViewPeer(pid){
@@ -8165,7 +8563,6 @@ function _cvSyncPayload(){
     rooms:_cvRooms,
     images:_cvImages.map(({el,...rest})=>rest),
     tokens:_cvTokens,
-    pins:_cvPins,
     healingCount:_healingCount,
     floorCount:_floorCount,
     floorRoomBudget:_floorRoomBudget,
@@ -8179,7 +8576,6 @@ function _cvSyncPayload(){
 function _cvApplySync(d){
   _cvStrokes=d.strokes||[];
   _cvRooms=d.rooms||[];
-  _cvPins=d.pins||[];
   _healingCount=d.healingCount||0;
   _floorCount=d.floorCount||1;
   _cvTokens=d.tokens||{};
@@ -8234,7 +8630,8 @@ function _cvHandleMsg(d){
     case 'cv-image-del':
       _cvImages=_cvImages.filter(i=>i.id!==d.id); break;
     case 'cv-token-move':
-      _cvTokens[d.peerId]={wx:d.wx,wy:d.wy}; break;
+      if(d.tokenData) _cvTokens[d.peerId]={...d.tokenData,wx:d.wx,wy:d.wy};
+      else _cvTokens[d.peerId]={..._cvTokens[d.peerId]||{},wx:d.wx,wy:d.wy}; break;
     case 'cv-token-delete':
       delete _cvTokens[d.peerId]; break;
     case 'cv-ping':
@@ -8277,16 +8674,33 @@ function _cvHandleMsg(d){
         _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
         _sysMsg('Returned to Floor '+_floorCount+'.');
         const fbup=document.getElementById('vtc-floor-num');if(fbup)fbup.textContent=_floorCount; } break;
-    case 'cv-pin-add':
-      if(!_cvPins.find(p=>p.id===d.pin.id)) _cvPins.push(d.pin); break;
-    case 'cv-pin-del':
-      _cvPins=_cvPins.filter(p=>p.id!==d.id); break;
+    case 'cv-dm-token-add':
+      if(!_cvTokens[d.tokenId]) _cvTokens[d.tokenId]=d.tok; break;
     case 'cv-sync':
       _cvApplySync(d); break;
     case 'char-share':
       if(d.peerId&&d.data){
         partyCharSheets[d.peerId]=d.data;
         _renderPartyCharSheet();
+      } break;
+    case 'dm-sheet-edit':
+      if(partyPeer&&d.targetPeer===partyPeer.id&&d.changes){
+        const c=d.changes;
+        const curEl=document.getElementById('cs-hp-cur');
+        if(curEl&&c.hp!==undefined) curEl.value=c.hp;
+        const tmpEl=document.getElementById('cs-hp-temp');
+        if(tmpEl&&c.hpTemp!==undefined) tmpEl.value=c.hpTemp;
+        const acEl=document.getElementById('cs-ac');
+        if(acEl&&c.ac!==undefined) acEl.value=c.ac;
+        const spdEl=document.getElementById('cs-speed');
+        if(spdEl&&c.speed!==undefined) spdEl.value=c.speed;
+        if(c.deathSaves){
+          const suc=document.querySelectorAll('.cs-death-suc');
+          const fail=document.querySelectorAll('.cs-death-fail');
+          suc.forEach((el,i)=>el.classList.toggle('active',i<(c.deathSaves.s||0)));
+          fail.forEach((el,i)=>el.classList.toggle('active',i<(c.deathSaves.f||0)));
+        }
+        _partyBroadcastCharSheet();
       } break;
   }
 }
@@ -8402,6 +8816,10 @@ function _setupConn(conn){
           delete partyPlayers[pid]; delete partyConns[pid]; delete partyCharSheets[pid];
         }
       });
+      // Also remove orphaned charSheet entries (old peer already removed from partyPlayers)
+      Object.keys(partyCharSheets).forEach(pid=>{
+        if(pid!==conn.peer&&partyCharSheets[pid]?.name===joinName) delete partyCharSheets[pid];
+      });
       _broadcast({type:'peer-join',id:conn.peer,name:joinName},conn.peer);
       partyPlayers[conn.peer]={name:joinName,isDM:false};
     }
@@ -8415,6 +8833,7 @@ function _setupConn(conn){
     const leftName=p?.name||'A player';
     delete partyConns[conn.peer];
     delete partyPlayers[conn.peer];
+    delete partyCharSheets[conn.peer];
     _sysMsg(leftName+' left the room');
     _renderPlayers();_partyStatus();
     if(partyIsHub) _broadcast({type:'peer-leave',id:conn.peer,name:leftName});
@@ -8458,6 +8877,10 @@ function _handleData(d,fromConn){
         if(pid!==d.id&&partyPlayers[pid].name===d.name){
           delete partyPlayers[pid]; delete partyConns[pid]; delete partyCharSheets[pid];
         }
+      });
+      // Also remove orphaned charSheet entries not yet in partyPlayers
+      Object.keys(partyCharSheets).forEach(pid=>{
+        if(pid!==d.id&&partyCharSheets[pid]?.name===d.name) delete partyCharSheets[pid];
       });
       partyPlayers[d.id]={name:d.name,isDM:false,color:_colorForPeer(d.id)};
       _renderPlayers();
@@ -8774,7 +9197,7 @@ function leaveRoom(){
   _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvTokens={};_cvPartials={};_cvCur=null;
   _cvDraft=null;_healingCount=0;_floorCount=1;_cvUndoIds=[];_cvSid=0;
   _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;_cvStairsUp=null;_cvResizingImg=null;
-  _cvPins=[];_cvPinPending=null;
+  _cvPinPending=null;
   const pf=document.getElementById('vtc-pin-form');if(pf)pf.style.display='none';
   _lastFloorHadHealing=true;partyCharSheets={};_partyViewingPeer=null;
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent='1';
@@ -8870,6 +9293,14 @@ if(_navRight)_navRight.appendChild(_saveBtn);
     <div class="irm-cards" id="irm-cards"></div>
     <div class="irm-hint" id="irm-hint">Click an item to add it to your inventory</div>
     <button class="irm-done-btn" id="irm-done-btn" onclick="closeItemRoll()">Close</button>
+  </div>
+</div>
+
+<!-- Item Detail Modal -->
+<div class="item-detail-ov" id="item-detail-ov" onclick="if(event.target===this)closeItemDetail()">
+  <div class="item-detail-modal">
+    <button class="item-detail-close" onclick="closeItemDetail()">✕</button>
+    <div id="item-detail-content"></div>
   </div>
 </div>
 
