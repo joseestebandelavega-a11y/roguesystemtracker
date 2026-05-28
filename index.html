@@ -6089,15 +6089,37 @@ function rollForEquipment(){
   openItemRoll(chosen);
 }
 
-function openItemRoll(items){
-  _irmChosen = false;
+function openItemRoll(items, dmMode){
+  _irmChosen = dmMode ? true : false;
   const ov = document.getElementById('item-roll-ov');
   const cards = document.getElementById('irm-cards');
   const hint = document.getElementById('irm-hint');
   const doneBtn = document.getElementById('irm-done-btn');
   const sub = document.getElementById('irm-sub');
   if(!ov||!cards) return;
-  
+
+  if(dmMode){
+    hint.textContent = 'DM view — discuss with players which item they want to buy';
+    doneBtn.className = 'irm-done-btn visible';
+    doneBtn.textContent = 'Close';
+    cards.innerHTML = items.map((item) => {
+      const rarity = item.rarity || 'Common';
+      const cost = item.cost || '—';
+      const propsHtml = (item.props||[]).slice(0,3).map(p=>`<span class="irm-prop">${p}</span>`).join('');
+      return `<div class="irm-card rarity-${rarity.replace(' ','_')}" style="cursor:default;pointer-events:none" data-item-id="${item.id}">
+        <div class="irm-rarity rarity-${rarity}">${rarity}</div>
+        <div class="irm-card-name">${item.name}</div>
+        <div class="irm-card-type">${item.cat ? item.cat.replace(/-/g,' ') : item.statType || ''}</div>
+        ${item.stat ? `<div class="irm-card-stat">${item.stat}${item.statType?' '+item.statType:''}</div>` : ''}
+        ${propsHtml ? `<div class="irm-card-props">${propsHtml}</div>` : ''}
+        <div class="irm-card-desc">${(item.desc||'').slice(0,120)}${item.desc&&item.desc.length>120?'…':''}</div>
+        <div style="margin-top:8px;font-size:12px;color:#d4a845;font-weight:600">💰 ${cost}</div>
+      </div>`;
+    }).join('');
+    ov.classList.add('open');
+    return;
+  }
+
   sub.textContent = 'Three items appear before you. Choose one to take.';
   // Show floor-based rarity odds
   const oddsEl = document.getElementById('irm-odds');
@@ -8124,8 +8146,8 @@ function _cvOpenShop(){
   const titleEl = ov ? ov.querySelector('.irm-title') : null;
   const subEl = document.getElementById('irm-sub');
   if(titleEl) titleEl.textContent = '🏪 Shop — Floor ' + floor + ' Wares';
-  if(subEl) subEl.textContent = 'The shopkeeper displays three items. Players may purchase at listed cost.';
-  openItemRoll(items);
+  if(subEl) subEl.textContent = 'Shop inventory — present these items to your players for purchase.';
+  openItemRoll(items, true);
 }
 
 function _renderFloorCounter(){
@@ -9073,6 +9095,15 @@ function _showDMPanel(){
   if(ptTools) ptTools.style.display='none';
   const roomBtn=document.getElementById('vtc-room');
   if(roomBtn) roomBtn.style.display='';
+  // Hide Character Sheet tab — DM has no character
+  const csTab = document.querySelector('.tab[onclick*="character"]');
+  if(csTab) csTab.style.display = 'none';
+  // Switch away from character sheet if currently on it
+  const activeTab = document.querySelector('.tab.active');
+  if(!activeTab || activeTab.getAttribute('onclick')?.includes('character')){
+    const partyTab = document.querySelector('.tab[onclick*="party"]');
+    if(partyTab) switchTab('party', partyTab);
+  }
   // Init floor 1 if not already done
   _cvDmSetupFloor();
 }
