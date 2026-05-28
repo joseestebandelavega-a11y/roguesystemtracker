@@ -2412,7 +2412,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
             </label>
             <button class="vtc-btn" onclick="_cvDmDeleteSelImg()" title="Delete selected image">✖ Img</button>
             <button class="vtc-btn vtc-btn-danger" onclick="_cvDmClearDrawings()" title="Erase all player drawings">🗑 Drawings</button>
-            <button class="vtc-btn" id="vtc-pin" onclick="_cvSetTool('pin')" title="Drop a named pin (enemy/NPC)">📍 Pin</button>
+            <button class="vtc-btn" id="vtc-pin" onclick="_cvSetTool('pin')" title="Drop a named token (enemy/NPC/marker)">🪙 Token</button>
             <button class="vtc-btn" id="vtc-go-up" onclick="_cvDmGoUpFloor()" style="display:none" title="Go up to previous floor">⬆ Up</button>
             <button class="vtc-btn" id="vtc-go-down" onclick="_cvDmNewFloor()" title="Descend to next floor">⬇ Down</button>
             <button class="vtc-btn" onclick="_cvExportSession()" title="Save session to file">💾 Save</button>
@@ -2453,6 +2453,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
             <select id="vtc-pin-type" class="pty-inp" style="padding:5px 8px;font-size:12px;cursor:pointer">
               <option value="enemy">⚔ Enemy</option>
               <option value="npc">💬 NPC</option>
+              <option value="marker">📍 Marker</option>
             </select>
             <div style="display:flex;gap:6px">
               <button class="pty-btn" onclick="_cvConfirmPin()" style="flex:1;padding:5px 0;font-size:11px">Place</button>
@@ -7252,7 +7253,7 @@ let _cvTokTimer=null;
 // Offscreen canvas for strokes (so eraser only erases drawings, not map)
 let _cvStrokeCvs=null,_cvStrokeCtx=null;
 // Named pins
-let _cvPins=[],_cvPinPending=null;
+let _cvPinPending=null;
 let _cvMapPings=[];
 // Image resize state
 let _cvResizingImg=null; // {id,corner,origWW,origWH,origWX,origWY,startSX,startSY}
@@ -7356,29 +7357,6 @@ function _cvRender(){
 
   // Tokens
   Object.entries(_cvTokens).forEach(([pid,tok])=>_cvDrawToken(ctx,pid,tok));
-
-  // Pins
-  _cvPins.forEach(p=>{
-    const s=_w2s(p.wx,p.wy);
-    const col=p.type==='enemy'?'#e05252':'#52b4e0';
-    ctx.save();
-    ctx.translate(s.x,s.y);
-    ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=4;
-    ctx.beginPath();ctx.arc(0,-2,9,0,Math.PI*2);
-    ctx.fillStyle=col;ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.stroke();
-    ctx.shadowBlur=0;
-    ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(p.type==='enemy'?'E':'N',0,-2);
-    const tw=ctx.measureText(p.name).width;
-    ctx.fillStyle='rgba(0,0,0,.65)';
-    ctx.beginPath();ctx.roundRect(-tw/2-4,9,tw+8,15,3);ctx.fill();
-    ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';
-    ctx.textBaseline='top';
-    ctx.fillText(p.name,0,11);
-    ctx.restore();
-  });
 
   // Map pings (shift+click beacons)
   const _now=Date.now();
@@ -7544,7 +7522,6 @@ function _cvDrawStroke(ctx,s){
 function _cvDrawToken(ctx,pid,tok){
   const p=_w2s(tok.wx,tok.wy);
   const pl=partyPlayers[pid];
-  // Extra tokens carry label/color directly; player tokens look up partyPlayers
   const color=tok.color||pl?.color||'#d4891a';
   const name=tok.label||pl?.name||'?';
   const r=Math.max(10,Math.min(18,TILE*_cvZoom*0.4));
@@ -7552,15 +7529,28 @@ function _cvDrawToken(ctx,pid,tok){
   ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=7;
   ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
   ctx.fillStyle=color; ctx.fill();
-  // Extra tokens: dashed outline to distinguish from main player token
   if(tok.isExtra){ctx.setLineDash([3,2]);ctx.strokeStyle='rgba(255,255,255,.9)';}
+  else if(tok.isDmToken){ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2.5;}
   else {ctx.strokeStyle='rgba(255,255,255,.75)';}
-  ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
+  ctx.lineWidth=tok.isDmToken?2.5:2; ctx.stroke(); ctx.setLineDash([]);
   ctx.shadowBlur=0;
+  // Icon letter inside circle
+  const icon=tok.isDmToken?(tok.type==='enemy'?'E':tok.type==='npc'?'N':'M'):name.slice(0,2).toUpperCase();
   ctx.fillStyle='#fff';
   ctx.font='bold '+Math.floor(r*0.85)+'px sans-serif';
   ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(name.slice(0,2).toUpperCase(),p.x,p.y);
+  ctx.fillText(icon,p.x,p.y);
+  // DM tokens: draw full name label below circle
+  if(tok.isDmToken){
+    ctx.font='bold 10px sans-serif';
+    const tw=ctx.measureText(name).width;
+    const lx=p.x, ly=p.y+r+3;
+    ctx.fillStyle='rgba(0,0,0,.7)';
+    ctx.beginPath();ctx.roundRect(lx-tw/2-4,ly,tw+8,14,3);ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.textBaseline='top';
+    ctx.fillText(name,lx,ly+2);
+  }
   ctx.restore();
 }
 
@@ -7589,16 +7579,6 @@ function _cvAttachEvents(){
       }
     }
     if(_cvTool==='cursor') return;
-    // Right-click on a pin: delete it
-    for(let i=_cvPins.length-1;i>=0;i--){
-      const p=_cvPins[i];
-      const ps=_w2s(p.wx,p.wy);
-      if(Math.hypot(sx-ps.x,sy-(ps.y-2))<14){
-        _cvPins.splice(i,1);
-        _broadcast({type:'cv-pin-del',id:p.id});
-        return;
-      }
-    }
     _cvDmDeleteRoomAt(sx,sy);
   });
 }
@@ -7740,7 +7720,7 @@ function _cvPMove(e){
 
   if(_cvPtrDown&&_cvDragTokId){
     const w=_s2w(sx,sy);
-    _cvTokens[_cvDragTokId]={wx:w.x,wy:w.y};
+    _cvTokens[_cvDragTokId]={..._cvTokens[_cvDragTokId],wx:w.x,wy:w.y};
     clearTimeout(_cvTokTimer);
     _cvTokTimer=setTimeout(()=>{
       if(_cvDragTokId) _broadcast({type:'cv-token-move',peerId:_cvDragTokId,wx:_cvTokens[_cvDragTokId].wx,wy:_cvTokens[_cvDragTokId].wy});
@@ -7896,12 +7876,15 @@ function _cvConfirmPin(){
   const name=(document.getElementById('vtc-pin-name')?.value||'').trim();
   if(!name){document.getElementById('vtc-pin-name')?.focus();return;}
   const type=document.getElementById('vtc-pin-type')?.value||'enemy';
-  const pin={id:'pin'+Date.now(),wx:_cvPinPending.wx,wy:_cvPinPending.wy,name,type};
-  _cvPins.push(pin);
-  _broadcast({type:'cv-pin-add',pin});
+  const color=type==='enemy'?'#e05252':type==='npc'?'#52b4e0':'#d4891a';
+  const tokenId='dm_'+Date.now();
+  const tok={wx:_cvPinPending.wx,wy:_cvPinPending.wy,label:name,type,color,isDmToken:true};
+  _cvTokens[tokenId]=tok;
+  _broadcast({type:'cv-dm-token-add',tokenId,tok});
   _cvPinPending=null;
   const form=document.getElementById('vtc-pin-form');
   if(form) form.style.display='none';
+  _cvRedraw();
 }
 
 function _cvCancelPin(){
@@ -8435,7 +8418,6 @@ function _cvSyncPayload(){
     rooms:_cvRooms,
     images:_cvImages.map(({el,...rest})=>rest),
     tokens:_cvTokens,
-    pins:_cvPins,
     healingCount:_healingCount,
     floorCount:_floorCount,
     floorRoomBudget:_floorRoomBudget,
@@ -8449,7 +8431,6 @@ function _cvSyncPayload(){
 function _cvApplySync(d){
   _cvStrokes=d.strokes||[];
   _cvRooms=d.rooms||[];
-  _cvPins=d.pins||[];
   _healingCount=d.healingCount||0;
   _floorCount=d.floorCount||1;
   _cvTokens=d.tokens||{};
@@ -8504,7 +8485,7 @@ function _cvHandleMsg(d){
     case 'cv-image-del':
       _cvImages=_cvImages.filter(i=>i.id!==d.id); break;
     case 'cv-token-move':
-      _cvTokens[d.peerId]={wx:d.wx,wy:d.wy}; break;
+      _cvTokens[d.peerId]={..._cvTokens[d.peerId]||{},wx:d.wx,wy:d.wy}; break;
     case 'cv-token-delete':
       delete _cvTokens[d.peerId]; break;
     case 'cv-ping':
@@ -8547,10 +8528,8 @@ function _cvHandleMsg(d){
         _healingCount=_cvRooms.filter(r=>r.type==='healing').length;
         _sysMsg('Returned to Floor '+_floorCount+'.');
         const fbup=document.getElementById('vtc-floor-num');if(fbup)fbup.textContent=_floorCount; } break;
-    case 'cv-pin-add':
-      if(!_cvPins.find(p=>p.id===d.pin.id)) _cvPins.push(d.pin); break;
-    case 'cv-pin-del':
-      _cvPins=_cvPins.filter(p=>p.id!==d.id); break;
+    case 'cv-dm-token-add':
+      if(!_cvTokens[d.tokenId]) _cvTokens[d.tokenId]=d.tok; break;
     case 'cv-sync':
       _cvApplySync(d); break;
     case 'char-share':
@@ -9044,7 +9023,7 @@ function leaveRoom(){
   _cvStrokes=[];_cvRooms=[];_cvImages=[];_cvTokens={};_cvPartials={};_cvCur=null;
   _cvDraft=null;_healingCount=0;_floorCount=1;_cvUndoIds=[];_cvSid=0;
   _cvFloorHistory=[];_floorRoomBudget=0;_floorRoomQueue=[];_cvDescentCell=null;_cvStairsUp=null;_cvResizingImg=null;
-  _cvPins=[];_cvPinPending=null;
+  _cvPinPending=null;
   const pf=document.getElementById('vtc-pin-form');if(pf)pf.style.display='none';
   _lastFloorHadHealing=true;partyCharSheets={};_partyViewingPeer=null;
   const fb=document.getElementById('vtc-floor-num');if(fb)fb.textContent='1';
