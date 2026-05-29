@@ -2262,6 +2262,7 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <div class="cs-rtab" onclick="switchRTab('abilities',this)">Abilities</div>
       <div class="cs-rtab" onclick="switchRTab('maneuvers',this)" id="cs-maneuvers-tab" style="display:none">Maneuvers</div>
       <div class="cs-rtab" onclick="switchRTab('resources',this)" id="cs-resources-tab">Resources</div>
+      <div class="cs-rtab" onclick="switchRTab('spells',this)" id="cs-spells-tab" style="display:none">Spells</div>
       <div class="cs-rtab" onclick="switchRTab('race',this)">Race</div>
       <div class="cs-rtab" onclick="switchRTab('inventory',this)">Inventory</div>
       <div class="cs-rtab" onclick="switchRTab('notes',this)">Notes</div>
@@ -2281,6 +2282,10 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
     <div class="cs-rtab-content cs-panel" id="cstab-resources" style="border-radius:0 0 8px 8px">
       <div class="cs-panel-hd">Class Resources <button onclick="resetAllResources()" style="background:transparent;border:.5px solid var(--border-hi);border-radius:4px;color:var(--text-muted);font-size:9px;padding:2px 7px;cursor:pointer;margin-left:auto">Reset All</button></div>
       <div id="cs-resources-body"></div>
+    </div>
+    <div class="cs-rtab-content cs-panel" id="cstab-spells" style="border-radius:0 0 8px 8px">
+      <div class="cs-panel-hd">Spell Preparation <span id="cs-spells-prep-note" style="font-size:8px;font-weight:400;color:var(--text-muted)"></span></div>
+      <div id="cs-spells-body" style="overflow-y:auto;max-height:420px"></div>
     </div>
     <div class="cs-rtab-content cs-panel" id="cstab-race" style="border-radius:0 0 8px 8px">
       <div class="cs-panel-hd" id="cs-race-panel-hd">Race Traits</div>
@@ -3903,6 +3908,7 @@ let currentLevel = 3;
 let acquiredMain = new Set();
 let acquiredSub = new Set();
 let bossPowers = [];          // {name,type,desc,level,source} drawn from boss rooms
+let preparedSpells = new Set(); // spell names the character has prepared
 let _bossDrawnRooms = new Set(); // roomIds this player has already drawn from
 let bmLevelsDone = new Set();
 let bmBatchRemaining = 0;
@@ -4201,10 +4207,10 @@ function renderActions(){
   const wisMod=mod(statTotal('wis'));
   const chaMod=mod(statTotal('cha'));
   const atkBonus=Math.max(strMod,dexMod)+pb;
-  const spellSave=8+pb+( ['wizard','warlock'].includes(currentClass)?intMod:
-                         ['cleric','druid','paladin'].includes(currentClass)?wisMod:chaMod );
-  const spellAtk = pb+( ['wizard','warlock'].includes(currentClass)?intMod:
-                        ['cleric','druid','paladin'].includes(currentClass)?wisMod:chaMod );
+  const _sca=_classSpellAbility(currentClass);
+  const _scMod=_sca==='int'?intMod:_sca==='wis'?wisMod:chaMod;
+  const spellSave=8+pb+_scMod;
+  const spellAtk=pb+_scMod;
 
   const statsRolled=Object.values(stats).some(v=>v!==10);
   const weapons=inventory.filter(i=>{
@@ -4303,10 +4309,37 @@ function renderActions(){
     <div style="font-size:11px;color:var(--text-dim)">${a.desc}</div>
   </div>`).join('');
 
+  // Prepared spells section
+  let spellSection='';
+  if(_classHasSpells(currentClass)&&preparedSpells.size>0){
+    const listCls=currentClass==='oathbreaker'?'paladin':currentClass;
+    const cantrips=new Set((SPELL_LIST[listCls]||{})[0]||[]);
+    const cantripList=[...preparedSpells].filter(n=>cantrips.has(n));
+    const leveledList=[...preparedSpells].filter(n=>!cantrips.has(n));
+    spellSection+=`<div style="padding:7px 11px 4px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);border-top:.5px solid var(--border)">Prepared Spells</div>`;
+    if(cantripList.length){
+      spellSection+=`<div style="padding:3px 11px 1px;font-size:9px;color:var(--text-muted)">Cantrips — at will</div>`;
+      cantripList.forEach(n=>{
+        spellSection+=`<div style="display:flex;align-items:center;padding:5px 11px 5px 18px;border-bottom:.5px solid var(--border)">
+          <div style="flex:1;font-size:12px;color:var(--text)">${n}</div>
+          <div style="font-size:10px;color:var(--text-muted)">∞</div></div>`;
+      });
+    }
+    if(leveledList.length){
+      spellSection+=`<div style="padding:3px 11px 1px;font-size:9px;color:var(--text-muted)">Leveled — use a spell slot</div>`;
+      leveledList.forEach(n=>{
+        spellSection+=`<div style="display:flex;align-items:center;padding:5px 11px;border-bottom:.5px solid var(--border)">
+          <div style="flex:1;font-size:12px;color:var(--text)">${n}</div>
+          <div style="font-size:10px;color:var(--cc)">▶ Cast</div></div>`;
+      });
+    }
+  }
+
   el.innerHTML=`
     <div style="overflow-x:auto">${weaponRows}</div>
     <div style="padding:7px 11px 4px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);border-top:.5px solid var(--border);margin-top:4px">Standard Actions</div>
     ${actHtml}
+    ${spellSection}
   `;
 }
 
@@ -4512,6 +4545,10 @@ function renderCharSheet(){
   if(typeof renderResources==='function') renderResources();
   if(typeof renderActions==='function') renderActions();
   if(typeof renderCSInventory==='function') renderCSInventory();
+  // Spells tab visibility + render
+  const spTab=document.getElementById('cs-spells-tab');
+  if(spTab) spTab.style.display=_classHasSpells(currentClass)?'':'none';
+  if(typeof renderSpellsTab==='function') renderSpellsTab();
 }
 
 // stat rolling
@@ -6134,6 +6171,66 @@ const EQUIP_ITEMS = [
 
 ];
 
+// ── SPELL LIST (PHB) ──────────────────────────────────────────────────────────
+// Keys: class name → level (0=cantrips) → array of spell names
+const SPELL_LIST = {
+  wizard:{
+    0:['Acid Splash','Blade Ward','Chill Touch','Dancing Lights','Fire Bolt','Light','Mage Hand','Mending','Message','Minor Illusion','Poison Spray','Prestidigitation','Ray of Frost','Shocking Grasp','True Strike'],
+    1:['Alarm','Burning Hands','Charm Person','Color Spray','Comprehend Languages','Detect Magic','Expeditious Retreat','False Life','Feather Fall','Fog Cloud','Grease','Identify','Jump','Longstrider','Mage Armor','Magic Missile','Protection from Evil and Good','Ray of Sickness','Shield','Silent Image','Sleep','Tasha\'s Hideous Laughter','Thunderwave','Unseen Servant','Witch Bolt'],
+    2:['Alter Self','Blur','Cloud of Daggers','Darkness','Darkvision','Detect Thoughts','Flaming Sphere','Hold Person','Invisibility','Knock','Levitate','Locate Object','Magic Weapon','Melf\'s Acid Arrow','Mirror Image','Misty Step','Phantasmal Force','Ray of Enfeeblement','Scorching Ray','See Invisibility','Shadow Blade','Shatter','Spider Climb','Suggestion','Web'],
+    3:['Animate Dead','Bestow Curse','Blink','Clairvoyance','Counterspell','Dispel Magic','Fear','Fireball','Fly','Gaseous Form','Haste','Hypnotic Pattern','Lightning Bolt','Major Image','Nondetection','Protection from Energy','Remove Curse','Sending','Slow','Stinking Cloud','Tongues','Vampiric Touch'],
+    4:['Arcane Eye','Banishment','Blight','Confusion','Dimension Door','Evard\'s Black Tentacles','Fire Shield','Greater Invisibility','Hallucinatory Terrain','Ice Storm','Locate Creature','Phantasmal Killer','Polymorph','Stoneskin','Wall of Fire'],
+    5:['Animate Objects','Bigby\'s Hand','Cloudkill','Cone of Cold','Conjure Elemental','Dominate Person','Hold Monster','Mislead','Modify Memory','Passwall','Scrying','Telekinesis','Teleportation Circle','Wall of Force','Wall of Stone'],
+    6:['Chain Lightning','Circle of Death','Contingency','Create Undead','Disintegrate','Eyebite','Globe of Invulnerability','Magic Jar','Mass Suggestion','Sunbeam','True Seeing','Wall of Ice'],
+    7:['Delayed Blast Fireball','Etherealness','Finger of Death','Forcecage','Mirage Arcane','Mordenkainen\'s Sword','Prismatic Spray','Project Image','Reverse Gravity','Simulacrum','Symbol','Teleport'],
+    8:['Antimagic Field','Clone','Control Weather','Demiplane','Dominate Monster','Feeblemind','Incendiary Cloud','Maze','Mind Blank','Power Word Stun','Sunburst'],
+    9:['Foresight','Gate','Imprisonment','Meteor Swarm','Power Word Kill','Prismatic Wall','Shapechange','Time Stop','True Polymorph','Weird','Wish'],
+  },
+  cleric:{
+    0:['Guidance','Light','Mending','Resistance','Sacred Flame','Spare the Dying','Thaumaturgy'],
+    1:['Bane','Bless','Command','Cure Wounds','Detect Evil and Good','Detect Magic','Detect Poison and Disease','Guiding Bolt','Healing Word','Inflict Wounds','Protection from Evil and Good','Purify Food and Drink','Sanctuary','Shield of Faith'],
+    2:['Aid','Augury','Blindness/Deafness','Calm Emotions','Enhance Ability','Gentle Repose','Hold Person','Lesser Restoration','Locate Object','Prayer of Healing','Protection from Poison','Silence','Spiritual Weapon','Zone of Truth'],
+    3:['Animate Dead','Bestow Curse','Clairvoyance','Create Food and Water','Daylight','Dispel Magic','Glyph of Warding','Magic Circle','Mass Healing Word','Protection from Energy','Remove Curse','Revivify','Sending','Speak with Dead','Spirit Guardians','Tongues','Water Walk'],
+    4:['Banishment','Control Water','Death Ward','Divination','Freedom of Movement','Guardian of Faith','Locate Creature','Stone Shape'],
+    5:['Commune','Contagion','Dispel Evil and Good','Flame Strike','Geas','Greater Restoration','Hallow','Insect Plague','Legend Lore','Mass Cure Wounds','Raise Dead','Scrying'],
+    6:['Blade Barrier','Create Undead','Find the Path','Forbiddance','Harm','Heal','Heroes\' Feast','Planar Ally','True Seeing','Word of Recall'],
+    7:['Conjure Celestial','Divine Word','Etherealness','Fire Storm','Plane Shift','Regenerate','Resurrection','Symbol'],
+    8:['Antimagic Field','Control Weather','Earthquake','Holy Aura'],
+    9:['Astral Projection','Gate','Mass Heal','True Resurrection'],
+  },
+  druid:{
+    0:['Druidcraft','Guidance','Mending','Poison Spray','Produce Flame','Resistance','Shillelagh','Thorn Whip'],
+    1:['Animal Friendship','Charm Person','Create or Destroy Water','Cure Wounds','Detect Magic','Detect Poison and Disease','Entangle','Faerie Fire','Fog Cloud','Goodberry','Healing Word','Jump','Longstrider','Purify Food and Drink','Speak with Animals','Thunderwave'],
+    2:['Animal Messenger','Barkskin','Beast Sense','Darkvision','Enhance Ability','Find Traps','Flame Blade','Flaming Sphere','Gust of Wind','Heat Metal','Hold Person','Lesser Restoration','Locate Animals or Plants','Locate Object','Moonbeam','Pass without Trace','Protection from Poison','Spike Growth'],
+    3:['Call Lightning','Conjure Animals','Daylight','Dispel Magic','Meld into Stone','Plant Growth','Protection from Energy','Sleet Storm','Speak with Plants','Water Breathing','Water Walk','Wind Wall'],
+    4:['Blight','Confusion','Conjure Woodland Beings','Control Water','Dominate Beast','Freedom of Movement','Giant Insect','Hallucinatory Terrain','Ice Storm','Locate Creature','Polymorph','Stone Shape','Stoneskin','Wall of Fire'],
+    5:['Antilife Shell','Awaken','Commune with Nature','Conjure Elemental','Contagion','Geas','Greater Restoration','Insect Plague','Mass Cure Wounds','Reincarnate','Scrying','Tree Stride','Wall of Stone'],
+    6:['Conjure Fey','Find the Path','Heal','Heroes\' Feast','Move Earth','Sunbeam','Transport via Plants','True Seeing','Wall of Thorns','Wind Walk'],
+    7:['Fire Storm','Mirage Arcane','Plane Shift','Regenerate','Reverse Gravity'],
+    8:['Animal Shapes','Antipathy/Sympathy','Control Weather','Earthquake','Feeblemind','Sunburst'],
+    9:['Foresight','Shapechange','Storm of Vengeance','True Resurrection'],
+  },
+  paladin:{
+    1:['Bless','Command','Cure Wounds','Detect Evil and Good','Detect Magic','Detect Poison and Disease','Divine Favor','Heroism','Protection from Evil and Good','Purify Food and Drink','Sanctuary','Shield of Faith','Thunderous Smite','Wrathful Smite'],
+    2:['Aid','Branding Smite','Find Steed','Lesser Restoration','Locate Object','Magic Weapon','Protection from Poison','Zone of Truth'],
+    3:['Aura of Vitality','Blinding Smite','Create Food and Water','Crusader\'s Mantle','Daylight','Dispel Magic','Elemental Weapon','Magic Circle','Remove Curse','Revivify'],
+    4:['Aura of Life','Aura of Purity','Banishment','Death Ward','Locate Creature','Staggering Smite'],
+    5:['Banishing Smite','Circle of Power','Destructive Wave','Dispel Evil and Good','Geas','Holy Weapon','Raise Dead'],
+  },
+  warlock:{
+    0:['Chill Touch','Eldritch Blast','Mage Hand','Minor Illusion','Poison Spray','Prestidigitation','True Strike'],
+    1:['Armor of Agathys','Arms of Hadar','Charm Person','Comprehend Languages','Expeditious Retreat','Hellish Rebuke','Hex','Illusory Script','Protection from Evil and Good','Unseen Servant','Witch Bolt'],
+    2:['Cloud of Daggers','Crown of Madness','Darkness','Enthrall','Hold Person','Invisibility','Mirror Image','Misty Step','Ray of Enfeeblement','Shatter','Spider Climb','Suggestion'],
+    3:['Counterspell','Dispel Magic','Fear','Fly','Gaseous Form','Hunger of Hadar','Hypnotic Pattern','Magic Circle','Major Image','Remove Curse','Tongues','Vampiric Touch'],
+    4:['Banishment','Blight','Dimension Door','Hallucinatory Terrain'],
+    5:['Contact Other Plane','Dream','Hold Monster','Scrying','Teleportation Circle'],
+    6:['Arcane Gate','Circle of Death','Conjure Fey','Create Undead','Eyebite','Flesh to Stone','Mass Suggestion','True Seeing'],
+    7:['Etherealness','Finger of Death','Forcecage','Plane Shift'],
+    8:['Demiplane','Dominate Monster','Feeblemind','Glibness','Power Word Stun'],
+    9:['Astral Projection','Foresight','Gate','Imprisonment','Power Word Kill','True Polymorph'],
+  },
+};
+
 const EQUIP_CATEGORIES = [
   {id:"all",        label:"All Items"},
   {id:"weapons",    label:"Weapons"},
@@ -7115,6 +7212,99 @@ function renderSpellSlots(){
   if(note)note.textContent=currentClass==='warlock'?'(short rest)':'(long rest)';
 }
 
+// ── SPELL PREPARATION ─────────────────────────────────────────────────────────
+function _classHasSpells(cls){
+  return ['wizard','cleric','druid','paladin','oathbreaker','warlock'].includes(cls);
+}
+function _classSpellAbility(cls){
+  if(cls==='wizard') return 'int';
+  if(['cleric','druid'].includes(cls)) return 'wis';
+  return 'cha'; // warlock, paladin, oathbreaker
+}
+function _maxPrepSpells(){
+  const cls=currentClass;
+  if(!_classHasSpells(cls)) return 0;
+  if(cls==='warlock') return null; // warlock knows spells, no daily prep limit
+  const abilMod=mod(statTotal(_classSpellAbility(cls)));
+  if(['paladin','oathbreaker'].includes(cls)) return Math.max(1,abilMod+Math.floor(currentLevel/2));
+  return Math.max(1,abilMod+currentLevel);
+}
+function _maxSpellLevel(){
+  const tbl=getSlotTable();
+  if(!tbl) return 0;
+  let mx=0;
+  tbl.forEach((c,i)=>{if(c>0)mx=i+1;});
+  return mx;
+}
+function togglePrepareSpell(name){
+  if(preparedSpells.has(name)){
+    preparedSpells.delete(name);
+  } else {
+    const max=_maxPrepSpells();
+    if(max!==null){
+      const listCls=currentClass==='oathbreaker'?'paladin':currentClass;
+      const cantrips=new Set((SPELL_LIST[listCls]||{})[0]||[]);
+      const nonCantrips=[...preparedSpells].filter(n=>!cantrips.has(n));
+      if(nonCantrips.length>=max) return;
+    }
+    preparedSpells.add(name);
+  }
+  renderSpellsTab();
+  if(typeof renderActions==='function') renderActions();
+  scheduleSave();
+  scheduleCSSync();
+}
+function renderSpellsTab(){
+  const el=document.getElementById('cs-spells-body');
+  if(!el) return;
+  const cls=currentClass;
+  if(!_classHasSpells(cls)){
+    el.innerHTML=`<div style="padding:20px 11px;font-size:11px;color:var(--text-muted);text-align:center">${(getCD()||{}).name||cls} does not prepare spells.</div>`;
+    return;
+  }
+  const listCls=cls==='oathbreaker'?'paladin':cls;
+  const spells=SPELL_LIST[listCls]||{};
+  const maxLv=_maxSpellLevel();
+  const max=_maxPrepSpells();
+  const isWarlock=cls==='warlock';
+  const cantrips=new Set((spells[0]||[]));
+  const prepCount=[...preparedSpells].filter(n=>!cantrips.has(n)).length;
+  const over=max!==null&&prepCount>max;
+
+  let html=`<div style="padding:8px 11px 7px;border-bottom:.5px solid var(--border);background:var(--s2);display:flex;align-items:center;gap:8px">`;
+  if(isWarlock){
+    html+=`<span style="font-size:11px;color:var(--text-dim)">Spells Known:</span>
+      <strong style="color:var(--cc)">${preparedSpells.size}</strong>
+      <span style="font-size:9px;color:var(--text-muted)">(toggle to track known spells)</span>`;
+  } else {
+    html+=`<span style="font-size:11px;color:var(--text-dim)">Prepared:</span>
+      <strong style="color:${over?'#ff6464':'var(--cc)'}">${prepCount}</strong>
+      <span style="font-size:11px;color:var(--text-dim)">/ ${max}</span>
+      <span style="font-size:9px;color:var(--text-muted);margin-left:4px">(${_classSpellAbility(cls).toUpperCase()}+level)</span>`;
+  }
+  html+=`</div>`;
+
+  const lvNames=['Cantrips','1st Level','2nd Level','3rd Level','4th Level','5th Level','6th Level','7th Level','8th Level','9th Level'];
+  for(let lv=0;lv<=9;lv++){
+    const lvSpells=spells[lv];
+    if(!lvSpells||!lvSpells.length) continue;
+    if(lv>0&&lv>maxLv) continue;
+    html+=`<div style="padding:5px 11px 3px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);border-top:.5px solid var(--border)">${lvNames[lv]}</div>`;
+    lvSpells.forEach(name=>{
+      const prep=preparedSpells.has(name);
+      const isCantrip=lv===0;
+      const safe=name.replace(/'/g,"\\'");
+      html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 11px;border-bottom:.5px solid var(--border);cursor:pointer;user-select:none"
+          onclick="togglePrepareSpell('${safe}')">
+        <div style="width:15px;height:15px;border-radius:3px;border:1.5px solid ${prep?'var(--cc)':'var(--border-hi)'};background:${prep?'var(--cc)':'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--bg)">${prep?'✓':''}</div>
+        <div style="font-size:12px;color:${prep?'var(--text)':'var(--text-dim)'};flex:1">${name}</div>
+        ${isCantrip?'<div style="font-size:9px;color:var(--text-muted)">∞</div>':''}
+      </div>`;
+    });
+  }
+  el.innerHTML=html;
+}
+
 // ── CON RECALC ─────────────────────────────────────────────────────────────────
 function recalcHP(){
   hpLevels=hpLevels.map(h=>{
@@ -7332,6 +7522,7 @@ function saveState(){
       acquiredSub:  serializeSet(acquiredSub),
       bmLevelsDone: serializeSet(bmLevelsDone),
       usedSlots,
+      preparedSpells: serializeSet(preparedSpells),
       // Resources
       classResources, superiorityDice, maneuversKnown,
       // Inventory
@@ -7376,6 +7567,7 @@ function loadState(){
     acquiredSub   = deserializeSet(s.acquiredSub);
     bmLevelsDone  = deserializeSet(s.bmLevelsDone);
     if(s.usedSlots) usedSlots = s.usedSlots;
+    if(s.preparedSpells) preparedSpells = deserializeSet(s.preparedSpells);
 
     // Resources
     if(s.classResources)  classResources  = s.classResources;
@@ -7533,6 +7725,7 @@ selectSubclass = function(sc,el){ _origSelectSubclass(sc,el); scheduleSave(); };
   if(typeof toggleDeath==='function')     toggleDeath     = _wrap(toggleDeath,    toggleDeath);
   if(typeof doLongRest==='function')      doLongRest      = _wrap(doLongRest,     doLongRest);
   if(typeof doShortRest==='function')     doShortRest     = _wrap(doShortRest,    doShortRest);
+  if(typeof togglePrepareSpell==='function') togglePrepareSpell = _wrap(togglePrepareSpell, togglePrepareSpell);
 })();
 
 // Sync on HP input (typed directly into hp field)
