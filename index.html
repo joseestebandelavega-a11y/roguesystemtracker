@@ -2201,6 +2201,10 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <input class="cs-hp-amt" id="cs-dmg-amt" type="number" min="0" placeholder="Dmg">
       <button class="cs-hp-dmg" onclick="applyDmg()">−Dmg</button>
     </div>
+    <div style="display:flex;gap:5px;margin-top:7px">
+      <button class="cs-hp-heal" style="flex:1;background:#1a2e3a;color:#5baddb;font-size:11px" onclick="doShortRest()">⏱ Short Rest</button>
+      <button class="cs-hp-heal" style="flex:1;background:#1e3020;color:#66bb6a;font-size:11px" onclick="doLongRest()">🌙 Long Rest</button>
+    </div>
     <div id="cs-hp-bk" class="cs-hp-bk"></div>
     <div style="font-size:9px;color:var(--text-muted);margin-top:4px;cursor:pointer" onclick="document.getElementById('cs-hp-bk').classList.toggle('open')">▾ level breakdown</div>
   </div>
@@ -7310,6 +7314,8 @@ selectSubclass = function(sc,el){ _origSelectSubclass(sc,el); scheduleSave(); };
   onRaceChange    = _wrap(onRaceChange,   onRaceChange);
   if(typeof toggleInsp==='function')      toggleInsp      = _wrap(toggleInsp,     toggleInsp);
   if(typeof toggleDeath==='function')     toggleDeath     = _wrap(toggleDeath,    toggleDeath);
+  if(typeof doLongRest==='function')      doLongRest      = _wrap(doLongRest,     doLongRest);
+  if(typeof doShortRest==='function')     doShortRest     = _wrap(doShortRest,    doShortRest);
 })();
 
 // Sync on HP input (typed directly into hp field)
