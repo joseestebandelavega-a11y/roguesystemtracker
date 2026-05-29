@@ -3970,6 +3970,7 @@ function renderSubclassBtns(){
   if(ll)ll.textContent=cd.levelLabel;
 }
 function render(){
+  if(typeof _syncSpellsFromAcquired==='function') _syncSpellsFromAcquired();
   renderSubclassBtns();
   const cd=getCD();
   const cfIds=getClassFeatureIds();
@@ -7315,6 +7316,14 @@ function learnSpell(name){
   scheduleSave();
   scheduleCSSync();
 }
+function _syncSpellsFromAcquired(){
+  const cd=getCD();
+  const allC=[...cd.generalCards,...Object.values(cd.subclassCards).flat()];
+  [...acquiredMain,...acquiredSub].forEach(id=>{
+    const card=allC.find(x=>x.id===id);
+    if(card&&card.spell) knownSpells.add(card.name);
+  });
+}
 function forgetSpell(name){
   knownSpells.delete(name);
   preparedSpells.delete(name);
@@ -7838,8 +7847,8 @@ function clearSave(){
 // ── LOAD SAVED STATE ─────────────────────────────────────────────────────────
 const _hasSave = loadState();
 if(_hasSave){
-  // Restore subclass button state
   renderSubclassBtns();
+  _syncSpellsFromAcquired(); // backfill knownSpells from any pre-existing acquired spell cards
 }
 initResources();
 render();
