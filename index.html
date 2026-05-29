@@ -4974,6 +4974,7 @@ function keepCard(idx){
   const others=drawnCards.filter((_,i)=>i!==idx);
   if(drawTarget==='main') acquiredMain.add(chosen.id);
   else acquiredSub.add(chosen.id);
+  if(chosen.spell) learnSpell(chosen.name);
   document.getElementById(`draw-card-${idx}`).classList.add('chosen');
   drawnCards.forEach((_,i)=>{if(i!==idx)document.getElementById(`draw-card-${i}`)?.classList.add('dismissed');});
   document.getElementById('draw-status').className='chosen-hint';
@@ -4993,6 +4994,11 @@ function closeDraw(){
 function removeAcquired(type,id){
   if(type==='main') acquiredMain.delete(id);
   else acquiredSub.delete(id);
+  // If it was a spell card, remove from known/prepared spells too
+  const _cd=getCD();
+  const _allC=[..._cd.generalCards,...Object.values(_cd.subclassCards).flat()];
+  const card=_allC.find(x=>x.id===id);
+  if(card&&card.spell) forgetSpell(card.name);
   render();
 }
 
@@ -5003,6 +5009,7 @@ function onClassChange(cls){
   if(!CLASS_DATA_MAP[cls]) return;
   currentClass=cls;
   currentSubclass='none'; acquiredMain=new Set(); acquiredSub=new Set();
+  knownSpells=new Set(); preparedSpells=new Set();
   bmLevelsDone=new Set(); bmBatchRemaining=0;
   hpLevels=[];
   // reset save proficiencies for new class
