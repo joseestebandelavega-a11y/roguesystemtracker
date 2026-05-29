@@ -4332,15 +4332,19 @@ function renderActions(){
     if(cantripList.length){
       spellSection+=`<div style="padding:3px 11px 1px;font-size:9px;color:var(--text-muted)">Cantrips — at will</div>`;
       cantripList.forEach(n=>{
-        spellSection+=`<div style="display:flex;align-items:center;padding:5px 11px 5px 18px;border-bottom:.5px solid var(--border)">
+        const safe=n.replace(/'/g,"\\'");
+        spellSection+=`<div style="display:flex;align-items:center;padding:5px 11px;border-bottom:.5px solid var(--border);cursor:pointer"
+            onclick="openSpellCastModal('${safe}')">
           <div style="flex:1;font-size:12px;color:var(--text)">${n}</div>
-          <div style="font-size:10px;color:var(--text-muted)">∞</div></div>`;
+          <div style="font-size:10px;color:var(--cc)">▶ Cast</div></div>`;
       });
     }
     if(leveledList.length){
       spellSection+=`<div style="padding:3px 11px 1px;font-size:9px;color:var(--text-muted)">Leveled — use a spell slot</div>`;
       leveledList.forEach(n=>{
-        spellSection+=`<div style="display:flex;align-items:center;padding:5px 11px;border-bottom:.5px solid var(--border)">
+        const safe=n.replace(/'/g,"\\'");
+        spellSection+=`<div style="display:flex;align-items:center;padding:5px 11px;border-bottom:.5px solid var(--border);cursor:pointer"
+            onclick="openSpellCastModal('${safe}')">
           <div style="flex:1;font-size:12px;color:var(--text)">${n}</div>
           <div style="font-size:10px;color:var(--cc)">▶ Cast</div></div>`;
       });
@@ -6244,6 +6248,55 @@ const SPELL_LIST = {
   },
 };
 
+// Damage dice for spells. cl:true = cantrip scaling (×1/2/3/4 at char levels 1/5/11/17)
+// up = extra dice per slot level above min; min = minimum cast level
+const SPELL_DAMAGE={
+  'Acid Splash':    {d:'1d6',  t:'acid',           cl:true},
+  'Chill Touch':    {d:'1d8',  t:'necrotic',        cl:true},
+  'Eldritch Blast': {d:'1d10', t:'force',           cl:true},
+  'Fire Bolt':      {d:'1d10', t:'fire',            cl:true},
+  'Poison Spray':   {d:'1d12', t:'poison',          cl:true},
+  'Produce Flame':  {d:'1d8',  t:'fire',            cl:true},
+  'Ray of Frost':   {d:'1d8',  t:'cold',            cl:true},
+  'Sacred Flame':   {d:'1d8',  t:'radiant',         cl:true},
+  'Shocking Grasp': {d:'1d8',  t:'lightning',       cl:true},
+  'Thorn Whip':     {d:'1d6',  t:'piercing',        cl:true},
+  'Burning Hands':  {d:'3d6',  t:'fire',     up:'1d6', min:1},
+  'Guiding Bolt':   {d:'4d6',  t:'radiant',  up:'1d6', min:1},
+  'Hellish Rebuke': {d:'2d10', t:'fire',     up:'1d10',min:1},
+  'Inflict Wounds': {d:'3d10', t:'necrotic', up:'1d10',min:1},
+  'Magic Missile':  {d:'3d4',  t:'force',    up:'1d4', min:1},
+  'Thunderwave':    {d:'2d8',  t:'thunder',  up:'1d8', min:1},
+  'Witch Bolt':     {d:'1d12', t:'lightning',up:'1d12',min:1},
+  'Arms of Hadar':  {d:'2d6',  t:'necrotic', up:'1d6', min:1},
+  "Melf's Acid Arrow":{d:'4d4',t:'acid',     up:'1d4', min:2},
+  'Flaming Sphere': {d:'2d6',  t:'fire',     up:'1d6', min:2},
+  'Moonbeam':       {d:'2d10', t:'radiant',  up:'1d10',min:2},
+  'Scorching Ray':  {d:'2d6',  t:'fire',     up:'1d6', min:2},
+  'Shatter':        {d:'3d8',  t:'thunder',  up:'1d8', min:2},
+  'Shadow Blade':   {d:'2d8',  t:'psychic',  up:'1d8', min:2},
+  'Spike Growth':   {d:'2d4',  t:'piercing', up:null,  min:2},
+  'Call Lightning': {d:'3d10', t:'lightning',up:'1d10',min:3},
+  'Fireball':       {d:'8d6',  t:'fire',     up:'1d6', min:3},
+  'Lightning Bolt': {d:'8d6',  t:'lightning',up:'1d6', min:3},
+  'Spirit Guardians':{d:'3d8', t:'radiant',  up:'1d8', min:3},
+  'Vampiric Touch': {d:'3d6',  t:'necrotic', up:'1d6', min:3},
+  'Hunger of Hadar':{d:'2d6',  t:'cold',     up:'1d6', min:3},
+  'Blight':         {d:'8d8',  t:'necrotic', up:'2d8', min:4},
+  'Ice Storm':      {d:'2d8',  t:'cold',     up:'1d8', min:4},
+  'Wall of Fire':   {d:'5d8',  t:'fire',     up:'1d8', min:4},
+  'Cloudkill':      {d:'5d8',  t:'poison',   up:'1d8', min:5},
+  'Cone of Cold':   {d:'8d8',  t:'cold',     up:'1d8', min:5},
+  'Flame Strike':   {d:'4d6',  t:'fire',     up:'1d6', min:5},
+  'Insect Plague':  {d:'4d10', t:'piercing', up:'1d10',min:5},
+  'Circle of Death':{d:'8d6',  t:'necrotic', up:'2d6', min:6},
+  'Disintegrate':   {d:'10d6', t:'force',    up:'3d6', min:6},
+  'Chain Lightning':{d:'10d8', t:'lightning',up:'1d8', min:6},
+  'Finger of Death':{d:'7d8',  t:'necrotic', up:null,  min:7},
+  'Delayed Blast Fireball':{d:'12d6',t:'fire',up:'1d6',min:7},
+  'Meteor Swarm':   {d:'20d6', t:'fire',     up:null,  min:9},
+};
+
 const EQUIP_CATEGORIES = [
   {id:"all",        label:"All Items"},
   {id:"weapons",    label:"Weapons"},
@@ -7282,33 +7335,19 @@ function togglePrepareSpell(name){
   scheduleSave();
   scheduleCSSync();
 }
-let _spellSearchVal='';
-function _updateSpellSearch(val){
-  _spellSearchVal=val.toLowerCase().trim();
-  const res=document.getElementById('cs-spell-search-res');
-  if(!res) return;
-  if(!_spellSearchVal){res.innerHTML='';return;}
+function rollForSpell(){
   const listCls=currentClass==='oathbreaker'?'paladin':currentClass;
   const spells=SPELL_LIST[listCls]||{};
   const maxLv=_maxSpellLevel();
-  const matches=[];
+  const pool=[];
   for(let lv=0;lv<=9;lv++){
     if(lv>0&&lv>maxLv) continue;
-    (spells[lv]||[]).forEach(n=>{
-      if(!knownSpells.has(n)&&n.toLowerCase().includes(_spellSearchVal)) matches.push({n,lv});
-    });
+    (spells[lv]||[]).forEach(n=>{if(!knownSpells.has(n)) pool.push(n);});
   }
-  if(!matches.length){res.innerHTML=`<div style="padding:8px 11px;font-size:11px;color:var(--text-muted)">No spells found</div>`;return;}
-  const lvLabel=['Cantrip','1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
-  res.innerHTML=matches.slice(0,12).map(({n,lv})=>{
-    const safe=n.replace(/'/g,"\\'");
-    return`<div style="display:flex;align-items:center;padding:5px 11px;border-bottom:.5px solid var(--border);gap:8px">
-      <div style="flex:1;font-size:12px;color:var(--text)">${n}</div>
-      <div style="font-size:9px;color:var(--text-muted)">${lvLabel[lv]}</div>
-      <button onclick="learnSpell('${safe}');document.getElementById('cs-spell-search').value='';_updateSpellSearch('')"
-        style="background:var(--cc);color:var(--bg);border:none;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer">Learn</button>
-    </div>`;
-  }).join('');
+  if(!pool.length){showToast('You already know all available spells for your level!');return;}
+  const name=pool[Math.floor(Math.random()*pool.length)];
+  learnSpell(name);
+  showToast('Spell discovered: '+name);
 }
 function renderSpellsTab(){
   const el=document.getElementById('cs-spells-body');
@@ -7327,7 +7366,6 @@ function renderSpellsTab(){
   const prepCount=[...preparedSpells].filter(n=>!cantrips.has(n)).length;
   const over=max!==null&&prepCount>max;
 
-  // Header
   let html=`<div style="padding:8px 11px 7px;border-bottom:.5px solid var(--border);background:var(--s2);display:flex;align-items:center;gap:8px;flex-wrap:wrap">`;
   if(isWarlock){
     html+=`<span style="font-size:11px;color:var(--text-dim)">Known:</span>
@@ -7337,11 +7375,11 @@ function renderSpellsTab(){
       <strong style="color:${over?'#ff6464':'var(--cc)'}">${prepCount}/${max}</strong>
       <span style="font-size:9px;color:var(--text-muted)">(${_classSpellAbility(cls).toUpperCase()}+level)</span>`;
   }
-  html+=`</div>`;
+  html+=`<button onclick="rollForSpell()" style="margin-left:auto;background:#2a1a3a;color:#c792ea;border:.5px solid #5a3a7a;border-radius:5px;font-size:10px;padding:4px 9px;cursor:pointer">+ Discover Spell</button>
+  </div>`;
 
-  // Known spells grouped by level
   if(knownSpells.size===0){
-    html+=`<div style="padding:18px 11px;font-size:11px;color:var(--text-muted);text-align:center">No spells known yet.<br>Search below to learn spells.</div>`;
+    html+=`<div style="padding:18px 11px;font-size:11px;color:var(--text-muted);text-align:center">No spells known yet.<br><br>Click <strong>+ Discover Spell</strong> to randomly learn a spell from your class list.</div>`;
   } else {
     const lvNames=['Cantrips','1st Level','2nd Level','3rd Level','4th Level','5th Level','6th Level','7th Level','8th Level','9th Level'];
     for(let lv=0;lv<=9;lv++){
@@ -7364,22 +7402,86 @@ function renderSpellsTab(){
       });
     }
   }
-
-  // Learn spell search
-  html+=`<div style="padding:7px 11px 5px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);border-top:.5px solid var(--border);margin-top:4px">Learn a Spell</div>
-  <div style="padding:4px 11px 8px">
-    <input id="cs-spell-search" placeholder="Search spells to learn…" oninput="_updateSpellSearch(this.value)"
-      style="width:100%;box-sizing:border-box;background:var(--s3);border:1px solid var(--border-hi);border-radius:5px;color:var(--text);font-size:11px;padding:5px 9px;outline:none">
-  </div>
-  <div id="cs-spell-search-res"></div>`;
-
   el.innerHTML=html;
-  // Restore search results if user was mid-search
-  if(_spellSearchVal){
-    const inp=document.getElementById('cs-spell-search');
-    if(inp) inp.value=_spellSearchVal;
-    _updateSpellSearch(_spellSearchVal);
+}
+
+// ── SPELL CASTING ─────────────────────────────────────────────────────────────
+function _spellDiceStr(name, castLv){
+  const data=SPELL_DAMAGE[name];
+  if(!data||!data.d) return null;
+  const m=data.d.match(/^(\d+)d(\d+)$/);
+  if(!m) return data.d;
+  let cnt=parseInt(m[1]);
+  const sides=parseInt(m[2]);
+  if(data.cl){
+    const lv=currentLevel;
+    cnt*=(lv>=17?4:lv>=11?3:lv>=5?2:1);
+  } else if(data.up&&castLv>(data.min||1)){
+    const um=data.up.match(/^(\d+)d/);
+    if(um) cnt+=parseInt(um[1])*(castLv-(data.min||1));
   }
+  return cnt+'d'+sides;
+}
+function _showSpellDamage(label, diceStr, dmgType){
+  const m=diceStr.match(/(\d+)d(\d+)/);
+  if(!m){showToast(label+' cast!');return;}
+  const cnt=parseInt(m[1]),sides=parseInt(m[2]);
+  const rolls=Array.from({length:cnt},()=>Math.ceil(Math.random()*sides));
+  const total=rolls.reduce((a,b)=>a+b,0);
+  _weaponDmgRoll=null;
+  document.getElementById('cs-roll-lbl').textContent=label+' — Damage';
+  const d20el=document.getElementById('cs-roll-d20');
+  d20el.className='cs-roll-d20 landed';
+  d20el.innerHTML=`<span style="font-size:72px;font-weight:700;color:var(--cc);font-family:var(--font-display);line-height:1">${total}</span>`;
+  document.getElementById('cs-roll-detail').textContent=diceStr+'('+rolls.join('+')+') · '+dmgType;
+  document.getElementById('cs-roll-total').innerHTML='';
+  document.getElementById('cs-roll-ov').classList.add('open');
+}
+function openSpellCastModal(name){
+  const listCls=currentClass==='oathbreaker'?'paladin':currentClass;
+  const cantrips=new Set((SPELL_LIST[listCls]||{})[0]||[]);
+  const isCantrip=cantrips.has(name);
+  const safe=name.replace(/'/g,"\\'");
+  const nameEl=document.getElementById('spell-cast-name');
+  const slotsEl=document.getElementById('spell-cast-slots');
+  if(!nameEl||!slotsEl) return;
+  nameEl.textContent=name;
+  if(isCantrip){
+    slotsEl.innerHTML=`<div style="text-align:center;font-size:11px;color:var(--text-dim);margin-bottom:10px">Cantrip — no spell slot needed</div>
+      <button onclick="closeSpellCast();_castSpell('${safe}',0)"
+        style="width:100%;padding:11px;background:var(--cc);color:var(--bg);border:none;border-radius:7px;cursor:pointer;font-size:14px;font-weight:700">Cast</button>`;
+  } else {
+    const tbl=getSlotTable();
+    const ords=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
+    if(!tbl){
+      slotsEl.innerHTML=`<div style="color:var(--text-muted);text-align:center;font-size:12px;padding:8px 0">No spell slots available</div>`;
+    } else {
+      slotsEl.innerHTML=tbl.map((total,i)=>{
+        if(total===0) return'';
+        const avail=total-(usedSlots[i]||0);
+        const dis=avail===0;
+        return`<button onclick="${dis?'':'closeSpellCast();_castSpell(\''+safe+'\','+( i+1 )+')'}"
+          style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px;
+            background:${dis?'transparent':'var(--s3)'};border:1px solid ${dis?'var(--border)':'var(--border-hi)'};
+            border-radius:7px;cursor:${dis?'not-allowed':'pointer'};
+            color:${dis?'var(--text-muted)':'var(--text)'};opacity:${dis?'0.4':'1'};margin-bottom:5px">
+          <span style="font-weight:600">${ords[i]} Level</span>
+          <span style="font-size:10px;color:var(--text-dim)">${avail}/${total} slots</span>
+        </button>`;
+      }).join('');
+    }
+  }
+  document.getElementById('spell-cast-ov').style.display='flex';
+}
+function closeSpellCast(){document.getElementById('spell-cast-ov').style.display='none';}
+function _castSpell(name, castLv){
+  const ords=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
+  if(castLv>0) useSlot(castLv-1);
+  const diceStr=_spellDiceStr(name,castLv);
+  const dmgType=SPELL_DAMAGE[name]?.t||'';
+  const label=name+(castLv>0?' ('+ords[castLv-1]+')':'');
+  if(diceStr) _showSpellDamage(label,diceStr,dmgType);
+  else showToast(label+' cast!');
 }
 
 // ── CON RECALC ─────────────────────────────────────────────────────────────────
@@ -10165,6 +10267,17 @@ if(_navRight)_navRight.appendChild(_saveBtn);
   <div class="item-detail-modal">
     <button class="item-detail-close" onclick="closeItemDetail()">✕</button>
     <div id="item-detail-content"></div>
+  </div>
+</div>
+
+<!-- SPELL CAST MODAL -->
+<div id="spell-cast-ov" style="display:none;position:fixed;inset:0;background:rgba(5,7,15,.85);z-index:300;align-items:center;justify-content:center"
+    onclick="if(event.target===this)closeSpellCast()">
+  <div style="background:var(--s2);border:1px solid var(--border-hi);border-radius:12px;padding:22px 20px 18px;min-width:270px;max-width:320px;width:88%">
+    <div id="spell-cast-name" style="font-size:17px;font-weight:700;color:var(--cc);text-align:center;margin-bottom:3px"></div>
+    <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-bottom:14px;letter-spacing:.05em">Choose slot level to cast at:</div>
+    <div id="spell-cast-slots"></div>
+    <button onclick="closeSpellCast()" style="width:100%;margin-top:10px;padding:8px;background:transparent;border:.5px solid var(--border);border-radius:7px;color:var(--text-muted);cursor:pointer;font-size:12px">Cancel</button>
   </div>
 </div>
 
