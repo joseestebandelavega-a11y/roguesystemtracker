@@ -7335,20 +7335,6 @@ function togglePrepareSpell(name){
   scheduleSave();
   scheduleCSSync();
 }
-function rollForSpell(){
-  const listCls=currentClass==='oathbreaker'?'paladin':currentClass;
-  const spells=SPELL_LIST[listCls]||{};
-  const maxLv=_maxSpellLevel();
-  const pool=[];
-  for(let lv=0;lv<=9;lv++){
-    if(lv>0&&lv>maxLv) continue;
-    (spells[lv]||[]).forEach(n=>{if(!knownSpells.has(n)) pool.push(n);});
-  }
-  if(!pool.length){showToast('You already know all available spells for your level!');return;}
-  const name=pool[Math.floor(Math.random()*pool.length)];
-  learnSpell(name);
-  showToast('Spell discovered: '+name);
-}
 function renderSpellsTab(){
   const el=document.getElementById('cs-spells-body');
   if(!el) return;
@@ -7375,11 +7361,10 @@ function renderSpellsTab(){
       <strong style="color:${over?'#ff6464':'var(--cc)'}">${prepCount}/${max}</strong>
       <span style="font-size:9px;color:var(--text-muted)">(${_classSpellAbility(cls).toUpperCase()}+level)</span>`;
   }
-  html+=`<button onclick="rollForSpell()" style="margin-left:auto;background:#2a1a3a;color:#c792ea;border:.5px solid #5a3a7a;border-radius:5px;font-size:10px;padding:4px 9px;cursor:pointer">+ Discover Spell</button>
-  </div>`;
+  html+=`</div>`;
 
   if(knownSpells.size===0){
-    html+=`<div style="padding:18px 11px;font-size:11px;color:var(--text-muted);text-align:center">No spells known yet.<br><br>Click <strong>+ Discover Spell</strong> to randomly learn a spell from your class list.</div>`;
+    html+=`<div style="padding:18px 11px;font-size:11px;color:var(--text-muted);text-align:center">No spells known yet.<br><br>Draw spells from the Abilities tab.</div>`;
   } else {
     const lvNames=['Cantrips','1st Level','2nd Level','3rd Level','4th Level','5th Level','6th Level','7th Level','8th Level','9th Level'];
     for(let lv=0;lv<=9;lv++){
