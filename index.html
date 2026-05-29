@@ -2205,6 +2205,16 @@ body > .section{width:100%;box-sizing:border-box;padding:24px 28px 64px}
       <button class="cs-hp-heal" style="flex:1;background:#1a2e3a;color:#5baddb;font-size:11px" onclick="doShortRest()">⏱ Short Rest</button>
       <button class="cs-hp-heal" style="flex:1;background:#1e3020;color:#66bb6a;font-size:11px" onclick="doLongRest()">🌙 Long Rest</button>
     </div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:5px 8px;background:var(--s2);border-radius:5px;border:.5px solid var(--border)">
+      <div style="flex:1">
+        <div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)">Hit Dice</div>
+        <div id="cs-hd-remaining" style="font-size:13px;font-weight:700;color:var(--cc)">3d10</div>
+      </div>
+      <button id="cs-hd-spend-btn" onclick="spendHitDie()"
+        style="background:#2a1e3a;color:#c792ea;border:.5px solid #5a3a7a;border-radius:5px;font-size:11px;padding:5px 10px;cursor:pointer">
+        Spend 1
+      </button>
+    </div>
     <div id="cs-hp-bk" class="cs-hp-bk"></div>
     <div style="font-size:9px;color:var(--text-muted);margin-top:4px;cursor:pointer" onclick="document.getElementById('cs-hp-bk').classList.toggle('open')">▾ level breakdown</div>
   </div>
@@ -3909,6 +3919,7 @@ let acquiredMain = new Set();
 let acquiredSub = new Set();
 let bossPowers = [];          // {name,type,desc,level,source} drawn from boss rooms
 let preparedSpells = new Set(); // spell names the character has prepared
+let hitDiceSpent = 0;           // how many hit dice have been used this long rest
 let _bossDrawnRooms = new Set(); // roomIds this player has already drawn from
 let bmLevelsDone = new Set();
 let bmBatchRemaining = 0;
@@ -4549,6 +4560,7 @@ function renderCharSheet(){
   const spTab=document.getElementById('cs-spells-tab');
   if(spTab) spTab.style.display=_classHasSpells(currentClass)?'':'none';
   if(typeof renderSpellsTab==='function') renderSpellsTab();
+  if(typeof _renderHitDice==='function') _renderHitDice();
 }
 
 // stat rolling
@@ -7473,8 +7485,42 @@ function showToast(msg,cls){
 }
 
 // ── REST ────────────────────────────────────────────────────────────────────
+function _renderHitDice(){
+  const rem=document.getElementById('cs-hd-remaining');
+  const btn=document.getElementById('cs-hd-spend-btn');
+  if(!rem||!btn) return;
+  const die=getCD().hitDie||8;
+  const total=currentLevel;
+  const left=Math.max(0,total-hitDiceSpent);
+  rem.textContent=left+'/'+total+'d'+die;
+  rem.style.color=left===0?'var(--text-muted)':left<Math.ceil(total/2)?'#ffb347':'var(--cc)';
+  btn.disabled=left===0;
+  btn.style.opacity=left===0?'0.4':'1';
+  btn.style.cursor=left===0?'not-allowed':'pointer';
+}
+function spendHitDie(){
+  const die=getCD().hitDie||8;
+  const total=currentLevel;
+  if(hitDiceSpent>=total) return;
+  hitDiceSpent++;
+  const roll=Math.ceil(Math.random()*die);
+  const conMod=mod(statTotal('con'));
+  const heal=Math.max(1,roll+conMod);
+  const cur=document.getElementById('cs-hp-cur');
+  const maxHP=hpLevels.reduce((a,x)=>a+x.total,0);
+  if(cur&&maxHP){
+    const newHP=Math.min(maxHP,parseInt(cur.value||0)+heal);
+    cur.value=newHP;
+  }
+  _renderHitDice();
+  scheduleCSSync();
+  scheduleSave();
+  showToast(`Hit Die: rolled ${roll} + CON ${fmtMod(conMod)} = +${heal} HP`,'hd-spend');
+}
 function doLongRest(){
   usedSlots=[0,0,0,0,0,0,0,0,0];
+  // Restore up to half total hit dice (round up), PHB p.186
+  hitDiceSpent=Math.max(0,hitDiceSpent-Math.ceil(currentLevel/2));
   const maxHP=hpLevels.reduce((a,x)=>a+x.total,0);
   const cur=document.getElementById('cs-hp-cur');
   if(cur&&maxHP)cur.value=maxHP;
@@ -7484,7 +7530,7 @@ function doLongRest(){
 }
 function doShortRest(){
   resetShortRestResources();
-  showToast('Short Rest — per-SR abilities recharged','rest-short');
+  showToast('Short Rest — per-SR abilities recharged. Spend Hit Dice above to heal.','rest-short');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -7523,6 +7569,7 @@ function saveState(){
       bmLevelsDone: serializeSet(bmLevelsDone),
       usedSlots,
       preparedSpells: serializeSet(preparedSpells),
+      hitDiceSpent,
       // Resources
       classResources, superiorityDice, maneuversKnown,
       // Inventory
@@ -7568,6 +7615,7 @@ function loadState(){
     bmLevelsDone  = deserializeSet(s.bmLevelsDone);
     if(s.usedSlots) usedSlots = s.usedSlots;
     if(s.preparedSpells) preparedSpells = deserializeSet(s.preparedSpells);
+    if(s.hitDiceSpent!=null) hitDiceSpent = s.hitDiceSpent;
 
     // Resources
     if(s.classResources)  classResources  = s.classResources;
@@ -7726,6 +7774,7 @@ selectSubclass = function(sc,el){ _origSelectSubclass(sc,el); scheduleSave(); };
   if(typeof doLongRest==='function')      doLongRest      = _wrap(doLongRest,     doLongRest);
   if(typeof doShortRest==='function')     doShortRest     = _wrap(doShortRest,    doShortRest);
   if(typeof togglePrepareSpell==='function') togglePrepareSpell = _wrap(togglePrepareSpell, togglePrepareSpell);
+  if(typeof spendHitDie==='function')        spendHitDie        = _wrap(spendHitDie,        spendHitDie);
 })();
 
 // Sync on HP input (typed directly into hp field)
