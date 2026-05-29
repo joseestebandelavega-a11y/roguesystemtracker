@@ -3918,7 +3918,8 @@ let currentLevel = 3;
 let acquiredMain = new Set();
 let acquiredSub = new Set();
 let bossPowers = [];          // {name,type,desc,level,source} drawn from boss rooms
-let preparedSpells = new Set(); // spell names the character has prepared
+let knownSpells    = new Set(); // spell names the character has learned
+let preparedSpells = new Set(); // subset of knownSpells prepared for the day
 let hitDiceSpent = 0;           // how many hit dice have been used this long rest
 let _bossDrawnRooms = new Set(); // roomIds this player has already drawn from
 let bmLevelsDone = new Set();
@@ -7236,7 +7237,7 @@ function _classSpellAbility(cls){
 function _maxPrepSpells(){
   const cls=currentClass;
   if(!_classHasSpells(cls)) return 0;
-  if(cls==='warlock') return null; // warlock knows spells, no daily prep limit
+  if(cls==='warlock') return null;
   const abilMod=mod(statTotal(_classSpellAbility(cls)));
   if(['paladin','oathbreaker'].includes(cls)) return Math.max(1,abilMod+Math.floor(currentLevel/2));
   return Math.max(1,abilMod+currentLevel);
@@ -7248,7 +7249,22 @@ function _maxSpellLevel(){
   tbl.forEach((c,i)=>{if(c>0)mx=i+1;});
   return mx;
 }
+function learnSpell(name){
+  knownSpells.add(name);
+  renderSpellsTab();
+  scheduleSave();
+  scheduleCSSync();
+}
+function forgetSpell(name){
+  knownSpells.delete(name);
+  preparedSpells.delete(name);
+  renderSpellsTab();
+  if(typeof renderActions==='function') renderActions();
+  scheduleSave();
+  scheduleCSSync();
+}
 function togglePrepareSpell(name){
+  if(!knownSpells.has(name)) return; // can only prepare known spells
   if(preparedSpells.has(name)){
     preparedSpells.delete(name);
   } else {
@@ -7265,6 +7281,34 @@ function togglePrepareSpell(name){
   if(typeof renderActions==='function') renderActions();
   scheduleSave();
   scheduleCSSync();
+}
+let _spellSearchVal='';
+function _updateSpellSearch(val){
+  _spellSearchVal=val.toLowerCase().trim();
+  const res=document.getElementById('cs-spell-search-res');
+  if(!res) return;
+  if(!_spellSearchVal){res.innerHTML='';return;}
+  const listCls=currentClass==='oathbreaker'?'paladin':currentClass;
+  const spells=SPELL_LIST[listCls]||{};
+  const maxLv=_maxSpellLevel();
+  const matches=[];
+  for(let lv=0;lv<=9;lv++){
+    if(lv>0&&lv>maxLv) continue;
+    (spells[lv]||[]).forEach(n=>{
+      if(!knownSpells.has(n)&&n.toLowerCase().includes(_spellSearchVal)) matches.push({n,lv});
+    });
+  }
+  if(!matches.length){res.innerHTML=`<div style="padding:8px 11px;font-size:11px;color:var(--text-muted)">No spells found</div>`;return;}
+  const lvLabel=['Cantrip','1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
+  res.innerHTML=matches.slice(0,12).map(({n,lv})=>{
+    const safe=n.replace(/'/g,"\\'");
+    return`<div style="display:flex;align-items:center;padding:5px 11px;border-bottom:.5px solid var(--border);gap:8px">
+      <div style="flex:1;font-size:12px;color:var(--text)">${n}</div>
+      <div style="font-size:9px;color:var(--text-muted)">${lvLabel[lv]}</div>
+      <button onclick="learnSpell('${safe}');document.getElementById('cs-spell-search').value='';_updateSpellSearch('')"
+        style="background:var(--cc);color:var(--bg);border:none;border-radius:4px;font-size:10px;padding:3px 8px;cursor:pointer">Learn</button>
+    </div>`;
+  }).join('');
 }
 function renderSpellsTab(){
   const el=document.getElementById('cs-spells-body');
@@ -7283,38 +7327,59 @@ function renderSpellsTab(){
   const prepCount=[...preparedSpells].filter(n=>!cantrips.has(n)).length;
   const over=max!==null&&prepCount>max;
 
-  let html=`<div style="padding:8px 11px 7px;border-bottom:.5px solid var(--border);background:var(--s2);display:flex;align-items:center;gap:8px">`;
+  // Header
+  let html=`<div style="padding:8px 11px 7px;border-bottom:.5px solid var(--border);background:var(--s2);display:flex;align-items:center;gap:8px;flex-wrap:wrap">`;
   if(isWarlock){
-    html+=`<span style="font-size:11px;color:var(--text-dim)">Spells Known:</span>
-      <strong style="color:var(--cc)">${preparedSpells.size}</strong>
-      <span style="font-size:9px;color:var(--text-muted)">(toggle to track known spells)</span>`;
+    html+=`<span style="font-size:11px;color:var(--text-dim)">Known:</span>
+      <strong style="color:var(--cc)">${knownSpells.size} spells</strong>`;
   } else {
     html+=`<span style="font-size:11px;color:var(--text-dim)">Prepared:</span>
-      <strong style="color:${over?'#ff6464':'var(--cc)'}">${prepCount}</strong>
-      <span style="font-size:11px;color:var(--text-dim)">/ ${max}</span>
-      <span style="font-size:9px;color:var(--text-muted);margin-left:4px">(${_classSpellAbility(cls).toUpperCase()}+level)</span>`;
+      <strong style="color:${over?'#ff6464':'var(--cc)'}">${prepCount}/${max}</strong>
+      <span style="font-size:9px;color:var(--text-muted)">(${_classSpellAbility(cls).toUpperCase()}+level)</span>`;
   }
   html+=`</div>`;
 
-  const lvNames=['Cantrips','1st Level','2nd Level','3rd Level','4th Level','5th Level','6th Level','7th Level','8th Level','9th Level'];
-  for(let lv=0;lv<=9;lv++){
-    const lvSpells=spells[lv];
-    if(!lvSpells||!lvSpells.length) continue;
-    if(lv>0&&lv>maxLv) continue;
-    html+=`<div style="padding:5px 11px 3px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);border-top:.5px solid var(--border)">${lvNames[lv]}</div>`;
-    lvSpells.forEach(name=>{
-      const prep=preparedSpells.has(name);
-      const isCantrip=lv===0;
-      const safe=name.replace(/'/g,"\\'");
-      html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 11px;border-bottom:.5px solid var(--border);cursor:pointer;user-select:none"
-          onclick="togglePrepareSpell('${safe}')">
-        <div style="width:15px;height:15px;border-radius:3px;border:1.5px solid ${prep?'var(--cc)':'var(--border-hi)'};background:${prep?'var(--cc)':'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--bg)">${prep?'✓':''}</div>
-        <div style="font-size:12px;color:${prep?'var(--text)':'var(--text-dim)'};flex:1">${name}</div>
-        ${isCantrip?'<div style="font-size:9px;color:var(--text-muted)">∞</div>':''}
-      </div>`;
-    });
+  // Known spells grouped by level
+  if(knownSpells.size===0){
+    html+=`<div style="padding:18px 11px;font-size:11px;color:var(--text-muted);text-align:center">No spells known yet.<br>Search below to learn spells.</div>`;
+  } else {
+    const lvNames=['Cantrips','1st Level','2nd Level','3rd Level','4th Level','5th Level','6th Level','7th Level','8th Level','9th Level'];
+    for(let lv=0;lv<=9;lv++){
+      const lvSpells=(spells[lv]||[]).filter(n=>knownSpells.has(n));
+      if(!lvSpells.length) continue;
+      html+=`<div style="padding:5px 11px 3px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);border-top:.5px solid var(--border)">${lvNames[lv]}</div>`;
+      lvSpells.forEach(name=>{
+        const prep=preparedSpells.has(name);
+        const isCantrip=lv===0;
+        const safe=name.replace(/'/g,"\\'");
+        html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 11px;border-bottom:.5px solid var(--border)">
+          <div style="width:15px;height:15px;border-radius:3px;border:1.5px solid ${prep?'var(--cc)':'var(--border-hi)'};background:${prep?'var(--cc)':'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--bg);cursor:pointer"
+              onclick="togglePrepareSpell('${safe}')">${prep?'✓':''}</div>
+          <div style="flex:1;font-size:12px;color:${prep?'var(--text)':'var(--text-dim)'};cursor:pointer"
+              onclick="togglePrepareSpell('${safe}')">${name}</div>
+          ${isCantrip?'<div style="font-size:9px;color:var(--text-muted)">∞</div>':''}
+          <div style="font-size:13px;color:var(--text-muted);cursor:pointer;padding:0 2px;line-height:1"
+              onclick="if(confirm('Forget ${safe}?'))forgetSpell('${safe}')" title="Forget spell">×</div>
+        </div>`;
+      });
+    }
   }
+
+  // Learn spell search
+  html+=`<div style="padding:7px 11px 5px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);border-top:.5px solid var(--border);margin-top:4px">Learn a Spell</div>
+  <div style="padding:4px 11px 8px">
+    <input id="cs-spell-search" placeholder="Search spells to learn…" oninput="_updateSpellSearch(this.value)"
+      style="width:100%;box-sizing:border-box;background:var(--s3);border:1px solid var(--border-hi);border-radius:5px;color:var(--text);font-size:11px;padding:5px 9px;outline:none">
+  </div>
+  <div id="cs-spell-search-res"></div>`;
+
   el.innerHTML=html;
+  // Restore search results if user was mid-search
+  if(_spellSearchVal){
+    const inp=document.getElementById('cs-spell-search');
+    if(inp) inp.value=_spellSearchVal;
+    _updateSpellSearch(_spellSearchVal);
+  }
 }
 
 // ── CON RECALC ─────────────────────────────────────────────────────────────────
@@ -7568,6 +7633,7 @@ function saveState(){
       acquiredSub:  serializeSet(acquiredSub),
       bmLevelsDone: serializeSet(bmLevelsDone),
       usedSlots,
+      knownSpells:    serializeSet(knownSpells),
       preparedSpells: serializeSet(preparedSpells),
       hitDiceSpent,
       // Resources
@@ -7614,6 +7680,7 @@ function loadState(){
     acquiredSub   = deserializeSet(s.acquiredSub);
     bmLevelsDone  = deserializeSet(s.bmLevelsDone);
     if(s.usedSlots) usedSlots = s.usedSlots;
+    if(s.knownSpells)    knownSpells    = deserializeSet(s.knownSpells);
     if(s.preparedSpells) preparedSpells = deserializeSet(s.preparedSpells);
     if(s.hitDiceSpent!=null) hitDiceSpent = s.hitDiceSpent;
 
@@ -7773,6 +7840,8 @@ selectSubclass = function(sc,el){ _origSelectSubclass(sc,el); scheduleSave(); };
   if(typeof toggleDeath==='function')     toggleDeath     = _wrap(toggleDeath,    toggleDeath);
   if(typeof doLongRest==='function')      doLongRest      = _wrap(doLongRest,     doLongRest);
   if(typeof doShortRest==='function')     doShortRest     = _wrap(doShortRest,    doShortRest);
+  if(typeof learnSpell==='function')         learnSpell         = _wrap(learnSpell,         learnSpell);
+  if(typeof forgetSpell==='function')        forgetSpell        = _wrap(forgetSpell,        forgetSpell);
   if(typeof togglePrepareSpell==='function') togglePrepareSpell = _wrap(togglePrepareSpell, togglePrepareSpell);
   if(typeof spendHitDie==='function')        spendHitDie        = _wrap(spendHitDie,        spendHitDie);
 })();
